@@ -18,8 +18,14 @@
 class CMonitorApp : public CWinApp
 {
 public:
+	HINSTANCE exe_hInstance;
+	HANDLE hSem;//判断软件市立是否已存在
+	CString strSemaphore;
+    CString strSemaphoreExist;
+    CString strSemaphoreCreatFail;
+public:
 	CMonitorApp();
-
+	CString GetResString(UINT uStringID);
 // 重写
 public:
 	virtual BOOL InitInstance();

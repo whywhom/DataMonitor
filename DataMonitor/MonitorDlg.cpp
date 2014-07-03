@@ -28,6 +28,8 @@ public:
 // 实现
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -39,7 +41,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 }
 
+
+
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	
 END_MESSAGE_MAP()
 
 
@@ -63,6 +68,11 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDOK, &CMonitorDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDCANCEL, &CMonitorDlg::OnBnClickedCancel)
+	ON_COMMAND(ID_MENU_ABOUT, &CMonitorDlg::OnMenuAbout)
+	ON_UPDATE_COMMAND_UI(ID_MENU_ABOUT, &CMonitorDlg::OnUpdateMenuAbout)
+	ON_COMMAND(ID_MENU_EXIT, &CMonitorDlg::OnMenuExit)
 END_MESSAGE_MAP()
 
 
@@ -96,10 +106,34 @@ BOOL CMonitorDlg::OnInitDialog()
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
-
 	// TODO: 在此添加额外的初始化代码
-
+	if (!m_ToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
+		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
+		!m_ToolBar.LoadToolBar(IDR_TOOLBAR_MAIN))  //IDR_TOOLBAR为工具条资源的ID号
+	{
+		TRACE0("未能创建工具栏\n");
+		return -1;      // 未能创建
+	}
+	m_ToolBar.ShowWindow(SW_SHOW);   
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST,   AFX_IDW_CONTROLBAR_LAST,   0); 
+	CWnd::SetWindowText(theApp.GetResString(IDS_PRODUCT_NAME));
+	//设置主界面大小
+	CWnd::SetWindowPos(NULL,0,0,GetSystemMetrics (SM_CXFULLSCREEN),GetSystemMetrics (SM_CYFULLSCREEN),0/*WS_SIZEBOX|SWP_NOZORDER|SWP_NOMOVE*/);
+	CenterWindow();//窗体居中
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+void CMonitorDlg::OnMenuAbout()
+{
+	// TODO: 在此添加命令处理程序代码
+	CAboutDlg dlgAbout;
+	dlgAbout.DoModal();
+}
+
+
+void CMonitorDlg::OnUpdateMenuAbout(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
 }
 
 void CMonitorDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -151,3 +185,52 @@ HCURSOR CMonitorDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CMonitorDlg::OnBnClickedOk()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CDialogEx::OnOK();
+}
+
+
+void CMonitorDlg::OnBnClickedCancel()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CDialogEx::OnCancel();
+}
+
+BOOL CMonitorDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	switch (pMsg->message)
+	{
+	case WM_KEYDOWN:
+		{
+			switch (pMsg->wParam)
+			{
+			case VK_ESCAPE:
+				return TRUE;
+			case VK_UP://屏蔽上下方向键
+			case VK_DOWN:	
+			case VK_SPACE:
+			case VK_RETURN://屏蔽回车
+				return TRUE;
+			default:
+				break;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+
+void CMonitorDlg::OnMenuExit()
+{
+	// TODO: 在此添加命令处理程序代码
+	SendMessage(WM_CLOSE);
+}

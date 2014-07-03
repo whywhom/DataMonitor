@@ -17,6 +17,7 @@ BEGIN_MESSAGE_MAP(CMonitorApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
+static HINSTANCE _hLangDLL = NULL;
 
 // CMonitorApp 构造
 
@@ -65,8 +66,34 @@ BOOL CMonitorApp::InitInstance()
 	// 更改用于存储设置的注册表项
 	// TODO: 应适当修改该字符串，
 	// 例如修改为公司或组织名
-	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
-
+	SetRegistryKey(_T("DataMonitor"));
+	/*wuhaoyong add CMutex*/
+    //Creat CMutex
+    hSem=NULL;
+	strSemaphore.LoadString( IDS_SEMAPHORE );
+    hSem=CreateSemaphore(NULL,1,1,strSemaphore);
+    if(hSem)  //Creat CMutex success
+    {
+        //the CMutex exist
+        if(ERROR_ALREADY_EXISTS==GetLastError())
+        {
+			strSemaphoreExist.LoadString( IDS_SEMAPHORE_ALREADY_EXISTS );
+            AfxMessageBox(strSemaphoreExist);
+            CloseHandle(hSem);      //Close CMutex
+            return FALSE;           //Exit App
+        }
+    }
+    else
+    {
+		strSemaphoreCreatFail.LoadString(IDS_SEMAPHORE_CREATE_FAIL);
+        AfxMessageBox(strSemaphoreCreatFail);
+        return FALSE;
+    }
+	exe_hInstance = GetModuleHandle(NULL);//获取hInstance wuhaoyong add
+	if(0 == exe_hInstance)
+	{
+		return FALSE;
+	}
 	CMonitorDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
@@ -90,5 +117,16 @@ BOOL CMonitorApp::InitInstance()
 	// 由于对话框已关闭，所以将返回 FALSE 以便退出应用程序，
 	//  而不是启动应用程序的消息泵。
 	return FALSE;
+}
+
+//根据_hLangDLL是否加载语言dll来判断使用语言库资源还是默认资源，默认为中文简体
+CString CMonitorApp::GetResString(UINT uStringID)
+{
+	CString resString;
+	if (_hLangDLL)
+		resString.LoadString(_hLangDLL, uStringID);
+	if (resString.IsEmpty())
+		resString.LoadString(theApp.exe_hInstance, uStringID);
+	return resString;
 }
 
