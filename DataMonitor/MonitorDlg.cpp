@@ -12,6 +12,7 @@
 #endif
 
 
+//
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -120,6 +121,7 @@ BOOL CMonitorDlg::OnInitDialog()
 	//设置主界面大小
 	CWnd::SetWindowPos(NULL,0,0,GetSystemMetrics (SM_CXFULLSCREEN),GetSystemMetrics (SM_CYFULLSCREEN),0/*WS_SIZEBOX|SWP_NOZORDER|SWP_NOMOVE*/);
 	CenterWindow();//窗体居中
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 

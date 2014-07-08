@@ -102,15 +102,20 @@
     <None Include="res\toolbar1.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommLayer.h" />
     <ClInclude Include="DataMonitor.h" />
     <ClInclude Include="MonitorDlg.h" />
+    <ClInclude Include="PublicInterface.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommLayer.cpp" />
     <ClCompile Include="DataMonitor.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

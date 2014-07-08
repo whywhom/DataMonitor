@@ -10,6 +10,9 @@
 #define new DEBUG_NEW
 #endif
 
+// 唯一的一个 CMonitorApp 对象
+
+CMonitorApp theApp;
 
 // CMonitorApp
 
@@ -29,11 +32,6 @@ CMonitorApp::CMonitorApp()
 	// TODO: 在此处添加构造代码，
 	// 将所有重要的初始化放置在 InitInstance 中
 }
-
-
-// 唯一的一个 CMonitorApp 对象
-
-CMonitorApp theApp;
 
 
 // CMonitorApp 初始化

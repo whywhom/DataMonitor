@@ -9,7 +9,7 @@
 #endif
 
 #include "resource.h"		// 主符号
-
+#include "CommLayer.h"
 
 // CMonitorApp:
 // 有关此类的实现，请参阅 DataMonitor.cpp
@@ -23,6 +23,9 @@ public:
 	CString strSemaphore;
     CString strSemaphoreExist;
     CString strSemaphoreCreatFail;
+	CString strUserSetCommPort;//用户选择的串口号
+	BYTE m_DeviceType;//设备类型
+	CCommLayer commLayer;
 public:
 	CMonitorApp();
 	CString GetResString(UINT uStringID);
