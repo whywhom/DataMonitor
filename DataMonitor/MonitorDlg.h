@@ -4,16 +4,21 @@
 
 #pragma once
 
-
 // CMonitorDlg 对话框
 class CMonitorDlg : public CDialogEx
 {
 public:
 	CToolBar m_ToolBar;
+
+private:
+
 // 构造
 public:
 	CMonitorDlg(CWnd* pParent = NULL);	// 标准构造函数
-
+	DWORD CreatConnect( );//建立连接
+	DWORD DestroyConnect( );//断开连接
+	void DataReceive(BYTE* inbuff, DWORD* dwSize);
+	WORD DataSend(BYTE* outbuff, DWORD dwSize);
 // 对话框数据
 	enum { IDD = IDD_DATAMONITOR_DIALOG };
 
@@ -38,4 +43,5 @@ public:
 	afx_msg void OnMenuAbout();
 	afx_msg void OnUpdateMenuAbout(CCmdUI *pCmdUI);
 	afx_msg void OnMenuExit();
+	afx_msg LRESULT OnCommReceive(WPARAM wParam, LPARAM lParam);//接收端口消息
 };

@@ -332,18 +332,6 @@ UINT CSerialPort::CommThread(LPVOID pParam)
                     //Sleep(10);
                     ReceivePort(port, comstat);
                 }
-#if 0
-                if (CommEvent & EV_DSR)
-                {
-                    if(theApp.fatherHwnd!=NULL&&theApp.m_CallType==TYPE_PIM)
-                    {
-                        ::PostMessage(theApp.fatherHwnd, WM_CONNECT_ERR, (WPARAM) 0, (LPARAM) 0);
-                    }
-                    else
-                    {
-                    }
-                }
-#endif
                 break;
             }
         case 2: // write event
@@ -371,13 +359,6 @@ BOOL CSerialPort::StartMonitoring()
         return FALSE;
     }
 	TRACE(_T("Thread started\n"));
-#if 0
-	if (!(m_MonitorThread=AfxBeginThread(SerialMonitorThread, this)))
-    {
-    	m_MonitorThread=NULL;
-    }
-    TRACE(_T("\nMonitor Thread started\n"));
-#endif
     return TRUE;
 }
 
@@ -564,7 +545,7 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
 
         if (bRead)
         {
-            nToRead = min(comstat.cbInQue, 4*1024);
+            nToRead = min(comstat.cbInQue, 4*COMM_BUFFER_BASESIZE);
             bResult = ReadFile(port->m_hComm,  // Handle to COMM port
                                inbuff,    // RX Buffer Pointer
                                nToRead,     // Read one byte
@@ -626,7 +607,6 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
         if(BytesRead)
         {
 			theApp.commLayer.RecvData(inbuff,(WORD)BytesRead);//send data to theApp to analyse
-            //::SendMessage((port->m_pOwner)->m_hWnd, WM_COMM_RXCHAR, (WPARAM) inbuff, (LPARAM) 0);
         }
     } // end forever loop
 }
@@ -681,50 +661,5 @@ void CSerialPort::ClosePort()
     {
         SetEvent(m_hShutdownEvent);
     }
-#if 0
-	if (theApp.m_SerialPort.m_MonitorThread != NULL)
-    {
-        TerminateThread (theApp.m_SerialPort.m_MonitorThread->m_hThread, 0);
-        theApp.m_SerialPort.m_MonitorThread = NULL;
-    }
-#endif
 	Sleep(100);
 }
-#if 0
-//
-// monitor serial port 
-//
-UINT CSerialPort::SerialMonitorThread(LPVOID pParam)
-{
-    DWORD dwEvent;
-	CSerialPort *port = (CSerialPort*)pParam;
-
-    while(1)
-    {
-        if(WaitCommEvent(port->m_hComm, &dwEvent, NULL))
-        {
-
-            if(dwEvent & EV_DSR)  //拔掉USB线产生的中断
-            {
-                if(theApp.fatherHwnd!=NULL&&theApp.m_CallType==TYPE_PIM)
-                {
-                	//软件调用采用消息传递机制通知上层软件
-                    ::PostMessage(theApp.fatherHwnd, WM_CONNECT_ERR, (WPARAM) 0, (LPARAM) 0);
-                }
-                else
-                {
-                	//电信组件调用时设置信号量
-                	theApp.m_bComPortEffective=FALSE;
-    				theApp.m_bConnectEffective=FALSE;
-                	if(theApp.m_EventStatus==SIGNALED)
-					{
-						theApp.g_event.SetEvent();
-					}
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-#endif

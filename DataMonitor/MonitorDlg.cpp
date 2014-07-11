@@ -6,7 +6,7 @@
 #include "DataMonitor.h"
 #include "MonitorDlg.h"
 #include "afxdialogex.h"
-
+#include "PublicInterface.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_ABOUT, &CMonitorDlg::OnMenuAbout)
 	ON_UPDATE_COMMAND_UI(ID_MENU_ABOUT, &CMonitorDlg::OnUpdateMenuAbout)
 	ON_COMMAND(ID_MENU_EXIT, &CMonitorDlg::OnMenuExit)
+	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
 END_MESSAGE_MAP()
 
 
@@ -121,6 +122,9 @@ BOOL CMonitorDlg::OnInitDialog()
 	//设置主界面大小
 	CWnd::SetWindowPos(NULL,0,0,GetSystemMetrics (SM_CXFULLSCREEN),GetSystemMetrics (SM_CYFULLSCREEN),0/*WS_SIZEBOX|SWP_NOZORDER|SWP_NOMOVE*/);
 	CenterWindow();//窗体居中
+	theApp.commLayer.SetConnectType(TYPE_NONE);
+
+	theApp.commLayer.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -235,4 +239,100 @@ void CMonitorDlg::OnMenuExit()
 {
 	// TODO: 在此添加命令处理程序代码
 	SendMessage(WM_CLOSE);
+}
+//===========================================================================
+//void CreatConnect( )
+// 函数：取得连接
+// 参数：
+// 返回值：void
+// 功能描述：
+// Author：wuhaoyong
+// Date：20140708
+//===========================================================================
+DWORD CMonitorDlg::CreatConnect( )
+{
+	theApp.m_CommResault=theApp.commLayer.CreatConnect();
+	if(theApp.m_CommResault==COMM_SUCCESS)
+	{
+		TRACE(_T("Communication OK!\n"));
+		theApp.m_DeviceConnectState=TRUE;
+
+	}
+	if(theApp.m_CommResault==COMM_ERROE_HARDWARE_CONNECT_FAIL)
+	{
+		TRACE(_T("Communication Fail!\n"));
+		theApp.m_DeviceConnectState=FALSE;
+
+	}
+	return 0;
+}
+
+//===========================================================================
+//void DestroyConnect( )
+// 函数：断开连接
+// 参数：
+// 返回值：DWORD
+// 功能描述：
+// Author：wuhaoyong
+// Date：20140708
+//===========================================================================
+DWORD CMonitorDlg::DestroyConnect( )
+{
+	theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
+    if (theApp.commLayer.m_SerialPort.m_bThreadAlive)
+    {
+        if(theApp.commLayer.m_SerialPort.m_Thread->m_hThread!=NULL)
+        {
+            TerminateThread (theApp.commLayer.m_SerialPort.m_Thread->m_hThread, 0);
+            theApp.commLayer.m_SerialPort.m_Thread=NULL;
+            theApp.commLayer.m_SerialPort.m_bThreadAlive=FALSE;
+        }
+    }
+    return 0;
+}
+
+//===========================================================================
+// void DataReceive(BYTE* inbuff, DWORD* dwSize)
+// 函数：接收数据外部接口
+// 参数： [in] inbuff:接收数据buf;dwSize:接收数据大小
+// 返回值：void
+// 功能描述：交互过程中的数据传递。
+// Author：wuhaoyong
+// Date：20140708
+//===========================================================================
+void CMonitorDlg::DataReceive(BYTE* inbuff, DWORD* dwSize)
+{
+    TRACE(_T("DataReceive\n"));
+
+    return;
+}
+//===========================================================================
+// WORD DataSend(BYTE* outbuff, DWORD dwSize)
+// 函数：发送数据外部接口
+// 参数： [in] outbuff:发送数据buf;dwSize:发送数据大小
+// 返回值：void
+// 功能描述：交互过程中的数据传递。
+// Author：wuhaoyong
+// Date：20140708
+//===========================================================================
+WORD CMonitorDlg::DataSend(BYTE* outbuff, DWORD dwSize)
+{
+    TRACE(_T("DataTrans\n"));
+    return theApp.commLayer.TransData(outbuff,dwSize);
+}
+
+/**************************************************************************/
+/***  specifications;              ***/
+/***  NAME   = OnCommReceive;       ***/
+/***  FUNCTION  = 接收手机端数据的主处理函数 ***/
+/***  DATE   = 2008/11/18;           ***/
+/***  AUTHOR  = wuhaoyong;              ***/
+/***  INPUT   = ;               ***/
+/***  OUTPUT  = ;               ***/
+/***  END OF SPECIFICATIONS;            ***/
+/**************************************************************************/
+LRESULT CMonitorDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
+{
+    TRACE(_T("Communication Receive!\n"));
+    return 0;
 }

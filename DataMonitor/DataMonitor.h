@@ -26,6 +26,8 @@ public:
 	CString strUserSetCommPort;//用户选择的串口号
 	BYTE m_DeviceType;//设备类型
 	CCommLayer commLayer;
+	int m_CommResault;//记录串口连接结果
+	BOOL m_DeviceConnectState;
 public:
 	CMonitorApp();
 	CString GetResString(UINT uStringID);
