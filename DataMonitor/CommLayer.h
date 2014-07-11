@@ -10,6 +10,8 @@
 const int array_size =100;
 const BYTE diag_maincmd =0x16;
 
+extern CEvent g_event;
+
 typedef struct
 {
     DWORD  SubKeyIndex;
@@ -50,7 +52,7 @@ public:
     BYTE m_ReceiveBuff[4*COMM_BUFFER_BASESIZE];//receive buffer
     WORD m_ReceiveBufferSize;
     BOOL ReceivewholePacket;     //接收的是整个packet
-	UINT8 sendCmd[COMM_BUFFER_BASESIZE];
+	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer
 	WORD sendDataSize;
     BOOL m_bTopFlagByte;             //第一个0x7E标志
     BOOL m_bEscapeByte;              //数据中有0x7E\0x7D的置换标志
@@ -59,15 +61,13 @@ public:
     WORD m_wlocalReceivePtr;         //数据bytes接收位置
     BYTE m_Mingroup;//组号最小序号
 	BYTE m_Maxgroup;//组号最大序号
-
-    CEvent g_event;
-    CEvent g_eventcom;
     Event_type m_EventStatus;
     
 
 	BOOL m_bISAddField;  
 private:
 	Connect_type m_ConnectType;
+	UINT  baudrate;   // 波特率
 public:
 	CCommLayer();
 	virtual ~CCommLayer();
@@ -78,7 +78,7 @@ public:
 	//////////////以上对外接口/////////////////
 	wchar_t * FromGBToUNICODE(char *pData,int *nDataLen,int *pwDataLen);
     char * FromUNICODEToGB(wchar_t *pData, int *nwDataLen, int *pDataLen);
-    
+    int SendCommand(BYTE* outbuff, DWORD dwSize);
     
     WORD TransData(BYTE* outbuff, DWORD dwSize);
     WORD RecvData(BYTE* inbuff, WORD dwSize);
@@ -87,7 +87,9 @@ public:
 	DWORD ChangeCStringToDWORD (CString strChange);
 	UINT8 CrcCheck(UINT8 *buf);
 	bool CrcCheck(UINT8 *buf, WORD dwSize);
-	int GenerateSendData(UINT8 *buf);
+	int GenerateSendData(UINT8 *buf, int size);
+	UINT getBaudrate();
+	void setBaudrate(UINT band);
 private:
 	int GetRegisterdComPort(SubKeyInfo_type* SubKey, DWORD* number);
 	int SelectComPort(void);

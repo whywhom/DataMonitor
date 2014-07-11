@@ -24,7 +24,7 @@ public:
 
     void ClosePort();
     // port initialisation
-    BOOL  InitPort(LPCTSTR pCommPort, UINT baud = 4*115200, BYTE parity = NOPARITY, UINT databits = 8, UINT stopbits = 1, DWORD dwCommEvents = EV_RXCHAR|EV_DSR);
+    BOOL  InitPort(LPCTSTR pCommPort, UINT baud = 115200, BYTE parity = NOPARITY, UINT databits = 8, UINT stopbits = 1, DWORD dwCommEvents = EV_RXCHAR|EV_DSR);
     HANDLE    m_hComm;
     // start/stop comm watching
     BOOL  StartMonitoring();

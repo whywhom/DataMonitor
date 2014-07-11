@@ -315,10 +315,10 @@ UINT CSerialPort::CommThread(LPVOID pParam)
             {
                 // Shutdown event.  This is event zero so it will be
                 // the higest priority and be serviced first.
+				SetCommMask(port->m_hComm, 0);
                 CloseHandle(port->m_hComm);
                 port->m_hComm=NULL;
                 port->m_bThreadAlive = FALSE;
-                SetCommMask(port->m_hComm, 0);
                 // Kill this thread.  break is not needed, but makes me feel better.
                 AfxEndThread(100);
                 break;

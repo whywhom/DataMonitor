@@ -4,14 +4,19 @@
 
 #pragma once
 
+extern bool bRunning;
+extern CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
+
 // CMonitorDlg 对话框
 class CMonitorDlg : public CDialogEx
 {
 public:
 	CToolBar m_ToolBar;
-
+	
 private:
-
+	
+	CWinThread*   m_Thread;
+	
 // 构造
 public:
 	CMonitorDlg(CWnd* pParent = NULL);	// 标准构造函数
@@ -22,9 +27,11 @@ public:
 // 对话框数据
 	enum { IDD = IDD_DATAMONITOR_DIALOG };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
-
+	static UINT MainThread(LPVOID pParam);
+	bool StartThread();
+	void Init();
 
 // 实现
 protected:
@@ -44,4 +51,6 @@ public:
 	afx_msg void OnUpdateMenuAbout(CCmdUI *pCmdUI);
 	afx_msg void OnMenuExit();
 	afx_msg LRESULT OnCommReceive(WPARAM wParam, LPARAM lParam);//接收端口消息
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnClose();
 };

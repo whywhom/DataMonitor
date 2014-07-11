@@ -7,6 +7,7 @@
 #include "CommLayer.h"
 #include "SerialPort.h"
 
+CEvent g_event;
 // CCommLayer
 
 IMPLEMENT_DYNAMIC(CCommLayer, CCmdTarget)
@@ -15,6 +16,7 @@ IMPLEMENT_DYNAMIC(CCommLayer, CCmdTarget)
 CCommLayer::CCommLayer()
 {
 	m_bConnectEffective=false;
+	setBaudrate(115200);
 }
 
 CCommLayer::~CCommLayer()
@@ -39,13 +41,20 @@ void CCommLayer::SetConnectType(Connect_type type)
 	m_ConnectType = type;
 }
 
-
+UINT CCommLayer::getBaudrate()
+{
+	return baudrate;
+}
+void CCommLayer::setBaudrate(UINT band)
+{
+	baudrate = band;
+}
 
 /**************************************************************************/
 /***  specifications;              ***/
 /***  NAME   = FromGBToUNICODE;       ***/
 /***  FUNCTION  = GB码转换为UNICODE   ***/
-/***  DATE   = 2008/11/18;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = *pData-GB字符串,*nDataLen-GB字符串有效长度,*pwDataLen-转换为UNICODE的长度;               ***/
 /***  OUTPUT  = *pwBuffer-UNICODE字符串;               ***/
@@ -64,7 +73,7 @@ wchar_t *CCommLayer::FromGBToUNICODE(char *pData, int *nDataLen,
 /***  specifications;              ***/
 /***  NAME   = FromUNICODEToGB;       ***/
 /***  FUNCTION  = UNICODE转换为GB码   ***/
-/***  DATE   = 2008/11/18;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = *pData-UNICODE字符串,*nwDataLen-UNICODE字符串有效长度,*pDataLen-转换为GB的长度;               ***/
 /***  OUTPUT  = *pBuffer-GB字符串;               ***/
@@ -106,12 +115,10 @@ DWORD CCommLayer::CreatConnect( )
             else
             {
                 //send data
-                //m_EventStatus=SIGNALED;
                 m_FuncReturnValue = SendVerification();
                 if (::WaitForSingleObject(g_event, 2000) ==WAIT_OBJECT_0)
                 {
                     g_event.ResetEvent();
-                    //m_EventStatus=UNSIGNALED;
                     if(m_bConnectEffective==true)
                     {
                         return COMM_SUCCESS;
@@ -125,13 +132,10 @@ DWORD CCommLayer::CreatConnect( )
                 else
                 {
                     //send data
-                    g_event.ResetEvent();
-                    //m_EventStatus=SIGNALED;
                     m_FuncReturnValue = SendVerification();
                     if (::WaitForSingleObject(g_event, 2000) ==WAIT_OBJECT_0)
                     {
                         g_event.ResetEvent();
-                        //m_EventStatus=UNSIGNALED;
                         if(m_bConnectEffective==TRUE)
                         {
                             return COMM_SUCCESS;
@@ -144,8 +148,6 @@ DWORD CCommLayer::CreatConnect( )
                     }
                     else
                     {
-                        g_event.ResetEvent();
-                        //m_EventStatus=UNSIGNALED;
                         m_SerialPort.ClosePort();//关闭串口
                         if(m_SerialPort.m_bThreadAlive)
                         {
@@ -173,7 +175,7 @@ DWORD CCommLayer::CreatConnect( )
 /***  specifications;              ***/
 /***  NAME   = GetRegisterdComPort;       ***/
 /***  FUNCTION  = enumerates the values for the specified open registry key   ***/
-/***  DATE   = 2008/11/07;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -186,7 +188,7 @@ int CCommLayer::GetRegisterdComPort(SubKeyInfo_type* SubKey, DWORD* number)
     HKEY qusbregisterkey;   //father key handle
 
     /////////////////////////////////////
-    //加入这些语句防止RegEnumValue函数在release版本下工作不正常！2008-11-07
+    //加入这些语句防止RegEnumValue函数在release版本下工作不正常！2014/07/11
     for(int i=0;i<array_size;i++)
     {
         SubKey[i].SubKeyNameLength=80;
@@ -238,7 +240,7 @@ int CCommLayer::GetRegisterdComPort(SubKeyInfo_type* SubKey, DWORD* number)
 /***  specifications;              ***/
 /***  NAME   = SelectComPort;       ***/
 /***  FUNCTION  = enumerates the com port   ***/
-/***  DATE   = 2008/11/07;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -283,7 +285,7 @@ int CCommLayer::SelectComPort(void)
 /***  specifications;              ***/
 /***  NAME   = SendVerification;       ***/
 /***  FUNCTION  = send verification data  ***/
-/***  DATE   = 2008/11/07;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -292,8 +294,31 @@ int CCommLayer::SelectComPort(void)
 int CCommLayer::SendVerification(void)
 {
 	UINT8 sendStr[] = {'L','Q','S','K','\r','\n'};
-	sendDataSize = GenerateSendData(sendStr);
-    if(GenerateSendData(sendStr))
+	sendDataSize = GenerateSendData(sendStr,6);
+    if(sendDataSize>0)
+    {
+        TransData((BYTE *)&sendCmd,sendDataSize);
+    }
+    else
+    {
+		return 1;
+	}
+    return 0;
+}
+/**************************************************************************/
+/***  specifications;              ***/
+/***  NAME   = SendCommand;       ***/
+/***  FUNCTION  = 通信层给上层提供的发送接口  ***/
+/***  DATE   = 2014/07/11;           ***/
+/***  AUTHOR  = wuhaoyong;              ***/
+/***  INPUT   = ;               ***/
+/***  OUTPUT  = ;               ***/
+/***  END OF SPECIFICATIONS;            ***/
+/**************************************************************************/
+int CCommLayer::SendCommand(BYTE* outbuff, DWORD dwSize)
+{
+	sendDataSize = GenerateSendData(outbuff, dwSize);
+    if(sendDataSize>6)
     {
         TransData((BYTE *)&sendCmd,sendDataSize);
     }
@@ -307,7 +332,7 @@ int CCommLayer::SendVerification(void)
 /***  specifications;              ***/
 /***  NAME   = TransData;       ***/
 /***  FUNCTION  = send data to the com port  ***/
-/***  DATE   = 2008/11/07;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -327,7 +352,7 @@ WORD CCommLayer::TransData(BYTE* outbuff, DWORD dwSize)
 /***  specifications;              ***/
 /***  NAME   = RecvData;       ***/
 /***  FUNCTION  = receive data from com port  ***/
-/***  DATE   = 2008/11/07;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -337,7 +362,6 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 {
     BYTE localReceiveBuff[4*COMM_BUFFER_BASESIZE];     //接收到的原始数据的缓冲
     BOOL bEndPacket = TRUE;  //数据尾
-    BOOL crcright;
     m_wlocalReceivePtr = 0;
     m_ReceiveBufferSize=0;
     memset(m_ReceiveBuff,0,sizeof(m_ReceiveBuff));
@@ -358,7 +382,8 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 			{
 				//判断返回值是否：LQRD
 				if(m_ReceiveBuff[0] == 'L' && m_ReceiveBuff[1] == 'Q'
-					&& m_ReceiveBuff[2] == 'R'&& m_ReceiveBuff[3] == 'D')
+					&& m_ReceiveBuff[2] == 'R'&& m_ReceiveBuff[3] == 'D'
+					&& m_ReceiveBuff[2] == '\r'&& m_ReceiveBuff[3] == '\n')
 				{
 					m_bConnectEffective = true;
 				}
@@ -397,7 +422,7 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 /***  specifications;              ***/
 /***  NAME   = CheckReceivePacketStatus;       ***/
 /***  FUNCTION  = check crc of receive data   ***/
-/***  DATE   = 2008/11/07;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -412,7 +437,7 @@ bool CCommLayer::CheckReceivePacketStatus(BYTE *pbBuff, WORD *wSize)
 /***  specifications;              ***/
 /***  NAME   = ChangeCStringToWORD;       ***/
 /***  FUNCTION  = 针对组号，将字符串转为数字 ***/
-/***  DATE   = 2008/11/18;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -448,7 +473,7 @@ WORD CCommLayer::ChangeCStringToWORD (CString strChange)
 /***  specifications;              ***/
 /***  NAME   = ChangeCStringToDWORD;       ***/
 /***  FUNCTION  = 针对组号，将字符串转为数字 ***/
-/***  DATE   = 2008/11/18;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -537,17 +562,16 @@ bool CCommLayer::CrcCheck(UINT8 *buf, WORD dwSize)
 	else return false; //校验出错
 
 }
-int CCommLayer::GenerateSendData(UINT8 *buf)
+int CCommLayer::GenerateSendData(UINT8 *buf, int size)
 {
 	memset(sendCmd,0,sizeof(UINT)*COMM_BUFFER_BASESIZE);
-	int size = sizeof(buf);
 	*(sendCmd+0) = '$';
-	UINT8 i;
+	UINT8 i = 0;
 	UINT8 crc;
 	UINT8 tcrc[2] = {0,0};
 	crc = 0;
 
-	for(i = 0;i<sizeof(buf);i++)
+	for(i = 0;i<size;i++)
 	{
 		crc = crc + *(buf+i);
 		*(sendCmd+1+i) = *(buf+i);
@@ -571,9 +595,9 @@ int CCommLayer::GenerateSendData(UINT8 *buf)
 	{
 		tcrc[1] = 0x40 + tcrc[1] - 9;
 	}
-	*(sendCmd+i+2) == tcrc[1];
-	*(sendCmd+i+3) == tcrc[0];
-	*(sendCmd+i+4) == '\r';
-	*(sendCmd+i+5) == '\n';
+	*(sendCmd+i+2) = tcrc[1];
+	*(sendCmd+i+3) = tcrc[0];
+	*(sendCmd+i+4) = '\r';
+	*(sendCmd+i+5) = '\n';
 	return i+5+1;
 }

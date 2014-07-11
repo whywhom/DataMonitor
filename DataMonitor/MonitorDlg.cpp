@@ -11,7 +11,8 @@
 #define new DEBUG_NEW
 #endif
 
-
+static bool bRunning;
+static CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
 //
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -75,6 +76,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_MENU_ABOUT, &CMonitorDlg::OnUpdateMenuAbout)
 	ON_COMMAND(ID_MENU_EXIT, &CMonitorDlg::OnMenuExit)
 	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
+	ON_WM_SHOWWINDOW()
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -125,10 +128,21 @@ BOOL CMonitorDlg::OnInitDialog()
 	theApp.commLayer.SetConnectType(TYPE_NONE);
 
 	theApp.commLayer.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
-
+	bRunning = true;
+	StartThread();//启动线程
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
+void CMonitorDlg::Init()
+{
+	SEND_COMMAND_LIST* pCurrent=NULL;
+	while(senCommandList.IsEmpty()==false)
+    {
+        pCurrent=senCommandList.RemoveHead();
+        delete pCurrent;
+        pCurrent=NULL;
+    }
+}
 void CMonitorDlg::OnMenuAbout()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -191,7 +205,49 @@ HCURSOR CMonitorDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+bool CMonitorDlg::StartThread()
+{
+    if (!(m_Thread = AfxBeginThread(MainThread, this)))
+    {
+    	m_Thread=NULL;
+        return FALSE;
+    }
+	TRACE(_T("Thread started\n"));
+    return TRUE;
+}
 
+UINT CMonitorDlg::MainThread(LPVOID pParam)
+{
+	while(bRunning)
+	{
+		if(!senCommandList.IsEmpty())
+		{
+			SEND_COMMAND_LIST* pCurrent=NULL;
+			pCurrent=senCommandList.RemoveHead();
+			if(pCurrent->cmd == _T("connect"))
+			{
+				theApp.m_CommResault=theApp.commLayer.CreatConnect();
+				if(theApp.m_CommResault==COMM_SUCCESS)
+				{
+					TRACE(_T("Communication OK!\n"));
+
+				}
+				if(theApp.m_CommResault==COMM_ERROE_HARDWARE_CONNECT_FAIL)
+				{
+					TRACE(_T("Communication Fail!\n"));
+
+				}
+			}
+			delete pCurrent;
+			pCurrent=NULL;
+
+		}
+		//TRACE(_T("MainThread is running \n"));
+		Sleep(100);
+	}
+	TRACE(_T("Exit MainThread \n"));
+	return 0;
+}
 
 void CMonitorDlg::OnBnClickedOk()
 {
@@ -255,18 +311,20 @@ DWORD CMonitorDlg::CreatConnect( )
 	if(theApp.m_CommResault==COMM_SUCCESS)
 	{
 		TRACE(_T("Communication OK!\n"));
-		theApp.m_DeviceConnectState=TRUE;
 
 	}
 	if(theApp.m_CommResault==COMM_ERROE_HARDWARE_CONNECT_FAIL)
 	{
 		TRACE(_T("Communication Fail!\n"));
-		theApp.m_DeviceConnectState=FALSE;
 
 	}
 	return 0;
 }
 
+bool isConnected()
+{
+	return theApp.commLayer.m_bConnectEffective;
+}
 //===========================================================================
 //void DestroyConnect( )
 // 函数：断开连接
@@ -325,7 +383,7 @@ WORD CMonitorDlg::DataSend(BYTE* outbuff, DWORD dwSize)
 /***  specifications;              ***/
 /***  NAME   = OnCommReceive;       ***/
 /***  FUNCTION  = 接收手机端数据的主处理函数 ***/
-/***  DATE   = 2008/11/18;           ***/
+/***  DATE   = 2014/07/11;           ***/
 /***  AUTHOR  = wuhaoyong;              ***/
 /***  INPUT   = ;               ***/
 /***  OUTPUT  = ;               ***/
@@ -335,4 +393,25 @@ LRESULT CMonitorDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
     TRACE(_T("Communication Receive!\n"));
     return 0;
+}
+
+
+void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialogEx::OnShowWindow(bShow, nStatus);
+
+	// TODO: 在此处添加消息处理程序代码
+	SEND_COMMAND_LIST* pCurrent= new SEND_COMMAND_LIST;
+	pCurrent->cmd = _T("connect");
+	senCommandList.AddTail(pCurrent);
+	pCurrent = NULL;
+}
+
+
+void CMonitorDlg::OnClose()
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	bRunning = false;
+	Sleep(500);
+	CDialogEx::OnClose();
 }
