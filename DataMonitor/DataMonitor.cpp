@@ -92,6 +92,7 @@ BOOL CMonitorApp::InitInstance()
 	{
 		return FALSE;
 	}
+	GetModulePath();//必要文件夹初始化
 	CMonitorDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
@@ -126,5 +127,62 @@ CString CMonitorApp::GetResString(UINT uStringID)
 	if (resString.IsEmpty())
 		resString.LoadString(theApp.exe_hInstance, uStringID);
 	return resString;
+}
+
+void CMonitorApp::GetModulePath()
+{
+	DWORD dwAttr = 0;
+	/******
+	TCHAR szPath[MAX_PATH];
+	if(SUCCEEDED(SHGetFolderPath(NULL, 
+									CSIDL_APPDATA, 
+									NULL, 
+									0, 
+									szPath))) 
+	{
+		//临时文件夹路径
+		TempPath = szPath;
+		CString backupDir = _T("\\Temp\\");
+		TempPath += backupDir;
+		dwAttr=GetFileAttributes(TempPath);
+		//若文件夹不存在，创建文件夹
+		if(dwAttr==0xFFFFFFFF)
+		{
+			CreateDirectory(TempPath,NULL);
+		}
+	}
+	******/
+	TCHAR szModPath[_MAX_PATH];
+	GetModuleFileName(m_hInstance, szModPath, _MAX_PATH);
+    szExePath = szModPath;
+    ModuleFilePath = szExePath.Left(szExePath.ReverseFind('\\'));
+	LogPath = ModuleFilePath + _T("\\Log\\");
+	dwAttr=GetFileAttributes(LogPath);
+	//若文件夹不存在，创建文件夹
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(LogPath,NULL);
+	}
+
+	TempPath = ModuleFilePath + _T("\\Temp\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(TempPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(TempPath,NULL);
+	}
+
+	IniFilePath = ModuleFilePath + _T("\\Config\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(IniFilePath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(IniFilePath,NULL);
+	}
+	strIniFilePath = IniFilePath + _T("config.ini");
+#ifdef FEATURE_LOG
+	LogFileName = LogPath + _T("log.txt");
+#endif
+	return;
 }
 

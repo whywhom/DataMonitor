@@ -297,7 +297,7 @@ int CCommLayer::SendVerification(void)
 	sendDataSize = GenerateSendData(sendStr,6);
     if(sendDataSize>0)
     {
-        TransData((BYTE *)&sendCmd,sendDataSize);
+        //TransData((BYTE *)&sendCmd,sendDataSize);
     }
     else
     {

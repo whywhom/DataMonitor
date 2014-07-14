@@ -133,16 +133,6 @@ BOOL CMonitorDlg::OnInitDialog()
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-void CMonitorDlg::Init()
-{
-	SEND_COMMAND_LIST* pCurrent=NULL;
-	while(senCommandList.IsEmpty()==false)
-    {
-        pCurrent=senCommandList.RemoveHead();
-        delete pCurrent;
-        pCurrent=NULL;
-    }
-}
 void CMonitorDlg::OnMenuAbout()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -403,6 +393,8 @@ void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	// TODO: 在此处添加消息处理程序代码
 	SEND_COMMAND_LIST* pCurrent= new SEND_COMMAND_LIST;
 	pCurrent->cmd = _T("connect");
+	pCurrent->buf = NULL;
+	pCurrent->size = 0;
 	senCommandList.AddTail(pCurrent);
 	pCurrent = NULL;
 }
@@ -411,7 +403,20 @@ void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 void CMonitorDlg::OnClose()
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
 	bRunning = false;
 	Sleep(500);
+	initCmdList();
 	CDialogEx::OnClose();
+}
+
+void CMonitorDlg::initCmdList()
+{
+	SEND_COMMAND_LIST* pCurrent=NULL;
+	while(senCommandList.IsEmpty()==false)
+    {
+        pCurrent=senCommandList.RemoveHead();
+        delete pCurrent;
+        pCurrent=NULL;
+    }
 }

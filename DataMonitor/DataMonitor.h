@@ -27,10 +27,20 @@ public:
 	BYTE m_DeviceType;//设备类型
 	CCommLayer commLayer;
 	int m_CommResault;//记录串口连接结果
+
+	//存储路径信息
+	CString szExePath;//可执行文件所在位置绝对路径
+	CString ModuleFilePath;
+	CString TempPath;//临时文件夹绝对路径
+	CString LogPath;//log日志所在位置绝对路径
+	CString IniFilePath;//ini文件夹绝对路径
+	CString strIniFilePath;//ini文件所在位置绝对路径
 public:
 	CMonitorApp();
 	CString GetResString(UINT uStringID);
 	bool isConnected();
+private:
+	void GetModulePath();
 // 重写
 public:
 	virtual BOOL InitInstance();

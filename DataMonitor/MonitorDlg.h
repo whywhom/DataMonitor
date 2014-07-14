@@ -31,7 +31,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 	static UINT MainThread(LPVOID pParam);
 	bool StartThread();
-	void Init();
+	void initCmdList();
 
 // 实现
 protected:
