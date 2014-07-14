@@ -29,6 +29,6 @@ const DWORD COMM_ERROE_CANCEL=0xEEE1;//È¡Ïû²Ù×÷
 typedef struct _SEND_COMMAND_LIST
 {
     CString cmd;
-    BYTE* buf;
+    UINT8* buf;
     DWORD size;
 }SEND_COMMAND_LIST;

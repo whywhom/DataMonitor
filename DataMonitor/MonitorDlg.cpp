@@ -216,6 +216,7 @@ UINT CMonitorDlg::MainThread(LPVOID pParam)
 			pCurrent=senCommandList.RemoveHead();
 			if(pCurrent->cmd == _T("connect"))
 			{
+				//connect device
 				theApp.m_CommResault=theApp.commLayer.CreatConnect();
 				if(theApp.m_CommResault==COMM_SUCCESS)
 				{
@@ -227,6 +228,11 @@ UINT CMonitorDlg::MainThread(LPVOID pParam)
 					TRACE(_T("Communication Fail!\n"));
 
 				}
+			}
+			else if(pCurrent->cmd == _T("senddata"))
+			{
+				//connect device
+				theApp.m_CommResault=theApp.commLayer.SendCommand(pCurrent->buf,pCurrent->size);
 			}
 			delete pCurrent;
 			pCurrent=NULL;
@@ -393,7 +399,7 @@ void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	// TODO: 在此处添加消息处理程序代码
 	SEND_COMMAND_LIST* pCurrent= new SEND_COMMAND_LIST;
 	pCurrent->cmd = _T("connect");
-	pCurrent->buf = NULL;
+	pCurrent->buf = theApp.sendCmd;
 	pCurrent->size = 0;
 	senCommandList.AddTail(pCurrent);
 	pCurrent = NULL;

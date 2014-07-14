@@ -35,6 +35,9 @@ public:
 	CString LogPath;//log日志所在位置绝对路径
 	CString IniFilePath;//ini文件夹绝对路径
 	CString strIniFilePath;//ini文件所在位置绝对路径
+	//发送给串口设备的数据buffer
+	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer
+	WORD sendDataSize;
 public:
 	CMonitorApp();
 	CString GetResString(UINT uStringID);
