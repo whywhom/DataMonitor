@@ -293,11 +293,11 @@ int CCommLayer::SelectComPort(void)
 /**************************************************************************/
 int CCommLayer::SendVerification(void)
 {
-	UINT8 sendStr[] = {'L','Q','S','K','\r','\n'};
+	UINT8 sendStr[ ] = {'L','Q','S','K','\r','\n'};
 	sendDataSize = GenerateSendData(sendStr,6);
     if(sendDataSize>0)
     {
-        //TransData((BYTE *)&sendCmd,sendDataSize);
+        TransData((BYTE *)&sendCmd,sendDataSize);
     }
     else
     {
@@ -564,7 +564,7 @@ bool CCommLayer::CrcCheck(UINT8 *buf, WORD dwSize)
 }
 int CCommLayer::GenerateSendData(UINT8 *buf, int size)
 {
-	memset(sendCmd,0,sizeof(UINT)*COMM_BUFFER_BASESIZE);
+	memset(sendCmd,0,sizeof(UINT8)*COMM_BUFFER_BASESIZE);
 	*(sendCmd+0) = '$';
 	UINT8 i = 0;
 	UINT8 crc;
