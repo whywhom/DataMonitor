@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "jobeditdlg.h"
 
 extern bool bRunning;
 extern CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
@@ -53,4 +54,6 @@ public:
 	afx_msg LRESULT OnCommReceive(WPARAM wParam, LPARAM lParam);//接收端口消息
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnClose();
+	afx_msg void OnMenuNew();
+	afx_msg void OnMenuOpen();
 };

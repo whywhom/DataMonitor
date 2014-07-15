@@ -78,6 +78,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
 	ON_WM_SHOWWINDOW()
 	ON_WM_CLOSE()
+	ON_COMMAND(ID_MENU_NEW, &CMonitorDlg::OnMenuNew)
+	ON_COMMAND(ID_MENU_OPEN, &CMonitorDlg::OnMenuOpen)
 END_MESSAGE_MAP()
 
 
@@ -425,4 +427,32 @@ void CMonitorDlg::initCmdList()
         delete pCurrent;
         pCurrent=NULL;
     }
+}
+void CMonitorDlg::OnMenuNew()
+{
+	// TODO: 在此添加命令处理程序代码
+	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造保存文件对话框
+	dlg.m_ofn.lpstrInitialDir=_T("D:\\DataMonitor\\lib\\jobs\\");
+    if(dlg.DoModal()==IDOK)//显示保存文件对话框
+	{
+		CJobEditDlg m_jeDlg;
+		m_jeDlg.m_jobName=dlg.GetPathName();//获取文件路径名称
+		m_jeDlg.m_Open=FALSE;
+		m_jeDlg.DoModal();
+	}
+}
+
+
+void CMonitorDlg::OnMenuOpen()
+{
+	// TODO: 在此添加命令处理程序代码
+	CFileDialog dlg(TRUE,_T(""),_T(""),OFN_EXPLORER,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造打开文件对话框
+	dlg.m_ofn.lpstrInitialDir=_T("D:\\Test\\DataMonitor\\lib\\jobs\\");
+	if(dlg.DoModal()==IDOK)//显示打开文件对话框
+	{
+		CJobEditDlg m_jeDlg;
+		m_jeDlg.m_jobName=dlg.GetPathName();//获取文件路径名称
+		m_jeDlg.m_Open=TRUE;
+		m_jeDlg.DoModal();
+	}
 }

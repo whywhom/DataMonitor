@@ -104,6 +104,9 @@
   <ItemGroup>
     <ClInclude Include="CommLayer.h" />
     <ClInclude Include="DataMonitor.h" />
+    <ClInclude Include="JobEditDlg.h" />
+    <ClInclude Include="JobEditDlgCable.h" />
+    <ClInclude Include="JobEditDlgTool.h" />
     <ClInclude Include="MonitorDlg.h" />
     <ClInclude Include="PublicInterface.h" />
     <ClInclude Include="Resource.h" />
@@ -114,6 +117,9 @@
   <ItemGroup>
     <ClCompile Include="CommLayer.cpp" />
     <ClCompile Include="DataMonitor.cpp" />
+    <ClCompile Include="JobEditDlg.cpp" />
+    <ClCompile Include="JobEditDlgCable.cpp" />
+    <ClCompile Include="JobEditDlgTool.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="stdafx.cpp">
