@@ -38,6 +38,7 @@ public:
 	//发送给串口设备的数据buffer
 	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer
 	WORD sendDataSize;
+	CWnd* activeWnd;//加载child窗口
 public:
 	CMonitorApp();
 	CString GetResString(UINT uStringID);

@@ -59,8 +59,14 @@ CMonitorDlg::CMonitorDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CMonitorDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	theApp.activeWnd = NULL;
+	initWndList();
 }
-
+CMonitorDlg::~CMonitorDlg()
+{
+	theApp.activeWnd = NULL;
+	initWndList();
+}
 void CMonitorDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
@@ -77,9 +83,11 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_EXIT, &CMonitorDlg::OnMenuExit)
 	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
 	ON_WM_SHOWWINDOW()
+	ON_WM_GETMINMAXINFO()
 	ON_WM_CLOSE()
 	ON_COMMAND(ID_MENU_NEW, &CMonitorDlg::OnMenuNew)
 	ON_COMMAND(ID_MENU_OPEN, &CMonitorDlg::OnMenuOpen)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -124,15 +132,28 @@ BOOL CMonitorDlg::OnInitDialog()
 	m_ToolBar.ShowWindow(SW_SHOW);   
 	RepositionBars(AFX_IDW_CONTROLBAR_FIRST,   AFX_IDW_CONTROLBAR_LAST,   0); 
 	CWnd::SetWindowText(theApp.GetResString(IDS_PRODUCT_NAME));
-	//设置主界面大小
-	CWnd::SetWindowPos(NULL,0,0,GetSystemMetrics (SM_CXFULLSCREEN),GetSystemMetrics (SM_CYFULLSCREEN),0/*WS_SIZEBOX|SWP_NOZORDER|SWP_NOMOVE*/);
-	CenterWindow();//窗体居中
+	
 	theApp.commLayer.SetConnectType(TYPE_NONE);
 
 	theApp.commLayer.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
 	bRunning = true;
 	StartThread();//启动线程
+
+	ChildWndInitialize();//初始化子窗体
+	wndList.AddTail(childDrawWnd);
+	ShowActiveDlg(childDrawWnd, 0);
+	//设置主界面大小
+	CWnd::SetWindowPos(NULL,0,0,GetSystemMetrics (SM_CXFULLSCREEN),GetSystemMetrics (SM_CYFULLSCREEN),0/*WS_SIZEBOX|SWP_NOZORDER|SWP_NOMOVE*/);
+	CenterWindow();//窗体居中
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+bool CMonitorDlg::ChildWndInitialize()
+{
+	//创建子窗体
+	childDrawWnd = new CChildDraw;
+	childDrawWnd->Create(IDD_CHILD_DRAW);
+	return true;
 }
 
 void CMonitorDlg::OnMenuAbout()
@@ -428,6 +449,16 @@ void CMonitorDlg::initCmdList()
         pCurrent=NULL;
     }
 }
+void CMonitorDlg::initWndList()
+{
+	CDialog* pCurrent=NULL;
+	while(wndList.IsEmpty()==false)
+    {
+        pCurrent=wndList.RemoveHead();
+        delete pCurrent;
+        pCurrent=NULL;
+    }
+}
 void CMonitorDlg::OnMenuNew()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -455,4 +486,55 @@ void CMonitorDlg::OnMenuOpen()
 		m_jeDlg.m_Open=TRUE;
 		m_jeDlg.DoModal();
 	}
+}
+
+bool CMonitorDlg::ShowActiveDlg(CWnd* activeWnd,int id)
+{
+	if(activeWnd == theApp.activeWnd)
+	{
+		return false;
+	}
+	if(theApp.activeWnd != NULL)
+	{
+		theApp.activeWnd->ShowWindow(SW_HIDE);
+	}
+	theApp.activeWnd = activeWnd;
+	
+	theApp.activeWnd->ShowWindow(SW_SHOW);
+	theApp.activeWnd->SetActiveWindow();
+	theApp.activeWnd->SetFocus();
+	return true;
+}
+
+void CMonitorDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
+	CRect rect,rectMain;
+	GetClientRect(&rect);
+	rectMain.left = rect.left + 3;
+	rectMain.right = rect.right - 3;
+	rectMain.top = rect.top + 30;
+	rectMain.bottom = rect.bottom - 30;
+	if(wndList.GetCount()>0)
+	{
+		POSITION pos = wndList.GetHeadPosition();
+		while(pos)
+		{
+			CDialog * pCurrent = wndList.GetNext(pos);
+			if(pCurrent != NULL)
+			{
+				pCurrent->SetWindowPos(NULL,rectMain.left,rectMain.top,rectMain.Width(),rectMain.Height(),0);
+				//TRACE(_T("Child Dialog OnSize\n"));
+			}
+		}
+	}
+}
+void CMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	// TODO: Add your message handler code here and/or call default
+	lpMMI-> ptMinTrackSize.x = 800 ; //宽 
+	lpMMI-> ptMinTrackSize.y = 600 ; //高 
+	CDialogEx::OnGetMinMaxInfo(lpMMI);
 }

@@ -4,6 +4,7 @@
 
 #pragma once
 #include "jobeditdlg.h"
+#include "ChildDraw.h"
 
 extern bool bRunning;
 extern CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
@@ -13,18 +14,21 @@ class CMonitorDlg : public CDialogEx
 {
 public:
 	CToolBar m_ToolBar;
-	
+	CChildDraw* childDrawWnd;
 private:
 	
 	CWinThread*   m_Thread;
-	
+	CTypedPtrList < CPtrList, CDialog * >wndList;//子窗体管理列表
 // 构造
 public:
 	CMonitorDlg(CWnd* pParent = NULL);	// 标准构造函数
+	~CMonitorDlg();
 	DWORD CreatConnect( );//建立连接
 	DWORD DestroyConnect( );//断开连接
 	void DataReceive(BYTE* inbuff, DWORD* dwSize);
 	WORD DataSend(BYTE* outbuff, DWORD dwSize);
+	bool ChildWndInitialize();
+	bool ShowActiveDlg(CWnd* activeWnd,int id);
 // 对话框数据
 	enum { IDD = IDD_DATAMONITOR_DIALOG };
 
@@ -33,7 +37,7 @@ protected:
 	static UINT MainThread(LPVOID pParam);
 	bool StartThread();
 	void initCmdList();
-
+	void initWndList();
 // 实现
 protected:
 	HICON m_hIcon;
@@ -56,4 +60,6 @@ public:
 	afx_msg void OnClose();
 	afx_msg void OnMenuNew();
 	afx_msg void OnMenuOpen();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 };
