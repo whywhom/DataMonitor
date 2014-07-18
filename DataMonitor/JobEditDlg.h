@@ -2,6 +2,7 @@
 #include "afxcmn.h"
 #include "jobeditdlgcable.h"
 #include "jobeditdlgtool.h"
+#include "afxwin.h"
 
 
 // CJobEditDlg 对话框
@@ -31,4 +32,16 @@ public:
     CJobEditDlgCable m_Cable;//缆芯提示对话框所对应的类
 	CJobEditDlgTool m_Tool;//仪器信息对话框对应的类
 	afx_msg void OnBnClickedOk();
+private:
+	void CableInit();
+	void CableAdd();
+	void CableUpdate();
+	void ToolAdd();
+	void DisplayTree();
+	void JobInit();//初始化作业数据库
+
+public:
+	afx_msg void OnBnClickedAdd();
+	int m_editTable;
+	afx_msg void OnBnClickedDelete();
 };

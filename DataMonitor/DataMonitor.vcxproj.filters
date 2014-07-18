@@ -66,6 +66,18 @@
     <ClInclude Include="CanvasView.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DirTreeCtrl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobCopyDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SortStringArray.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataMonitor.cpp">
@@ -96,6 +108,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CanvasView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DirTreeCtrl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobCopyDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SortStringArray.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

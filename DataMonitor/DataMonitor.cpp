@@ -172,6 +172,14 @@ void CMonitorApp::GetModulePath()
 		CreateDirectory(TempPath,NULL);
 	}
 
+	JobPath = ModuleFilePath + _T("\\Jobs\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(JobPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(JobPath,NULL);
+	}
+
 	IniFilePath = ModuleFilePath + _T("\\Config\\");
 	//若文件夹不存在，创建文件夹
 	dwAttr=GetFileAttributes(IniFilePath);

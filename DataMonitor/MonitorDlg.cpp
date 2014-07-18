@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_WM_CLOSE()
 	ON_COMMAND(ID_MENU_NEW, &CMonitorDlg::OnMenuNew)
 	ON_COMMAND(ID_MENU_OPEN, &CMonitorDlg::OnMenuOpen)
+	ON_COMMAND(ID_MENU_WORK, &CMonitorDlg::OnMenuWork)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
@@ -473,6 +474,12 @@ void CMonitorDlg::OnMenuNew()
 	}
 }
 
+void CMonitorDlg::OnMenuWork()
+{
+	// TODO: 在此添加命令处理程序代码
+		CJobDlg m_jDlg;		
+		m_jDlg.DoModal();
+}
 
 void CMonitorDlg::OnMenuOpen()
 {

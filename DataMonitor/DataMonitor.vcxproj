@@ -106,6 +106,9 @@
     <ClInclude Include="ChildDraw.h" />
     <ClInclude Include="CommLayer.h" />
     <ClInclude Include="DataMonitor.h" />
+    <ClInclude Include="DirTreeCtrl.h" />
+    <ClInclude Include="JobCopyDlg.h" />
+    <ClInclude Include="JobDlg.h" />
     <ClInclude Include="JobEditDlg.h" />
     <ClInclude Include="JobEditDlgCable.h" />
     <ClInclude Include="JobEditDlgTool.h" />
@@ -113,6 +116,7 @@
     <ClInclude Include="PublicInterface.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SerialPort.h" />
+    <ClInclude Include="SortStringArray.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -121,11 +125,15 @@
     <ClCompile Include="ChildDraw.cpp" />
     <ClCompile Include="CommLayer.cpp" />
     <ClCompile Include="DataMonitor.cpp" />
+    <ClCompile Include="DirTreeCtrl.cpp" />
+    <ClCompile Include="JobCopyDlg.cpp" />
+    <ClCompile Include="JobDlg.cpp" />
     <ClCompile Include="JobEditDlg.cpp" />
     <ClCompile Include="JobEditDlgCable.cpp" />
     <ClCompile Include="JobEditDlgTool.cpp" />
     <ClCompile Include="MonitorDlg.cpp" />
     <ClCompile Include="SerialPort.cpp" />
+    <ClCompile Include="SortStringArray.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
