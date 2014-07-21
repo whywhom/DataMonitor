@@ -111,7 +111,6 @@
     <ClInclude Include="JobCopyDlg.h" />
     <ClInclude Include="JobDlg.h" />
     <ClInclude Include="JobEditDlg.h" />
-    <ClInclude Include="JobEditDlgCable.h" />
     <ClInclude Include="JobEditDlgCurve.h" />
     <ClInclude Include="JobEditDlgOrigin.h" />
     <ClInclude Include="JobEditDlgTool.h" />
@@ -132,7 +131,6 @@
     <ClCompile Include="JobCopyDlg.cpp" />
     <ClCompile Include="JobDlg.cpp" />
     <ClCompile Include="JobEditDlg.cpp" />
-    <ClCompile Include="JobEditDlgCable.cpp" />
     <ClCompile Include="JobEditDlgCurve.cpp" />
     <ClCompile Include="JobEditDlgOrigin.cpp" />
     <ClCompile Include="JobEditDlgTool.cpp" />

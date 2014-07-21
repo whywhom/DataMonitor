@@ -1,7 +1,6 @@
 #pragma once
 #pragma warning(disable : 4995)
 #include "afxcmn.h"
-#include "jobeditdlgcable.h"
 #include "jobeditdlgtool.h"
 #include "jobeditdlgcurve.h"
 #include "jobeditdlgorigin.h"
@@ -32,15 +31,11 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchangedJobeditTree(NMHDR *pNMHDR, LRESULT *pResult);
 public:	
-    CJobEditDlgCable m_Cable;//缆芯提示对话框所对应的类
-	CJobEditDlgTool m_Tool;//仪器信息对话框对应的类
+   	CJobEditDlgTool m_Tool;//仪器信息对话框对应的类
 	CJobEditDlgCurve m_Curve;//曲线信息对话框对应的类
 	CJobEditDlgOrigin m_Origin;//原始信息对话框对应的类
 	afx_msg void OnBnClickedOk();
-private:
-	void CableInit();	
-	void CableAdd();
-	void CableUpdate();
+private:	
 	void ToolAdd();
 	void ToolInit(CString Label);
 	void ToolInit();
