@@ -24,8 +24,8 @@ CJobDlg::~CJobDlg()
 void CJobDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_TREE1, m_treeCtrl);
-	DDX_Control(pDX, IDC_TREE1, m_treeCtrl);
+	DDX_Control(pDX, IDC_ZCW_JOB_TREE, m_treeCtrl);
+	DDX_Control(pDX, IDC_ZCW_JOB_TREE, m_treeCtrl);
 }
 
 
@@ -44,7 +44,7 @@ void CJobDlg::OnJobNew()
 {
 	// TODO: 在此添加命令处理程序代码
 	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造保存文件对话框
-	dlg.m_ofn.lpstrInitialDir=theApp.JobPath;
+	dlg.m_ofn.lpstrInitialDir=m_Path;
     if(dlg.DoModal()==IDOK)//显示保存文件对话框
 	{
 		CJobEditDlg m_jeDlg;
@@ -52,7 +52,7 @@ void CJobDlg::OnJobNew()
 		m_jeDlg.m_Open=FALSE;
 		if(m_jeDlg.DoModal()==IDOK){
 		m_treeCtrl.ModifyStyle(0,TVS_HASBUTTONS   |   TVS_LINESATROOT   |   TVS_HASLINES);	
-		m_treeCtrl.DisplayTree (theApp.JobPath,TRUE);
+		m_treeCtrl.DisplayTree (m_Path,TRUE);
 		}
 	}
 }
@@ -77,8 +77,10 @@ BOOL CJobDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
+	SetWindowText(m_Title); 	
+	GetDlgItem(IDC_ZCW_JOB_TREE_TITLE)->SetWindowText(m_TreeTitle);
 	m_treeCtrl.ModifyStyle(0,TVS_HASBUTTONS   |   TVS_LINESATROOT   |   TVS_HASLINES);	
-	m_treeCtrl.DisplayTree (theApp.JobPath,TRUE);
+	m_treeCtrl.DisplayTree (m_Path,TRUE);
 
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -92,7 +94,7 @@ void CJobDlg::OnJobDel()
 	HTREEITEM sel_htem=m_treeCtrl.GetSelectedItem(); 
     CString strPath=m_treeCtrl.GetFullPath(sel_htem);//获取文件路径名称
 	if(!m_treeCtrl.FindSubDir(strPath)){//不能删除非空子目录
-		if(MessageBox(_T("您确定要删除作业")+strPath+_T("吗"),_T("警告"), MB_OKCANCEL )==IDOK)
+		if(MessageBox(_T("您确定要删除作业")+strPath+_T("吗?"),_T("警告"), MB_OKCANCEL )==IDOK)
 		{
 		  DeleteFile(strPath);
 		  m_treeCtrl.DeleteItem(sel_htem);//删除节点

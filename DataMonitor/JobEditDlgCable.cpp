@@ -43,70 +43,70 @@ CJobEditDlgCable::~CJobEditDlgCable()
 void CJobEditDlgCable::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT1, m_Wire1);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT1, m_Wire1);
 	DDV_MaxChars(pDX, m_Wire1, 50);
-	DDX_Text(pDX, IDC_EDIT11, m_Panel1);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT11, m_Panel1);
 	DDV_MaxChars(pDX, m_Panel1, 50);
-	DDX_Text(pDX, IDC_EDIT2, m_Wire2);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT2, m_Wire2);
 	DDV_MaxChars(pDX, m_Wire2, 50);
-	DDX_Text(pDX, IDC_EDIT12, m_Panel2);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT12, m_Panel2);
 	DDV_MaxChars(pDX, m_Panel2, 50);
-	DDX_Text(pDX, IDC_EDIT3, m_Wire3);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT3, m_Wire3);
 	DDV_MaxChars(pDX, m_Wire3, 50);
-	DDX_Text(pDX, IDC_EDIT4, m_Wire4);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT4, m_Wire4);
 	DDV_MaxChars(pDX, m_Wire4, 50);
-	DDX_Text(pDX, IDC_EDIT5, m_Wire5);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT5, m_Wire5);
 	DDV_MaxChars(pDX, m_Wire5, 50);
-	DDX_Text(pDX, IDC_EDIT6, m_Wire6);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT6, m_Wire6);
 	DDV_MaxChars(pDX, m_Wire6, 50);
-	DDX_Text(pDX, IDC_EDIT7, m_Wire7);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT7, m_Wire7);
 	DDV_MaxChars(pDX, m_Wire7, 50);
-	DDX_Text(pDX, IDC_EDIT8, m_Wire8);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT8, m_Wire8);
 	DDV_MaxChars(pDX, m_Wire8, 50);
-	DDX_Text(pDX, IDC_EDIT9, m_Wire9);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT9, m_Wire9);
 	DDV_MaxChars(pDX, m_Wire9, 50);
-	DDX_Text(pDX, IDC_EDIT10, m_Wire10);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT10, m_Wire10);
 	DDV_MaxChars(pDX, m_Wire10, 50);
-	DDX_Text(pDX, IDC_EDIT13, m_Panel3);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT13, m_Panel3);
 	DDV_MaxChars(pDX, m_Panel3, 50);
-	DDX_Text(pDX, IDC_EDIT14, m_Panel4);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT14, m_Panel4);
 	DDV_MaxChars(pDX, m_Panel4, 50);
-	DDX_Text(pDX, IDC_EDIT15, m_Panel5);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT15, m_Panel5);
 	DDV_MaxChars(pDX, m_Panel5, 50);
-	DDX_Text(pDX, IDC_EDIT16, m_Panel6);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT16, m_Panel6);
 	DDV_MaxChars(pDX, m_Panel6, 50);
-	DDX_Text(pDX, IDC_EDIT17, m_Panel7);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT17, m_Panel7);
 	DDV_MaxChars(pDX, m_Panel7, 50);
-	DDX_Text(pDX, IDC_EDIT18, m_Panel8);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT18, m_Panel8);
 	DDV_MaxChars(pDX, m_Panel8, 50);
-	DDX_Text(pDX, IDC_EDIT19, m_Panel9);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT19, m_Panel9);
 	DDV_MaxChars(pDX, m_Panel9, 50);
-	DDX_Text(pDX, IDC_EDIT20, m_Panel10);
+	DDX_Text(pDX, IDC_ZCW_CABLE_EDIT20, m_Panel10);
 	DDV_MaxChars(pDX, m_Panel10, 50);
 }
 
 
 BEGIN_MESSAGE_MAP(CJobEditDlgCable, CDialog)
-	ON_EN_CHANGE(IDC_EDIT1, &CJobEditDlgCable::OnEnChangeEdit1)
-	ON_EN_CHANGE(IDC_EDIT2, &CJobEditDlgCable::OnEnChangeEdit2)
-	ON_EN_CHANGE(IDC_EDIT3, &CJobEditDlgCable::OnEnChangeEdit3)
-	ON_EN_CHANGE(IDC_EDIT4, &CJobEditDlgCable::OnEnChangeEdit4)
-	ON_EN_CHANGE(IDC_EDIT5, &CJobEditDlgCable::OnEnChangeEdit5)
-	ON_EN_CHANGE(IDC_EDIT6, &CJobEditDlgCable::OnEnChangeEdit6)
-	ON_EN_CHANGE(IDC_EDIT7, &CJobEditDlgCable::OnEnChangeEdit7)
-	ON_EN_CHANGE(IDC_EDIT8, &CJobEditDlgCable::OnEnChangeEdit8)
-	ON_EN_CHANGE(IDC_EDIT9, &CJobEditDlgCable::OnEnChangeEdit9)
-	ON_EN_CHANGE(IDC_EDIT10, &CJobEditDlgCable::OnEnChangeEdit10)
-	ON_EN_CHANGE(IDC_EDIT11, &CJobEditDlgCable::OnEnChangeEdit11)
-	ON_EN_CHANGE(IDC_EDIT12, &CJobEditDlgCable::OnEnChangeEdit12)
-	ON_EN_CHANGE(IDC_EDIT13, &CJobEditDlgCable::OnEnChangeEdit13)
-	ON_EN_CHANGE(IDC_EDIT14, &CJobEditDlgCable::OnEnChangeEdit14)
-	ON_EN_CHANGE(IDC_EDIT15, &CJobEditDlgCable::OnEnChangeEdit15)
-	ON_EN_CHANGE(IDC_EDIT16, &CJobEditDlgCable::OnEnChangeEdit16)
-	ON_EN_CHANGE(IDC_EDIT17, &CJobEditDlgCable::OnEnChangeEdit17)
-	ON_EN_CHANGE(IDC_EDIT18, &CJobEditDlgCable::OnEnChangeEdit18)
-	ON_EN_CHANGE(IDC_EDIT19, &CJobEditDlgCable::OnEnChangeEdit19)
-	ON_EN_CHANGE(IDC_EDIT20, &CJobEditDlgCable::OnEnChangeEdit20)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT1, &CJobEditDlgCable::OnEnChangeEdit1)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT2, &CJobEditDlgCable::OnEnChangeEdit2)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT3, &CJobEditDlgCable::OnEnChangeEdit3)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT4, &CJobEditDlgCable::OnEnChangeEdit4)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT5, &CJobEditDlgCable::OnEnChangeEdit5)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT6, &CJobEditDlgCable::OnEnChangeEdit6)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT7, &CJobEditDlgCable::OnEnChangeEdit7)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT8, &CJobEditDlgCable::OnEnChangeEdit8)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT9, &CJobEditDlgCable::OnEnChangeEdit9)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT10, &CJobEditDlgCable::OnEnChangeEdit10)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT11, &CJobEditDlgCable::OnEnChangeEdit11)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT12, &CJobEditDlgCable::OnEnChangeEdit12)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT13, &CJobEditDlgCable::OnEnChangeEdit13)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT14, &CJobEditDlgCable::OnEnChangeEdit14)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT15, &CJobEditDlgCable::OnEnChangeEdit15)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT16, &CJobEditDlgCable::OnEnChangeEdit16)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT17, &CJobEditDlgCable::OnEnChangeEdit17)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT18, &CJobEditDlgCable::OnEnChangeEdit18)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT19, &CJobEditDlgCable::OnEnChangeEdit19)
+	ON_EN_CHANGE(IDC_ZCW_CABLE_EDIT20, &CJobEditDlgCable::OnEnChangeEdit20)
 END_MESSAGE_MAP()
 
 

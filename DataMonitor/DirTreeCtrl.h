@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable : 4996)
 #include "afxcmn.h"
 class CDirTreeCtrl :
 	public CTreeCtrl

@@ -180,6 +180,14 @@ void CMonitorApp::GetModulePath()
 		CreateDirectory(JobPath,NULL);
 	}
 
+	ToolPath = ModuleFilePath + _T("\\Tools\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(ToolPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(ToolPath,NULL);
+	}
+
 	IniFilePath = ModuleFilePath + _T("\\Config\\");
 	//若文件夹不存在，创建文件夹
 	dwAttr=GetFileAttributes(IniFilePath);

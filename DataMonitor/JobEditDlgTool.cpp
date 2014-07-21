@@ -31,24 +31,24 @@ CJobEditDlgTool::~CJobEditDlgTool()
 void CJobEditDlgTool::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_LABEL, m_Label);
-	DDX_Text(pDX, IDC_TYPE, m_Type);
-	DDX_Text(pDX, IDC_SN, m_SN);
-	DDX_Text(pDX, IDC_LENGTH, m_Length);
-	DDX_Text(pDX, IDC_WEIGHT, m_Weight);
-	DDX_Text(pDX, IDC_OUTERDIAM, m_OuteRdiam);
-	DDX_Text(pDX, IDC_SPEED5, m_Speed);
+	DDX_Text(pDX, IDC_ZCW_TOOL_LABEL, m_Label);
+	DDX_Text(pDX, IDC_ZCW_TOOL_TYPE, m_Type);
+	DDX_Text(pDX, IDC_ZCW_TOOL_SN, m_SN);
+	DDX_Text(pDX, IDC_ZCW_TOOL_LENGTH, m_Length);
+	DDX_Text(pDX, IDC_ZCW_TOOL_WEIGHT, m_Weight);
+	DDX_Text(pDX, IDC_ZCW_TOOL_OUTERDIAM, m_OuteRdiam);
+	DDX_Text(pDX, IDC_ZCW_TOOL_SPEED, m_Speed);
 }
 
 
 BEGIN_MESSAGE_MAP(CJobEditDlgTool, CDialog)
-	ON_EN_CHANGE(IDC_LABEL, &CJobEditDlgTool::OnEnChangeLabel)
-	ON_EN_CHANGE(IDC_TYPE, &CJobEditDlgTool::OnEnChangeType)
-	ON_EN_CHANGE(IDC_LENGTH, &CJobEditDlgTool::OnEnChangeLength)
-	ON_EN_CHANGE(IDC_SN, &CJobEditDlgTool::OnEnChangeSn)
-	ON_EN_CHANGE(IDC_WEIGHT, &CJobEditDlgTool::OnEnChangeWeight)
-	ON_EN_CHANGE(IDC_OUTERDIAM, &CJobEditDlgTool::OnEnChangeOuterdiam)
-	ON_EN_CHANGE(IDC_SPEED, &CJobEditDlgTool::OnEnChangeSpeed)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_LABEL, &CJobEditDlgTool::OnEnChangeLabel)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_TYPE, &CJobEditDlgTool::OnEnChangeType)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_LENGTH, &CJobEditDlgTool::OnEnChangeLength)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_SN, &CJobEditDlgTool::OnEnChangeSn)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_WEIGHT, &CJobEditDlgTool::OnEnChangeWeight)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_OUTERDIAM, &CJobEditDlgTool::OnEnChangeOuterdiam)
+	ON_EN_CHANGE(IDC_ZCW_TOOL_SPEED, &CJobEditDlgTool::OnEnChangeSpeed)
 END_MESSAGE_MAP()
 
 

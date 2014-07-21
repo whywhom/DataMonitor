@@ -32,6 +32,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 
+	afx_msg void OnMenuInstrument();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -88,6 +89,7 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_NEW, &CMonitorDlg::OnMenuNew)
 	ON_COMMAND(ID_MENU_OPEN, &CMonitorDlg::OnMenuOpen)
 	ON_COMMAND(ID_MENU_WORK, &CMonitorDlg::OnMenuWork)
+	ON_COMMAND(ID_MENU_INSTRUMENT, &CMonitorDlg::OnMenuInstrument)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
@@ -463,37 +465,34 @@ void CMonitorDlg::initWndList()
 void CMonitorDlg::OnMenuNew()
 {
 	// TODO: 在此添加命令处理程序代码
-	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造保存文件对话框
-	dlg.m_ofn.lpstrInitialDir=_T("D:\\DataMonitor\\lib\\jobs\\");
-    if(dlg.DoModal()==IDOK)//显示保存文件对话框
-	{
-		CJobEditDlg m_jeDlg;
-		m_jeDlg.m_jobName=dlg.GetPathName();//获取文件路径名称
-		m_jeDlg.m_Open=FALSE;
-		m_jeDlg.DoModal();
-	}
+}
+
+
+void CMonitorDlg::OnMenuOpen()
+{
+	// TODO: 在此添加命令处理程序代码
+	
 }
 
 void CMonitorDlg::OnMenuWork()
 {
 	// TODO: 在此添加命令处理程序代码
-		CJobDlg m_jDlg;		
+		CJobDlg m_jDlg;
+		m_jDlg.m_Path=theApp.JobPath;
+		m_jDlg.m_Title=_T("力擎作业管理");
+		m_jDlg.m_TreeTitle=_T("作业列表");
+		m_jDlg.DoModal();
+}
+void CMonitorDlg::OnMenuInstrument()
+{
+	// TODO: 在此添加命令处理程序代码
+		CJobDlg m_jDlg;
+		m_jDlg.m_Path=theApp.ToolPath;
+		m_jDlg.m_Title=_T("力擎仪器管理");
+		m_jDlg.m_TreeTitle=_T("仪器列表");
 		m_jDlg.DoModal();
 }
 
-void CMonitorDlg::OnMenuOpen()
-{
-	// TODO: 在此添加命令处理程序代码
-	CFileDialog dlg(TRUE,_T(""),_T(""),OFN_EXPLORER,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造打开文件对话框
-	dlg.m_ofn.lpstrInitialDir=_T("D:\\Test\\DataMonitor\\lib\\jobs\\");
-	if(dlg.DoModal()==IDOK)//显示打开文件对话框
-	{
-		CJobEditDlg m_jeDlg;
-		m_jeDlg.m_jobName=dlg.GetPathName();//获取文件路径名称
-		m_jeDlg.m_Open=TRUE;
-		m_jeDlg.DoModal();
-	}
-}
 
 bool CMonitorDlg::ShowActiveDlg(CWnd* activeWnd,int id)
 {

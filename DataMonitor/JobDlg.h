@@ -26,4 +26,7 @@ public:
 	CDirTreeCtrl m_treeCtrl;
 	afx_msg void OnJobDel();
 	afx_msg void OnJobCopy();
+	CString m_Path;
+	CString m_Title;
+	CString m_TreeTitle;
 };

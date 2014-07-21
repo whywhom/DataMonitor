@@ -2,3 +2,5 @@ Debug
 Release
 ipch
 /DataMonitor.sdf
+/DataMonitor/DataMonitor.vcxproj.user
+/DataMonitor/DataMonitor.aps

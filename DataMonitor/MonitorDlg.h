@@ -62,6 +62,7 @@ public:
 	afx_msg void OnMenuNew();
 	afx_msg void OnMenuOpen();
 	afx_msg void OnMenuWork();
+	afx_msg void OnMenuInstrument();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 };

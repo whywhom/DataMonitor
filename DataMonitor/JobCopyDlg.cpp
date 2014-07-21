@@ -26,8 +26,8 @@ CJobCopyDlg::~CJobCopyDlg()
 void CJobCopyDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_OLDNAME, m_oldName);
-	DDX_Text(pDX, IDC_NEWNAME, m_newName);
+	DDX_Text(pDX, IDC_ZCW_COPY_OLDNAME, m_oldName);
+	DDX_Text(pDX, IDC_ZCW_COPY_NEWNAME, m_newName);
 }
 
 
