@@ -6,6 +6,7 @@
 #include "jobdlg.h"
 #include "jobeditdlg.h"
 #include "ChildDraw.h"
+#include "tinyxml.h"
 
 extern bool bRunning;
 extern CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
