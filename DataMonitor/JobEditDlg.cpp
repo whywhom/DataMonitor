@@ -21,6 +21,9 @@ CJobEditDlg::CJobEditDlg(CWnd* pParent /*=NULL*/)
 
 CJobEditDlg::~CJobEditDlg()
 {
+	//关闭数据库
+	if (m_DataBase.IsOpen())
+	m_DataBase.Close();
 }
 
 void CJobEditDlg::DoDataExchange(CDataExchange* pDX)
@@ -44,9 +47,9 @@ END_MESSAGE_MAP()
 BOOL CJobEditDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-
 	// TODO:  在此添加额外的初始化
 	if(m_Open==TRUE){//如果是打开作业操作，则用数据库内容初始化窗口
+		m_DataBase.Open(m_jobName);	
 		ToolInit();
 	}else{
 		JobInit();		
@@ -80,10 +83,8 @@ void CJobEditDlg::DisplayTree(){
 	HTREEITEM root5=m_jeTree.InsertItem(_T("加电参数"),0,1,TVI_ROOT,TVI_LAST);
 	m_jeTree.SetItemData(root5,(DWORD)5);
 
-	//一层子节点
-	 CDaoDatabase m_DataBase;
-	 try{
-				m_DataBase.Open(m_jobName);			   	  			   
+	//一层子节点	
+	 try{						   	  			   
 				CDaoRecordset rs(&m_DataBase);
 				COleVariant OleVariant ;
 				//填充Tool的子节点
@@ -111,10 +112,7 @@ void CJobEditDlg::DisplayTree(){
 					rs.MoveNext();
 				}
 				rs.Close();  
-
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-				m_DataBase.Close();
+				
 	 } catch(CDaoException *e){		
 			MessageBox(e->m_pErrorInfo->m_strDescription);
 			e->Delete();
@@ -128,11 +126,11 @@ void CJobEditDlg::OnSelchangedJobeditTree(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: 在此添加控件通知处理程序代码
 	 HTREEITEM hSel=m_jeTree.GetSelectedItem();//当前节点
 	 HTREEITEM hPar=m_jeTree.GetParentItem(hSel);//父节点
-	 DWORD idp;
+	 DWORD idp;//父节点ID
 	 if(hPar){
-	 idp = m_jeTree.GetItemData(hPar);
+	 idp = m_jeTree.GetItemData(hPar);//二级节点
 	 }else{
-	 idp=m_jeTree.GetItemData(hSel);
+	 idp=m_jeTree.GetItemData(hSel);//一级节点
 	 }
 	 //CString par;	
      //par.Format(_T("%d"), idp);此处代码用于显示选中的父节点号
@@ -145,7 +143,7 @@ void CJobEditDlg::OnSelchangedJobeditTree(NMHDR *pNMHDR, LRESULT *pResult)
 	 if(m_Curve.GetSafeHwnd()!=NULL)
 			m_Curve.DestroyWindow();//如果曲线信息面版已经打开过，则先清理掉，避免重复打开
 	 if(m_Origin.GetSafeHwnd()!=NULL)
-			m_Origin.DestroyWindow();//如果原始信息面版已经打开过，则先清理掉，避免重复打开	
+			m_Origin.DestroyWindow();//如果原始信号面版已经打开过，则先清理掉，避免重复打开	
 	 switch(idp){
 	 case 1:
 		    if(hPar){			
@@ -210,16 +208,14 @@ void CJobEditDlg::OnBnClickedOk()
 	// TODO: 在此添加控件通知处理程序代码	
 	 if(m_Open==TRUE){//如果作业已经存在则修改		
 	   }else{//否则创建新作业	        
-	 }
+	 }	
 	CDialog::OnOK();
 }
 
 void CJobEditDlg::ToolInit(CString Label){
-	//根据数据库初始化窗口控件内容
-	 CDaoDatabase m_DataBase;
+	//初始化仪器信息窗口
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{					
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL where LABEL='")+Label+_T("'"));
 					rs.MoveFirst () ;				
@@ -243,10 +239,7 @@ void CJobEditDlg::ToolInit(CString Label){
 
 					rs.GetFieldValue (6,OleVariant);
 					m_Tool.m_Speed=OleVariant.bstrVal;							
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -255,11 +248,9 @@ void CJobEditDlg::ToolInit(CString Label){
 }
 
 void CJobEditDlg::CurveInit(CString Label){
-	//根据数据库初始化窗口控件内容
-	 CDaoDatabase m_DataBase;
+	//初始化曲线信息窗口	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{				
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Curve where LABEL='")+Label+_T("'"));
 					rs.MoveFirst () ;				
@@ -272,10 +263,7 @@ void CJobEditDlg::CurveInit(CString Label){
 					rs.GetFieldValue (2,OleVariant);
 					m_Curve.m_filter=OleVariant.iVal;		
 
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -284,11 +272,9 @@ void CJobEditDlg::CurveInit(CString Label){
 }
 
 void CJobEditDlg::OriginInit(CString Label){
-	//根据数据库初始化窗口控件内容
-	 CDaoDatabase m_DataBase;
+	//初始化原始信号窗口	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{						
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin where LABEL='")+Label+_T("'"));
 					rs.MoveFirst () ;				
@@ -301,10 +287,7 @@ void CJobEditDlg::OriginInit(CString Label){
 					rs.GetFieldValue (2,OleVariant);
 					m_Origin.m_filter=OleVariant.iVal;		
 
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -313,18 +296,13 @@ void CJobEditDlg::OriginInit(CString Label){
 }
 
 void CJobEditDlg::ToolDel(CString Label){
-	//根据数据库初始化窗口控件内容
-	 CDaoDatabase m_DataBase;
+	//删除选中的仪器信息	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{					
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL where LABEL='")+Label+_T("'"));
 				rs.Delete();					
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -333,18 +311,13 @@ void CJobEditDlg::ToolDel(CString Label){
 }
 
 void CJobEditDlg::CurveDel(CString Label){
-	//根据数据库初始化窗口控件内容
-	 CDaoDatabase m_DataBase;
+	//删除选中的曲线信息	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{					
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Curve where LABEL='")+Label+_T("'"));
 				rs.Delete();					
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -353,18 +326,13 @@ void CJobEditDlg::CurveDel(CString Label){
 }
 
 void CJobEditDlg::OriginDel(CString Label){
-	//根据数据库初始化窗口控件内容
-	 CDaoDatabase m_DataBase;
+	//删除选中的原始信号	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{					
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin where LABEL='")+Label+_T("'"));
 				rs.Delete();					
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -398,10 +366,8 @@ void CJobEditDlg::OriginInit(){
 }
 
 void CJobEditDlg::ToolAdd()
-{
-	 CDaoDatabase m_DataBase;
-	 try{
-				m_DataBase.Open(m_jobName);
+{	
+	 try{				
 			   //新建数据库记录			  			   
 				CDaoRecordset rs(&m_DataBase);				
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL where LABEL='")+m_Tool.m_Label+_T("'"));
@@ -417,13 +383,9 @@ void CJobEditDlg::ToolAdd()
 				rs.Update();
 				MessageBox(_T("添加成功,点左侧仪器信息继续添加"));
 				}else{
-				MessageBox(_T("仪器")+m_Tool.m_Label+_T("已经存在"),MB_OK);
+				MessageBox(_T("仪器信息")+m_Tool.m_Label+_T("已经存在"),MB_OK);
 				}
-				rs.Close();			
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-				m_DataBase.Close();	
-
+				rs.Close();		
 
 	 } catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -432,10 +394,8 @@ void CJobEditDlg::ToolAdd()
 }
 
 void CJobEditDlg::CurveAdd()
-{
-	 CDaoDatabase m_DataBase;
-	 try{
-				m_DataBase.Open(m_jobName);
+{	
+	 try{				
 			   //新建数据库记录			  			   
 				CDaoRecordset rs(&m_DataBase);				
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Curve where LABEL='")+m_Curve.m_Label+_T("'"));
@@ -447,14 +407,9 @@ void CJobEditDlg::CurveAdd()
 				rs.Update();
 				MessageBox(_T("添加成功,点左侧曲线信息继续添加"));
 				}else{
-				MessageBox(_T("曲线")+m_Curve.m_Label+_T("已经存在"),MB_OK);
+				MessageBox(_T("曲线信息")+m_Curve.m_Label+_T("已经存在"),MB_OK);
 				}
 				rs.Close();			
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-				m_DataBase.Close();	
-
-
 	 } catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
 			e->Delete();
@@ -462,10 +417,8 @@ void CJobEditDlg::CurveAdd()
 }
 
 void CJobEditDlg::OriginAdd()
-{
-	 CDaoDatabase m_DataBase;
-	 try{
-				m_DataBase.Open(m_jobName);
+{	
+	 try{				
 			   //新建数据库记录			  			   
 				CDaoRecordset rs(&m_DataBase);				
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin where LABEL='")+m_Origin.m_Label+_T("'"));
@@ -475,15 +428,11 @@ void CJobEditDlg::OriginAdd()
 				rs.SetFieldValue(1,COleVariant(long(m_Origin.m_unitbox.GetCurSel())));	
 				rs.SetFieldValue(2,COleVariant(long(m_Origin.m_filterbox.GetCurSel())));				
 				rs.Update();
-				MessageBox(_T("添加成功,点左侧原始信息继续添加"));
+				MessageBox(_T("添加成功,点左侧原始信号继续添加"));
 				}else{
-				MessageBox(_T("原始信息")+m_Origin.m_Label+_T("已经存在"),MB_OK);
+				MessageBox(_T("原始信号")+m_Origin.m_Label+_T("已经存在"),MB_OK);
 				}
-				rs.Close();			
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-				m_DataBase.Close();	
-
+				rs.Close();	
 
 	 } catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -527,7 +476,6 @@ void CJobEditDlg::OnBnClickedAdd()
 }
 
 void CJobEditDlg::JobInit(){
-	CDaoDatabase m_DataBase;	
 	try{
 			m_DataBase.Create(m_jobName);//如果新建作业则创建数据库
 				CDaoTableDef td(&m_DataBase);        //构造表对象						
@@ -558,9 +506,7 @@ void CJobEditDlg::JobInit(){
 				td.CreateField(_T("UNIT"),dbInteger,0L);		
 				td.CreateField(_T("FILTER"),dbInteger,0L);		
 			    td.Append();
-				td.Close();
-				if (m_DataBase.IsOpen())
-				m_DataBase.Close();      
+				td.Close();				    
 
 		}catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -576,21 +522,21 @@ void CJobEditDlg::OnBnClickedDelete()
 	switch(m_editTable){
 	case 1:				
 			if(hPar){//非一级节点
-				if(MessageBox(_T("确定删除仪器")+m_jeTree.GetItemText(hSel)+_T("吗？"),_T("警告"),MB_OKCANCEL)==IDOK){
+				if(MessageBox(_T("确定删除仪器信息")+m_jeTree.GetItemText(hSel)+_T("吗？"),_T("警告"),MB_OKCANCEL)==IDOK){
 					ToolDel(m_jeTree.GetItemText(hSel));					
 				}			
 			}			
 		break;
 	case 2:
 		   if(hPar){//非一级节点
-				if(MessageBox(_T("确定删除曲线")+m_jeTree.GetItemText(hSel)+_T("吗？"),_T("警告"),MB_OKCANCEL)==IDOK){
+				if(MessageBox(_T("确定删除曲线信息")+m_jeTree.GetItemText(hSel)+_T("吗？"),_T("警告"),MB_OKCANCEL)==IDOK){
 					CurveDel(m_jeTree.GetItemText(hSel));					
 				}			
 			}	
 		break;
 	case 3:
 		if(hPar){//非一级节点
-				if(MessageBox(_T("确定删除原始信息")+m_jeTree.GetItemText(hSel)+_T("吗？"),_T("警告"),MB_OKCANCEL)==IDOK){
+				if(MessageBox(_T("确定删除原始信号")+m_jeTree.GetItemText(hSel)+_T("吗？"),_T("警告"),MB_OKCANCEL)==IDOK){
 					OriginDel(m_jeTree.GetItemText(hSel));					
 				}			
 			}	
@@ -606,11 +552,9 @@ void CJobEditDlg::OnBnClickedDelete()
 }
 
 void CJobEditDlg::ToolUpdate(CString Label)
-{
-	 CDaoDatabase m_DataBase;
+{	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{						
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL where LABEL='")+Label+_T("'"));
 				rs.Edit();
@@ -625,12 +569,9 @@ void CJobEditDlg::ToolUpdate(CString Label)
 				rs.Update();
 				MessageBox(_T("修改成功,点左侧仪器信息查看"));
 				}else{
-				MessageBox(_T("仪器")+m_Tool.m_Label+_T("不存在"),MB_OK);
+				MessageBox(_T("仪器信息")+m_Tool.m_Label+_T("不存在"),MB_OK);
 				}				
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -639,11 +580,9 @@ void CJobEditDlg::ToolUpdate(CString Label)
 }
 
 void CJobEditDlg::CurveUpdate(CString Label)
-{
-	 CDaoDatabase m_DataBase;
+{	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{						
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM CURVE where LABEL='")+Label+_T("'"));
 				rs.Edit();
@@ -652,14 +591,11 @@ void CJobEditDlg::CurveUpdate(CString Label)
 				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
 				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));		
 				rs.Update();
-				MessageBox(_T("修改成功,点左侧仪器信息查看"));
+				MessageBox(_T("修改成功,点左侧曲线信息查看"));
 				}else{
-				MessageBox(_T("仪器")+m_Curve.m_Label+_T("不存在"),MB_OK);
+				MessageBox(_T("曲线信息")+m_Curve.m_Label+_T("不存在"),MB_OK);
 				}				
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -668,11 +604,9 @@ void CJobEditDlg::CurveUpdate(CString Label)
 }
 
 void CJobEditDlg::OriginUpdate(CString Label)
-{
-	 CDaoDatabase m_DataBase;
+{	
 	 COleVariant OleVariant ;
-		try{
-			m_DataBase.Open(m_jobName);				
+		try{					
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin where LABEL='")+Label+_T("'"));
 				rs.Edit();
@@ -681,14 +615,11 @@ void CJobEditDlg::OriginUpdate(CString Label)
 				rs.SetFieldValue(1,COleVariant(long(m_Origin.m_unitbox.GetCurSel())));	
 				rs.SetFieldValue(2,COleVariant(long(m_Origin.m_filterbox.GetCurSel())));		
 				rs.Update();
-				MessageBox(_T("修改成功,点左侧仪器信息查看"));
+				MessageBox(_T("修改成功,点左侧原始信号查看"));
 				}else{
-				MessageBox(_T("仪器")+m_Origin.m_Label+_T("不存在"),MB_OK);
+				MessageBox(_T("原始信号")+m_Origin.m_Label+_T("不存在"),MB_OK);
 				}				
-				rs.Close();
-				//关闭数据库
-				if (m_DataBase.IsOpen())
-					m_DataBase.Close();
+				rs.Close();				
             }
             catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);

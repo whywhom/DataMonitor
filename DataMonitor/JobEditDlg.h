@@ -26,6 +26,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	CString m_jobName;
+	CDaoDatabase m_DataBase;
 	bool m_Open;
 	CTreeCtrl m_jeTree;
 	virtual BOOL OnInitDialog();

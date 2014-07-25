@@ -80,7 +80,10 @@ BOOL CChildDraw::OnInitDialog()
 	cs04.SetWindowText(value04);
 
 	btSetup.SetWindowText(theApp.GetResString(IDS_SETUP));
-
+	listView.InsertColumn( 0, theApp.GetResString(IDS_WHY_CURVE), LVCFMT_LEFT, 50 ); 
+    listView.InsertColumn( 1, theApp.GetResString(IDS_WHY_VALUE), LVCFMT_LEFT, 50 ); 
+	listView.InsertColumn( 2, theApp.GetResString(IDS_WHY_UNIT), LVCFMT_LEFT, 50 ); 
+	listView.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP /*| LVS_EX_CHECKBOXES*/); 
 	ASSERT(pCanvasView != NULL);
 	if (!((CView*)pCanvasView)->Create(NULL, NULL, WS_CHILD,
 		CRect(0, 0, 0, 0), this, NULL, NULL))
