@@ -103,6 +103,15 @@ DWORD CCommLayer::CreatConnect( )
         num=comnumber;
         for(DWORD i=0;i<comnumber;i++)
         {
+			CString strPort = SubKey[i].SubKeyValue;
+			if(!strPort.Compare(_T("COM1")))
+			{
+				continue;
+			}
+			if(!strPort.Compare(_T("COM2")))
+			{
+				continue;
+			}
             m_FuncReturnValue = SelectComPort();
             if(m_FuncReturnValue==2)
             {
@@ -293,8 +302,8 @@ int CCommLayer::SelectComPort(void)
 /**************************************************************************/
 int CCommLayer::SendVerification(void)
 {
-	UINT8 sendStr[ ] = {'L','Q','S','K','\r','\n'};
-	sendDataSize = GenerateSendData(sendStr,6);
+	UINT8 sendStr[ ] = {'L','Q','S','K'};
+	sendDataSize = GenerateSendData(sendStr,4);
     if(sendDataSize>0)
     {
         TransData((BYTE *)&sendCmd,sendDataSize);
@@ -368,41 +377,49 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
     memset(localReceiveBuff, 0, sizeof(localReceiveBuff));
     memcpy(localReceiveBuff, inbuff, dwSize);
     //解包并做校验
-    while(bEndPacket == TRUE)
+    //while(bEndPacket == TRUE)
     {
 		bEndPacket = CrcCheck(localReceiveBuff,dwSize);
         if(bEndPacket == TRUE)
         {
-			memcpy(m_ReceiveBuff,&localReceiveBuff[1],dwSize-6);
 			if(GetConnectType() == TYPE_COMM)
 			{
+				memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
+				m_bConnectEffective = true;
+				g_event.SetEvent();
 				::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, m_ReceiveBufferSize, 0x0000);
 			}
 			else if(GetConnectType() == TYPE_INIT)
 			{
+				SetConnectType(TYPE_COMM);
 				//判断返回值是否：LQRD
-				if(m_ReceiveBuff[0] == 'L' && m_ReceiveBuff[1] == 'Q'
-					&& m_ReceiveBuff[2] == 'R'&& m_ReceiveBuff[3] == 'D'
-					&& m_ReceiveBuff[2] == '\r'&& m_ReceiveBuff[3] == '\n')
+				if(localReceiveBuff[0] == '$' && localReceiveBuff[1] == 'L'
+					&& localReceiveBuff[2] == 'Q'&& localReceiveBuff[3] == 'R'
+					&& localReceiveBuff[2] == 'D' )
 				{
+					memcpy(m_ReceiveBuff,&localReceiveBuff[10],dwSize-10);
 					m_bConnectEffective = true;
+					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, m_ReceiveBufferSize, 0x0000);
 				}
 				else
 				{
-					m_bConnectEffective = false;
-				}
-				g_event.SetEvent();
+					memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
+					m_bConnectEffective = true;
+					g_event.SetEvent();
+					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, m_ReceiveBufferSize, 0x0000);
+					}
+					g_event.SetEvent();
 			}
 			else
 			{
 			}
-            
         }
 		else
 		{
 			if(GetConnectType() == TYPE_COMM)
 			{
 				//数据包解码错误
+				g_event.SetEvent();
 				::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, 0, 0x0001);
 				return 1;
 			}

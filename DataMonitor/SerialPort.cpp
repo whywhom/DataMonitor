@@ -320,6 +320,7 @@ UINT CSerialPort::CommThread(LPVOID pParam)
                 port->m_hComm=NULL;
                 port->m_bThreadAlive = FALSE;
                 // Kill this thread.  break is not needed, but makes me feel better.
+				TRACE(_T("Exit CommThread \n"));
                 AfxEndThread(100);
                 break;
             }
@@ -330,6 +331,7 @@ UINT CSerialPort::CommThread(LPVOID pParam)
                 {
                     // Receive character event from port.
                     //Sleep(10);
+					TRACE(_T("*** Receive data ***\n"));
                     ReceivePort(port, comstat);
                 }
                 break;

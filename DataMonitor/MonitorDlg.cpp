@@ -414,6 +414,12 @@ WORD CMonitorDlg::DataSend(BYTE* outbuff, DWORD dwSize)
 LRESULT CMonitorDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
     TRACE(_T("Communication Receive!\n"));
+	TRACE0("RX = ");
+    for(WORD cont = 0; cont < wParam ; cont++)
+    {
+        TRACE(_T(" %02X"),theApp.commLayer.m_ReceiveBuff[cont]);
+    }
+    TRACE0("\n");
     return 0;
 }
 
@@ -435,7 +441,7 @@ void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 void CMonitorDlg::OnClose()
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	
+	theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
 	bRunning = false;
 	Sleep(500);
 	initCmdList();
