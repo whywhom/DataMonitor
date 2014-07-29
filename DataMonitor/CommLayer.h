@@ -62,7 +62,7 @@ public:
     BYTE m_Mingroup;//组号最小序号
 	BYTE m_Maxgroup;//组号最大序号
     Event_type m_EventStatus;
-    
+    bool isNewData;//检测到开头是“$LQRD”则认为是新数据
 
 	BOOL m_bISAddField;  
 private:

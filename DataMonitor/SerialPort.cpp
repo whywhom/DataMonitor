@@ -167,7 +167,7 @@ BOOL CSerialPort::InitPort(LPCTSTR  pCommPort,  // portnumber (COM1..COM4)
                 m_dcb.ByteSize = 8;
                 m_dcb.Parity = parity;
                 m_dcb.StopBits = ONESTOPBIT;
-                m_dcb.EvtChar = 0;
+                m_dcb.EvtChar = 0x0;
                 SetCommState(m_hComm, &m_dcb);
                 if (!SetCommState(m_hComm, &m_dcb))
                 {
@@ -509,9 +509,9 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
     BOOL  bResult = TRUE;
     DWORD dwError = 0;
     DWORD BytesRead = 0;
-    BYTE inbuff[4*1024];
+    BYTE inbuff[4*COMM_BUFFER_BASESIZE];
     DWORD nToRead;
-
+	memset(inbuff, 0, 4*COMM_BUFFER_BASESIZE);
     for (;;)
     {
         // Gain ownership of the comm port critical section.
@@ -553,7 +553,7 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
                                nToRead,     // Read one byte
                                &BytesRead,   // Stores number of bytes read
                                &port->m_ov);  // pointer to the m_ov structure
-
+#if 0
             TRACE0("RX = ");
             TRACE(_T(" %02X\n"),BytesRead);
             for(DWORD cont=0; cont < BytesRead; cont++)
@@ -561,6 +561,7 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
                 TRACE(_T(" %02X"),inbuff[cont]);
             }
             TRACE0("\n");
+#endif
             // deal with the error code
             if (!bResult)
             {

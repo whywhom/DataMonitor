@@ -3,14 +3,17 @@
 //
 
 #include "stdafx.h"
+#include<iostream>
+#include <fstream>
 #include "DataMonitor.h"
 #include "MonitorDlg.h"
 #include "afxdialogex.h"
 #include "PublicInterface.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
+using namespace std;
 static bool bRunning;
 static CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
 //
@@ -61,6 +64,7 @@ CMonitorDlg::CMonitorDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	theApp.activeWnd = NULL;
+	fp = NULL;
 	initWndList();
 }
 CMonitorDlg::~CMonitorDlg()
@@ -91,6 +95,8 @@ BEGIN_MESSAGE_MAP(CMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_WORK, &CMonitorDlg::OnMenuWork)
 	ON_COMMAND(ID_MENU_INSTRUMENT, &CMonitorDlg::OnMenuInstrument)
 	ON_WM_SIZE()
+	ON_COMMAND(ID_TOOLBAR_CONNECT, &CMonitorDlg::OnToolbarConnect)
+	ON_COMMAND(ID_TOOLBAR_DISCONNECT, &CMonitorDlg::OnToolbarDisconnect)
 END_MESSAGE_MAP()
 
 
@@ -415,11 +421,13 @@ LRESULT CMonitorDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
     TRACE(_T("Communication Receive!\n"));
 	TRACE0("RX = ");
+	TRACE(_T(" %02X\n"),wParam);
     for(WORD cont = 0; cont < wParam ; cont++)
     {
         TRACE(_T(" %02X"),theApp.commLayer.m_ReceiveBuff[cont]);
     }
     TRACE0("\n");
+	writeDataFile(&theApp.commLayer.m_ReceiveBuff[0],wParam);
     return 0;
 }
 
@@ -429,6 +437,38 @@ void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	CDialogEx::OnShowWindow(bShow, nStatus);
 
 	// TODO: 在此处添加消息处理程序代码
+	
+}
+
+void CMonitorDlg::startWork()
+{
+	//open and write file
+	//执行导出操作
+	CString sGetFileName;
+	CString strTime;
+	//获取系统时间
+	CTime tm;
+	tm=CTime::GetCurrentTime();
+	strTime=tm.Format(_T("(%Y-%m-%d-%H-%M-%S)"));
+	CString fileName = _T("export ")+strTime;
+	CFileDialog dlg (FALSE, _T("dmor"), fileName, OFN_HIDEREADONLY | OFN_EXPLORER | OFN_OVERWRITEPROMPT, NULL);
+	if (dlg.DoModal () == IDOK)
+	{
+		sGetFileName = dlg.GetPathName ();
+		openDataFile(sGetFileName);
+	}
+		
+	sendConnectCmd();
+}
+
+void CMonitorDlg::stopWork()
+{
+	//close file
+	closeDataFile(sGetFileName);
+}
+
+void CMonitorDlg::sendConnectCmd()
+{
 	SEND_COMMAND_LIST* pCurrent= new SEND_COMMAND_LIST;
 	pCurrent->cmd = _T("connect");
 	pCurrent->buf = theApp.sendCmd;
@@ -437,6 +477,78 @@ void CMonitorDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	pCurrent = NULL;
 }
 
+void CMonitorDlg::openDataFile(CString strFile)  
+{   
+#ifdef FEATURE_C_LANGUAGE
+	if(fp != NULL)
+	{
+		fclose(fp);  
+	}
+	fp = _wfopen(strFile, _T("w")); 
+#else
+	if (!fAddressTransOut.Open (strFile, CFile::modeCreate | CFile::modeWrite, &eFileException))
+	{
+		MessageBox (_T("Create file fail"), _T("Error"), MB_OK + MB_ICONERROR);
+		bFileOk = false;
+	}
+	bFileOk = true;
+#endif
+}  
+
+void CMonitorDlg::writeDataFile(BYTE* tmp, WPARAM wParam)  
+{     
+#ifdef FEATURE_C_LANGUAGE
+    if(fp != NULL)
+	{ 
+		fseek(fp,0L,2);
+		for(unsigned int i=0; i < wParam; ++i)
+		{
+			unsigned int nSize = fwrite( &tmp[i], 1, 1, fp);  
+		}
+    }   
+#else 
+	if(bFileOk)
+	{
+		fAddressTransOut.SeekToEnd ();
+		fAddressTransOut.Write (tmp, wParam);
+	}
+#endif
+}  
+void CMonitorDlg::closeDataFile(CString strFile)  
+{    
+#ifdef FEATURE_C_LANGUAGE
+	if(fp != NULL)
+	{
+		fclose(fp);   
+	}
+#else
+	if(bFileOk)
+	{
+		TRY
+		{
+			fAddressTransOut.Close ();
+		}
+		CATCH (CFileException, eFileException)
+		{
+			TRACE0 ("File close Failed!\n");
+		}
+		END_CATCH
+		bFileOk = false;
+	}
+#endif
+}  
+void CMonitorDlg::OnToolbarConnect()
+{
+	// TODO: 在此添加命令处理程序代码
+	startWork();
+}
+
+
+void CMonitorDlg::OnToolbarDisconnect()
+{
+	// TODO: 在此添加命令处理程序代码
+	stopWork();
+}
 
 void CMonitorDlg::OnClose()
 {
@@ -550,3 +662,6 @@ void CMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 	lpMMI-> ptMinTrackSize.y = 600 ; //高 
 	CDialogEx::OnGetMinMaxInfo(lpMMI);
 }
+
+
+

@@ -103,7 +103,10 @@ DWORD CCommLayer::CreatConnect( )
         num=comnumber;
         for(DWORD i=0;i<comnumber;i++)
         {
+			/*
 			CString strPort = SubKey[i].SubKeyValue;
+			TRACE(_T("strPort = %s\n"),SubKey[i].SubKeyValue);
+			
 			if(!strPort.Compare(_T("COM1")))
 			{
 				continue;
@@ -112,7 +115,9 @@ DWORD CCommLayer::CreatConnect( )
 			{
 				continue;
 			}
+			*/
             m_FuncReturnValue = SelectComPort();
+			TRACE(_T("m_FuncReturnValue = %d\n"),m_FuncReturnValue);
             if(m_FuncReturnValue==2)
             {
                 return COMM_ERROE_HARDWARE_CONNECT_FAIL;//main program call waiting result
@@ -257,6 +262,7 @@ int CCommLayer::GetRegisterdComPort(SubKeyInfo_type* SubKey, DWORD* number)
 /**************************************************************************/
 int CCommLayer::SelectComPort(void)
 {
+	TRACE(_T("SelectComPort\n"));
     BOOL m_bReturnvalue;
     CString comportname;
     num--;
@@ -266,7 +272,7 @@ int CCommLayer::SelectComPort(void)
     }
     //try initial,连接当前端口成功，发送验证码
     m_bReturnvalue=theApp.commLayer.m_SerialPort.InitPort(SubKey[num].SubKeyValue);
-    TRACE(_T("Initial COM\n"));
+    TRACE(_T("Initial %s\n"),SubKey[num].SubKeyValue);
 
     if(TRUE == m_bReturnvalue)
     {
@@ -374,7 +380,8 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
     m_wlocalReceivePtr = 0;
     m_ReceiveBufferSize=0;
     memset(m_ReceiveBuff,0,sizeof(m_ReceiveBuff));
-    memset(localReceiveBuff, 0, sizeof(localReceiveBuff));
+    memset(localReceiveBuff, 0, 4*COMM_BUFFER_BASESIZE);
+	memset(m_ReceiveBuff, 0, 4*COMM_BUFFER_BASESIZE);
     memcpy(localReceiveBuff, inbuff, dwSize);
     //解包并做校验
     //while(bEndPacket == TRUE)
@@ -387,7 +394,7 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 				memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
 				m_bConnectEffective = true;
 				g_event.SetEvent();
-				::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, m_ReceiveBufferSize, 0x0000);
+				::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize, 0x0000);
 			}
 			else if(GetConnectType() == TYPE_INIT)
 			{
@@ -397,16 +404,18 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 					&& localReceiveBuff[2] == 'Q'&& localReceiveBuff[3] == 'R'
 					&& localReceiveBuff[2] == 'D' )
 				{
-					memcpy(m_ReceiveBuff,&localReceiveBuff[10],dwSize-10);
+					isNewData = true;
+					memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
 					m_bConnectEffective = true;
-					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, m_ReceiveBufferSize, 0x0000);
+					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize, 0x0000);
 				}
 				else
 				{
+					isNewData = false;
 					memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
 					m_bConnectEffective = true;
 					g_event.SetEvent();
-					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, m_ReceiveBufferSize, 0x0000);
+					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize, 0x0000);
 					}
 					g_event.SetEvent();
 			}

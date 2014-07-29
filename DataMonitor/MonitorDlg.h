@@ -17,6 +17,11 @@ class CMonitorDlg : public CDialogEx
 public:
 	CToolBar m_ToolBar;
 	CChildDraw* childDrawWnd;
+	CString sGetFileName;//保存打开的文件名
+	FILE* fp;//指向打开的文件
+	CFile fAddressTransOut;
+	CFileException eFileException;
+	bool bFileOk;
 private:
 	
 	CWinThread*   m_Thread;
@@ -38,6 +43,12 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 	static UINT MainThread(LPVOID pParam);
 	bool StartThread();
+	void startWork();
+	void stopWork();
+	void sendConnectCmd();
+	void openDataFile(CString strFile);
+	void writeDataFile(BYTE* tmp, WPARAM wParam)  ;
+	void closeDataFile(CString strFile);
 	void initCmdList();
 	void initWndList();
 // 实现
@@ -66,4 +77,6 @@ public:
 	afx_msg void OnMenuInstrument();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnToolbarConnect();
+	afx_msg void OnToolbarDisconnect();
 };

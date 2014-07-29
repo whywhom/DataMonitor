@@ -8,6 +8,7 @@
 //消息类型定义
 #define WM_USER_RECEIVEDATA (WM_USER+7)
 
+#define FEATURE_C_LANGUAGE
 //错误类型
 const DWORD COMM_SUCCESS=0x0000;//函数执行成功
 const DWORD COMM_ERROE_PARA=0xF001;//传入参数错误
