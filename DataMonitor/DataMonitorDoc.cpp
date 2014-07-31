@@ -135,3 +135,11 @@ void CDataMonitorDoc::Dump(CDumpContext& dc) const
 
 
 // CDataMonitorDoc 命令
+
+
+void CDataMonitorDoc::SetTitle(LPCTSTR lpszTitle)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	lpszTitle = _T("");
+	CDocument::SetTitle(lpszTitle);
+}

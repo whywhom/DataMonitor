@@ -373,6 +373,7 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
     //解包并做校验
     //while(bEndPacket == TRUE)
     {
+		TRACE(_T("CCommLayer::RecvData () dwSize = %02X \n"),dwSize);
 		bEndPacket = CrcCheck(localReceiveBuff,dwSize);
         if(bEndPacket == TRUE)
         {
@@ -381,6 +382,13 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 				memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
 				m_bConnectEffective = true;
 				g_event.SetEvent();
+				TRACE0("CCommLayer RX = ");
+				TRACE(_T(" %02X\n"),dwSize);
+				for(DWORD cont=0; cont < dwSize; cont++)
+				{
+					TRACE(_T(" %02X"),inbuff[cont]);
+				}
+				TRACE0("\n");
 				::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize, 0x0000);
 			}
 			else if(GetConnectType() == TYPE_INIT)

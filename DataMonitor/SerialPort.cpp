@@ -329,7 +329,7 @@ UINT CSerialPort::CommThread(LPVOID pParam)
                 if (CommEvent & EV_RXCHAR)
                 {
                     // Receive character event from port.
-                    //Sleep(10);
+                    Sleep(10);
 					TRACE(_T("*** Receive data ***\n"));
                     ReceivePort(port, comstat);
                 }
@@ -552,8 +552,8 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
                                nToRead,     // Read one byte
                                &BytesRead,   // Stores number of bytes read
                                &port->m_ov);  // pointer to the m_ov structure
-#if 0
-            TRACE0("RX = ");
+#if 1
+            TRACE0("SerialPort RX = ");
             TRACE(_T(" %02X\n"),BytesRead);
             for(DWORD cont=0; cont < BytesRead; cont++)
             {

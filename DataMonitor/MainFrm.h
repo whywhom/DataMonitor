@@ -6,6 +6,9 @@
 #include "jobdlg.h"
 #include "jobeditdlg.h"
 #include "DMSplitterWnd.h"
+#include "PanelView.h"
+#include "ScaleView.h"
+#include "DataMonitorView.h"
 #include "tinyxml.h"
 
 class CMainFrame : public CFrameWnd
@@ -21,6 +24,14 @@ public:
 protected:
     CSplitterWnd m_wndSplitter;
 	CSplitterWnd m_wndSplitterSub;
+	bool bConnect;
+
+	CMainFrame*   pFrame;  
+	//get view point ,sample
+	//CPanelView* pPanelView=(CPanelView*) GetActiveView(); 
+	CPanelView* pPanelView; 
+	CScaleView* pScaleView; 
+	CDataMonitorView* pDataMonitorView; 
 // 操作
 public:
 
@@ -44,6 +55,8 @@ protected:  // 控件条嵌入成员
 	FILE* fp;//指向打开的文件
 
 	CWinThread*   m_Thread;
+
+	unsigned long totalReceiveByte;
 protected:
 	static UINT MainThread(LPVOID pParam);
 	bool StartThread();
@@ -72,6 +85,7 @@ public:
 	afx_msg void OnUpdateToolbarDisconnect(CCmdUI *pCmdUI);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnUpdateIndicatorInfo(CCmdUI *pCmdUI);
 };
 
 

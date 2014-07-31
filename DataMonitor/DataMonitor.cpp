@@ -215,6 +215,14 @@ void CDataMonitorApp::GetModulePath()
 		CreateDirectory(TempPath,NULL);
 	}
 
+	DataPath = ModuleFilePath + _T("\\Data\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(DataPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(DataPath,NULL);
+	}
+
 	JobPath = ModuleFilePath + _T("\\Jobs\\");
 	//若文件夹不存在，创建文件夹
 	dwAttr=GetFileAttributes(JobPath);

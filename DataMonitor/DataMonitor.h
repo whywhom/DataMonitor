@@ -36,6 +36,7 @@ public:
 	CString LogPath;//log日志所在位置绝对路径
 	CString IniFilePath;//ini文件夹绝对路径
 	CString strIniFilePath;//ini文件所在位置绝对路径
+	CString DataPath;//临时文件夹绝对路径
 	CString JobPath;//作业文件夹的绝对路径
 	CString ToolPath;//仪器文件夹绝对路径
 

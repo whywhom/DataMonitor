@@ -1,6 +1,5 @@
-/Debug
-/Release
-/ipch
-/DataMonitor/Release
-/DataMonitor/Debug
-/DataMonitor.sdf
+Debug
+ipch
+Release
+DataMonitor.sdf
+/DataMonitor.opensdf
