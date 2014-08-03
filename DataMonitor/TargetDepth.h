@@ -11,7 +11,7 @@ class CTargetDepth : public CDialog
 public:
 	CTargetDepth(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CTargetDepth();
-	void SaveParameter();
+	bool SaveParameter();
 // 对话框数据
 	enum { IDD = IDD_TARGETDEPTH };
 

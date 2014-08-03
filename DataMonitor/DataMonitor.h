@@ -9,6 +9,12 @@
 
 #include "resource.h"       // 主符号
 #include "CommLayer.h"
+#include <Setupapi.h>
+#include <devguid.h>
+#include <string>
+
+#include "tinyxml.h"
+#include "tinystr.h"
 
 // CDataMonitorApp:
 // 有关此类的实现，请参阅 DMonitor.cpp
@@ -19,6 +25,8 @@ class CDataMonitorApp : public CWinApp
 public:
 	CDataMonitorApp();
 	CString GetResString(UINT uStringID);
+	char *FromUNICODEToANSI(CString str);
+	short FromUnicodeToUTF8 (LPSTR utf8Str, short utf8StrLen, WORD * unStr, unsigned short unMaxLen);
 public:
 	HINSTANCE exe_hInstance;
 	HANDLE hSem;//判断软件市立是否已存在
@@ -39,7 +47,8 @@ public:
 	CString DataPath;//临时文件夹绝对路径
 	CString JobPath;//作业文件夹的绝对路径
 	CString ToolPath;//仪器文件夹绝对路径
-
+	CString strUnitsFile;//记录度量单位的配置文件
+	CString strSettingFile;//记录用户设置的常用数值配置文件
 	//发送给串口设备的数据buffer
 	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer
 	WORD sendDataSize;
@@ -49,6 +58,9 @@ public:
 
 private:
 	void GetModulePath();
+	int CreateDmFile(CString strFile);
+	int CreateIniFile(CString strFile);
+	void LinkElementeFuns(TiXmlElement * element, CString str);
 // 重写
 public:
 	virtual BOOL InitInstance();

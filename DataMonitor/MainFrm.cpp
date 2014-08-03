@@ -379,7 +379,7 @@ void CMainFrame::closeDataFile(CString strFile)
 void CMainFrame::OnClose()
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	if (MessageBox(_T("确定要退出吗？"),_T("提示"),MB_OKCANCEL)==IDOK)
+	if (MessageBox(theApp.GetResString(IDS_EXIT_APP_QUESTION),_T("提示"),MB_ICONQUESTION|MB_OKCANCEL)==IDOK)
 	{
 		theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
 		bRunning = false;

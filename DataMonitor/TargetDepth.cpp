@@ -14,8 +14,8 @@ IMPLEMENT_DYNAMIC(CTargetDepth, CDialog)
 CTargetDepth::CTargetDepth(CWnd* pParent /*=NULL*/)
 	: CDialog(CTargetDepth::IDD, pParent)
 {
-	strEditOne = _T("0");
-	strEditTwo = _T("0");
+	::GetPrivateProfileString(_T("TargetDepth"),_T("Depth1"),_T("100"),strEditOne.GetBuffer(MAX_PATH),MAX_PATH,theApp.strIniFilePath); //_T("100");
+	::GetPrivateProfileString(_T("TargetDepth"),_T("Depth2"),_T("100"),strEditTwo.GetBuffer(MAX_PATH),MAX_PATH,theApp.strIniFilePath);//_T("100");
 }
 
 CTargetDepth::~CTargetDepth()
@@ -46,7 +46,12 @@ END_MESSAGE_MAP()
 void CTargetDepth::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	SaveParameter();
+	if(!SaveParameter())
+	{
+		return;
+	}
+	::WritePrivateProfileString(_T("TargetDepth"),_T("Depth1"),strEditOne,theApp.strIniFilePath); 
+	::WritePrivateProfileString(_T("TargetDepth"),_T("Depth2"),strEditTwo,theApp.strIniFilePath);
 	CDialog::OnOK();
 }
 
@@ -98,7 +103,16 @@ void CTargetDepth::OnShowWindow(BOOL bShow, UINT nStatus)
 	}
 }
 
-void CTargetDepth::SaveParameter()
+bool CTargetDepth::SaveParameter()
 {
-
+	edit1.GetWindowText(strEditOne);
+	edit2.GetWindowText(strEditTwo);
+	int iEdit1 =  _ttoi(strEditOne);
+	int iEdit2 =  _ttoi(strEditTwo);
+	if(iEdit1 <100 || iEdit2 < 100)
+	{
+		MessageBox(theApp.GetResString(IDS_DEPTH_INVALIDPARA),_T("提示"),MB_ICONERROR);
+		return false;
+	}
+	return true;
 }
