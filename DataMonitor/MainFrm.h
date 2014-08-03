@@ -10,7 +10,7 @@
 #include "ScaleView.h"
 #include "DataMonitorView.h"
 #include "tinyxml.h"
-
+#include "TargetDepth.h"
 class CMainFrame : public CFrameWnd
 {
 	
@@ -32,6 +32,7 @@ protected:
 	CPanelView* pPanelView; 
 	CScaleView* pScaleView; 
 	CDataMonitorView* pDataMonitorView; 
+	int parameterFlag;//send flag to jobdlg for some action, 0-nothing;1-new job
 // ²Ù×÷
 public:
 
@@ -86,6 +87,17 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnUpdateIndicatorInfo(CCmdUI *pCmdUI);
+	afx_msg void OnMenuNewjob();
+	afx_msg void OnMenuJobload();
+	afx_msg void OnMenuMeasureup();
+	afx_msg void OnMenuMeasuredown();
+	afx_msg void OnMenuDrawmodel();
+	afx_msg void OnMenuDemo();
+	afx_msg void OnMenuDebugcmd();
+	afx_msg void OnEditCopy();
+	afx_msg void OnEditCut();
+	afx_msg void OnEditPaste();
+	afx_msg void OnMenuTargetdeepth();
 };
 
 

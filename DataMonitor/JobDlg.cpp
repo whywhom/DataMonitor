@@ -14,7 +14,7 @@ IMPLEMENT_DYNAMIC(CJobDlg, CDialog)
 CJobDlg::CJobDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CJobDlg::IDD, pParent)
 {
-
+	receiveFlag = 0;
 }
 
 CJobDlg::~CJobDlg()
@@ -34,6 +34,7 @@ BEGIN_MESSAGE_MAP(CJobDlg, CDialog)
 	ON_COMMAND(ID_JOB_OPEN, &CJobDlg::OnJobOpen)
 	ON_COMMAND(ID_JOB_DEL, &CJobDlg::OnJobDel)
 	ON_COMMAND(ID_JOB_COPY, &CJobDlg::OnJobCopy)
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -122,5 +123,16 @@ void CJobDlg::OnJobCopy()
 			MessageBox(strNewPath+_T("已存在"),MB_OK);
 		}
 	}
+	}
+}
+
+void CJobDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialog::OnShowWindow(bShow, nStatus);
+
+	// TODO: 在此处添加消息处理程序代码
+	if(receiveFlag == 1)
+	{
+		OnJobNew();
 	}
 }

@@ -33,6 +33,17 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_SIZE()
 	ON_WM_GETMINMAXINFO()
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_INFO, &CMainFrame::OnUpdateIndicatorInfo)
+	ON_COMMAND(ID_MENU_NEWJOB, &CMainFrame::OnMenuNewjob)
+	ON_COMMAND(ID_MENU_JOBLOAD, &CMainFrame::OnMenuJobload)
+	ON_COMMAND(ID_MENU_MEASUREUP, &CMainFrame::OnMenuMeasureup)
+	ON_COMMAND(ID_MENU_MEASUREDOWN, &CMainFrame::OnMenuMeasuredown)
+	ON_COMMAND(ID_MENU_DRAWMODEL, &CMainFrame::OnMenuDrawmodel)
+	ON_COMMAND(ID_MENU_DEMO, &CMainFrame::OnMenuDemo)
+	ON_COMMAND(ID_MENU_DEBUGCMD, &CMainFrame::OnMenuDebugcmd)
+	ON_COMMAND(ID_EDIT_COPY, &CMainFrame::OnEditCopy)
+	ON_COMMAND(ID_EDIT_CUT, &CMainFrame::OnEditCut)
+	ON_COMMAND(ID_EDIT_PASTE, &CMainFrame::OnEditPaste)
+	ON_COMMAND(ID_MENU_TARGETDEEPTH, &CMainFrame::OnMenuTargetdeepth)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -50,6 +61,7 @@ CMainFrame::CMainFrame()
 {
 	// TODO: 在此添加成员初始化代码
 	bConnect = false;
+	parameterFlag = 0;
 }
 
 CMainFrame::~CMainFrame()
@@ -163,9 +175,9 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy)
 	// TODO: 在此处添加消息处理程序代码
 	CRect rect;
 	GetClientRect(&rect);
-	m_wndStatusBar.SetPaneInfo(1,ID_INDICATOR_INFO,SBPS_NORMAL,200);
 	if(m_wndSplitter && m_wndSplitterSub)  // m_bSplitterCreated set in OnCreateClient
     {
+		m_wndStatusBar.SetPaneInfo(1,ID_INDICATOR_INFO,SBPS_NORMAL,200);
 		if(rect.Width()>=200 && rect.Height()>=200)
 		{
 			m_wndSplitter.SetColumnInfo(0, 200, 10);
@@ -383,6 +395,7 @@ void CMainFrame::OnMenuWork()
 	// TODO: 在此添加命令处理程序代码
 	CJobDlg m_jDlg;
 	m_jDlg.m_Path=theApp.JobPath;
+	m_jDlg.receiveFlag = parameterFlag;
 	m_jDlg.m_Title=_T("力擎作业管理");
 	m_jDlg.m_TreeTitle=_T("作业列表");
 	m_jDlg.DoModal();
@@ -407,4 +420,74 @@ void CMainFrame::OnMenuInstrument()
 void CMainFrame::OnUpdateIndicatorInfo(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
+}
+
+
+void CMainFrame::OnMenuNewjob()
+{
+	// TODO: 在此添加命令处理程序代码
+	parameterFlag = 1;
+	OnMenuWork();
+}
+
+
+void CMainFrame::OnMenuJobload()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnMenuMeasureup()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnMenuMeasuredown()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnMenuDrawmodel()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnMenuDemo()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnMenuDebugcmd()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnEditCopy()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnEditCut()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnEditPaste()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnMenuTargetdeepth()
+{
+	// TODO: 在此添加命令处理程序代码
+	CTargetDepth targetDlg;
+	targetDlg.DoModal();
 }

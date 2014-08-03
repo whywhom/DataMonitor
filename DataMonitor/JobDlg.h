@@ -14,7 +14,8 @@ public:
 
 // 对话框数据
 	enum { IDD = IDD_JOB };
-
+public:
+	int receiveFlag;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
@@ -29,4 +30,5 @@ public:
 	CString m_Path;
 	CString m_Title;
 	CString m_TreeTitle;
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 };

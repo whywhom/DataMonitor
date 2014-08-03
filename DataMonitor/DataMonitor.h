@@ -44,6 +44,9 @@ public:
 	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer
 	WORD sendDataSize;
 
+	int targetDepth1;
+	int targetDepth2;
+
 private:
 	void GetModulePath();
 // 重写
