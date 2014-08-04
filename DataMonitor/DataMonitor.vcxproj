@@ -99,6 +99,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="DataMonitor.reg" />
+    <None Include="Info.txt" />
     <None Include="ReadMe.txt" />
     <None Include="res\DataMonitor.ico" />
     <None Include="res\DataMonitor.rc2" />

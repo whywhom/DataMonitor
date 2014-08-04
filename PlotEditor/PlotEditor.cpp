@@ -47,6 +47,7 @@ CPlotEditorApp::CPlotEditorApp()
 
 	// TODO: 在此处添加构造代码，
 	// 将所有重要的初始化放置在 InitInstance 中
+	
 }
 
 // 唯一的一个 CPlotEditorApp 对象
@@ -92,9 +93,30 @@ BOOL CPlotEditorApp::InitInstance()
 	// 更改用于存储设置的注册表项
 	// TODO: 应适当修改该字符串，
 	// 例如修改为公司或组织名
-	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
+	SetRegistryKey(_T("PlotEditor"));
 	LoadStdProfileSettings(2);  // 加载标准 INI 文件选项(包括 MRU)
-
+	/*wuhaoyong add CMutex*/
+    //Creat CMutex
+    hSem=NULL;
+	strSemaphore.LoadString( IDS_SEMAPHORE );
+    hSem=CreateSemaphore(NULL,1,1,strSemaphore);
+    if(hSem)  //Creat CMutex success
+    {
+        //the CMutex exist
+        if(ERROR_ALREADY_EXISTS==GetLastError())
+        {
+			strSemaphoreExist.LoadString( IDS_SEMAPHORE_ALREADY_EXISTS );
+            AfxMessageBox(strSemaphoreExist);
+            CloseHandle(hSem);      //Close CMutex
+            return FALSE;           //Exit App
+        }
+    }
+    else
+    {
+		strSemaphoreCreatFail.LoadString(IDS_SEMAPHORE_CREATE_FAIL);
+        AfxMessageBox(strSemaphoreCreatFail);
+        return FALSE;
+    }
 
 	// 注册应用程序的文档模板。文档模板
 	// 将用作文档、框架窗口和视图之间的连接
@@ -132,7 +154,14 @@ BOOL CPlotEditorApp::InitInstance()
 	m_pMainWnd->DragAcceptFiles();
 	return TRUE;
 }
-
+//根据_hLangDLL是否加载语言dll来判断使用语言库资源还是默认资源，默认为中文简体
+CString CPlotEditorApp::GetResString(UINT uStringID)
+{
+	CString resString;
+	if (resString.IsEmpty())
+		resString.LoadString(theApp.exe_hInstance, uStringID);
+	return resString;
+}
 int CPlotEditorApp::ExitInstance()
 {
 	//TODO: 处理可能已添加的附加资源

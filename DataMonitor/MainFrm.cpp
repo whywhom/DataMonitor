@@ -452,6 +452,45 @@ void CMainFrame::OnMenuMeasuredown()
 void CMainFrame::OnMenuDrawmodel()
 {
 	// TODO: 在此添加命令处理程序代码
+
+	SHELLEXECUTEINFO  ShExecInfo = {0};
+	CString strFile = theApp.ModuleFilePath + _T("\\PlotEditor.exe");  
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask    = NULL;
+	ShExecInfo.hwnd      = NULL;
+	ShExecInfo.lpVerb    = NULL;
+	ShExecInfo.lpFile      = strFile;      // 执行的程序名
+	ShExecInfo.lpParameters = NULL;
+	ShExecInfo.lpDirectory    = NULL;
+	ShExecInfo.nShow          = SW_NORMAL;                // 默认方式显示这个程序
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
+	/*
+	if(!ShellExecuteEx(&ShExecInfo))
+	{
+		DWORD dErr = GetLastError();
+		if(dErr == ERROR_FILE_NOT_FOUND)
+		{
+			MessageBox(_T("指定文件不存在"),_T("提示"),MB_ICONQUESTION|MB_OK);
+		}
+		else if(dErr == ERROR_NO_ASSOCIATION)
+		{
+			MessageBox(_T("没有与制定文件名扩展对应的应用程序"),_T("提示"),MB_ICONQUESTION|MB_OK);
+		}
+		else if(dErr == ERROR_ACCESS_DENIED)
+		{
+			MessageBox(_T("访问指定文件被拒绝"),_T("提示"),MB_ICONQUESTION|MB_OK);
+		}
+		else if(dErr == ERROR_DLL_NOT_FOUND)
+		{
+			MessageBox(_T("无法找到运行应用程序所必须的库文件"),_T("提示"),MB_ICONQUESTION|MB_OK);
+		}
+		else if(dErr == ERROR_NOT_ENOUGH_MEMORY)
+		{
+			MessageBox(_T("没有足够的内存来执行操作"),_T("提示"),MB_ICONQUESTION|MB_OK);
+		}
+	}
+	*/
 }
 
 

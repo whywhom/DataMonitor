@@ -102,6 +102,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoordinateView.h" />
+    <ClInclude Include="CurveInfo.h" />
+    <ClInclude Include="CurvePage.h" />
+    <ClInclude Include="CurveSheet.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="PlotEditor.h" />
     <ClInclude Include="PlotEditorDoc.h" />
@@ -112,6 +115,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CoordinateView.cpp" />
+    <ClCompile Include="CurveInfo.cpp" />
+    <ClCompile Include="CurvePage.cpp" />
+    <ClCompile Include="CurveSheet.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="PlotEditor.cpp" />
     <ClCompile Include="PlotEditorDoc.cpp" />

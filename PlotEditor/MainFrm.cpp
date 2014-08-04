@@ -17,6 +17,9 @@ IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
+	ON_COMMAND(ID_FILE_NEWPLOT, &CMainFrame::OnFileNewplot)
+	ON_COMMAND(ID_FILE_SAVEPLOT, &CMainFrame::OnFileSaveplot)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -32,6 +35,13 @@ static UINT indicators[] =
 CMainFrame::CMainFrame()
 {
 	// TODO: 在此添加成员初始化代码
+	CCurveInfo* pCurrent = NULL;
+	while(theApp.curveList.IsEmpty()==false)
+	{
+		pCurrent=theApp.curveList.RemoveHead();
+		delete pCurrent;
+		pCurrent=NULL;
+	}
 }
 
 CMainFrame::~CMainFrame()
@@ -64,7 +74,7 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/,
 	GetClientRect(&rect);
 	
 
-	pFrame=(CMainFrame*)AfxGetMainWnd();  
+	pFrame=(CMainFrame*)AfxGetMainWnd;
 
 	if(!m_wndSplitter.CreateView(0,0,RUNTIME_CLASS(CPlotEditorView),CSize(rect.Width(),rect.Height()-200),pContext))
 	{
@@ -106,3 +116,27 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 
 // CMainFrame 消息处理程序
+
+
+void CMainFrame::OnFileNewplot()
+{
+	// TODO: 在此添加命令处理程序代码
+	CCurveSheet PropSht(theApp.GetResString(IDS_CURVE_PROPERTY));
+	if(PropSht.DoModal() == IDOK)
+	{
+	}
+}
+
+
+void CMainFrame::OnFileSaveplot()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CMainFrame::OnClose()
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CFrameWnd::OnClose();
+}

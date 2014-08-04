@@ -5,6 +5,8 @@
 #pragma once
 #include "PlotEditorView.h"
 #include "CoordinateView.h"
+#include "CurveSheet.h"
+#include "CurveInfo.h"
 class CMainFrame : public CFrameWnd
 {
 	
@@ -18,7 +20,7 @@ protected:
 public:
 	CMainFrame*   pFrame; 
 	CPlotEditorView*   pPlotEditorView; 
-	CCoordinateView * pCoodinateView;  
+	CCoordinateView * pCoodinateView; 
 // ²Ù×÷
 public:
 
@@ -43,6 +45,10 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	DECLARE_MESSAGE_MAP()
 
+public:
+	afx_msg void OnFileNewplot();
+	afx_msg void OnFileSaveplot();
+	afx_msg void OnClose();
 };
 
 

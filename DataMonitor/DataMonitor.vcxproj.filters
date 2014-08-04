@@ -29,6 +29,7 @@
     <None Include="res\DataMonitorDoc.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="Info.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

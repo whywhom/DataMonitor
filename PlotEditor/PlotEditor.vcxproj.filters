@@ -52,6 +52,15 @@
     <ClInclude Include="CoordinateView.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CurveSheet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CurvePage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CurveInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PlotEditor.cpp">
@@ -70,6 +79,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CoordinateView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CurveSheet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CurvePage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CurveInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,0 +1,7 @@
+全局函数AfxGetApp可以得到CWinApp应用类指针 
+AfxGetApp()->m_pMainWnd为框架窗口指针 
+在框架窗口中：CFrameWnd::GetActiveDocument得到当前活动文档指针 
+在框架窗口中：CFrameWnd::GetActiveView得到当前活动视图指针 
+在视图中：CView::GetDocument得到对应的文档指针 
+在文档中：CDocument::GetFirstViewPosition，CDocument::GetNextView用来遍历所有和文档关联的视。 
+在文档中：CDocument::GetDocTemplate得到文档模板指针 

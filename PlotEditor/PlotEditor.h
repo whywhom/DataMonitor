@@ -8,8 +8,7 @@
 #endif
 
 #include "resource.h"       // 主符号
-
-
+#include "CurveInfo.h"
 // CPlotEditorApp:
 // 有关此类的实现，请参阅 PlotEditor.cpp
 //
@@ -18,8 +17,14 @@ class CPlotEditorApp : public CWinApp
 {
 public:
 	CPlotEditorApp();
-
-
+	CString GetResString(UINT uStringID);
+public:
+	HINSTANCE exe_hInstance;
+	HANDLE hSem;//判断软件市立是否已存在
+	CString strSemaphore;
+    CString strSemaphoreExist;
+    CString strSemaphoreCreatFail;
+	CTypedPtrList < CPtrList, CCurveInfo * >curveList;
 // 重写
 public:
 	virtual BOOL InitInstance();
