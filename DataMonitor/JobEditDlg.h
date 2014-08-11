@@ -4,6 +4,8 @@
 #include "jobeditdlgtool.h"
 #include "jobeditdlgcurve.h"
 #include "jobeditdlgorigin.h"
+#include "jobeditdlgcontrol.h"
+#include "jobeditdlgpower.h"
 #include "afxwin.h"
 
 
@@ -34,7 +36,9 @@ public:
 public:	
    	CJobEditDlgTool m_Tool;//仪器信息对话框对应的类
 	CJobEditDlgCurve m_Curve;//曲线信息对话框对应的类
-	CJobEditDlgOrigin m_Origin;//原始信息对话框对应的类
+	CJobEditDlgOrigin m_Origin;//原始信号对话框对应的类
+	CJobEditDlgControl m_Control;//控制信息对话框对应的类
+	CJobEditDlgPower m_Power;//加电信息对话框对应的类
 	afx_msg void OnBnClickedOk();
 private:	
 	void ToolAdd();
@@ -52,12 +56,19 @@ private:
 	void OriginInit();
 	void OriginDel(CString Label);
 	void OriginUpdate(CString Label);
+	void ControlAdd();
+	void ControlUpdate();
+	void ControlInit();
+	void PowerAdd();
+	void PowerUpdate(CString PowerMode);
+	void PowerInit(CString PowerMode);
 	void DisplayTree();
 	void JobInit();//初始化作业数据库
 
 public:
 	afx_msg void OnBnClickedAdd();
 	int m_editTable;
+	CString m_PowerMode;
 	afx_msg void OnBnClickedDelete();
 	afx_msg void OnBnClickedUpdate();
 };

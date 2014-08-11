@@ -54,7 +54,7 @@ BOOL CJobEditDlg::OnInitDialog()
 	}else{
 		JobInit();		
 	}
-
+	ControlInit();
 	DisplayTree();
 	CRect rect;  
 	GetDlgItem(IDC_ZCW_STATIC_RECT)-> GetWindowRect(&rect);  
@@ -112,6 +112,16 @@ void CJobEditDlg::DisplayTree(){
 					rs.MoveNext();
 				}
 				rs.Close();  
+
+				//填充Power的子节点
+				m_jeTree.InsertItem(_T("工作电"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("低刻挡"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("高刻挡"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("测井挡"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("步进加"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("步进减"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("开腿"),0,1,root5,TVI_LAST);
+				m_jeTree.InsertItem(_T("收腿"),0,1,root5,TVI_LAST);
 				
 	 } catch(CDaoException *e){		
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -144,6 +154,10 @@ void CJobEditDlg::OnSelchangedJobeditTree(NMHDR *pNMHDR, LRESULT *pResult)
 			m_Curve.DestroyWindow();//如果曲线信息面版已经打开过，则先清理掉，避免重复打开
 	 if(m_Origin.GetSafeHwnd()!=NULL)
 			m_Origin.DestroyWindow();//如果原始信号面版已经打开过，则先清理掉，避免重复打开	
+	 if(m_Control.GetSafeHwnd()!=NULL)
+			m_Control.DestroyWindow();//如果控制面版信息已经打开过，则先清理掉，避免重复打开
+	 if(m_Power.GetSafeHwnd()!=NULL)
+			m_Power.DestroyWindow();//如果加电信息面版已经打开过，则先清理掉，避免重复打开
 	 switch(idp){
 	 case 1:
 		    if(hPar){			
@@ -187,17 +201,30 @@ void CJobEditDlg::OnSelchangedJobeditTree(NMHDR *pNMHDR, LRESULT *pResult)
 			GetDlgItem(IDC_ZCW_JOBEDIT_DELETE)->ShowWindow(TRUE);
 			GetDlgItem(IDC_ZCW_JOBEDIT_UPDATE)->ShowWindow(TRUE);
 		break;
-	 case 4:
+	 case 4:											    
+			m_Control.Create(IDD_JOBEDIT_CONTROL, this);
+			m_Control.MoveWindow(rect);  			
+			m_Control.ShowWindow( SW_SHOW ); 	
+			m_editTable=4;			
 			GetDlgItem(IDC_ZCW_JOBEDIT_ADD)->ShowWindow(FALSE);
 			GetDlgItem(IDC_ZCW_JOBEDIT_DELETE)->ShowWindow(FALSE);
-			GetDlgItem(IDC_ZCW_JOBEDIT_UPDATE)->ShowWindow(FALSE);
-			m_editTable=4;
+			GetDlgItem(IDC_ZCW_JOBEDIT_UPDATE)->ShowWindow(FALSE);			
 		break;
 	 case 5:
+			if(hPar){
+		    m_PowerMode=m_jeTree.GetItemText(hSel);						
+			}else{
+            m_PowerMode=_T("工作电");						
+			}
+			PowerInit(m_PowerMode);	
+			m_Power.Create(IDD_JOBEDIT_POWER, this);
+			m_Power.MoveWindow(rect);  			
+			m_Power.ShowWindow( SW_SHOW ); 	
+			m_editTable=5;	
+			
 			GetDlgItem(IDC_ZCW_JOBEDIT_ADD)->ShowWindow(FALSE);
 			GetDlgItem(IDC_ZCW_JOBEDIT_DELETE)->ShowWindow(FALSE);
-			GetDlgItem(IDC_ZCW_JOBEDIT_UPDATE)->ShowWindow(FALSE);
-			m_editTable=5;
+			GetDlgItem(IDC_ZCW_JOBEDIT_UPDATE)->ShowWindow(FALSE);			
 		break;
 	 }
 	*pResult = 0;
@@ -207,8 +234,12 @@ void CJobEditDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码	
 	 if(m_Open==TRUE){//如果作业已经存在则修改		
-	   }else{//否则创建新作业	        
-	 }	
+	   }else{//否则创建新作业	     
+	 }
+	if(m_editTable==4)
+		ControlUpdate();
+	if(m_editTable==5)
+		PowerUpdate(m_PowerMode);
 	CDialog::OnOK();
 }
 
@@ -341,7 +372,7 @@ void CJobEditDlg::OriginDel(CString Label){
 }
 
 void CJobEditDlg::ToolInit(){
-	//清空tool窗口	
+	//初始化仪器信息窗口	
 					m_Tool.m_Label=_T("");					
 					m_Tool.m_SN=_T("001");					
 					m_Tool.m_Speed=_T("1000");						
@@ -352,17 +383,186 @@ void CJobEditDlg::ToolInit(){
 }
 
 void CJobEditDlg::CurveInit(){
-	//清空tool窗口	
+	//初始化曲线信息窗口	
 					m_Curve.m_Label=_T("");					
 					m_Curve.m_unit=0;
 					m_Curve.m_filter=0;
 }
 
 void CJobEditDlg::OriginInit(){
-	//清空tool窗口	
+	//初始化原始信号窗口	
 					m_Origin.m_Label=_T("");					
 					m_Origin.m_unit=0;
 					m_Origin.m_filter=0;
+}
+
+void CJobEditDlg::ControlInit(){
+	//初始化控制信号窗口				
+					CString m_combo1ary[]={_T("100"),_T("125"),_T("25"),_T("31.25")};
+					CString m_combo2ary[]={_T("600"),_T("450"),_T("300"),_T("100")};
+					CString m_combo3ary[]={_T("3000")};
+					CString m_combo4ary[]={_T("1"),_T("2"),_T("4"),_T("8")};
+					CString m_combo5ary[]={_T("10"),_T("20"),_T("30"),_T("40"),_T("50"),_T("55")};
+					COleVariant OleVariant ;
+					try{						
+					CDaoRecordset rs(&m_DataBase);
+					rs.Open(dbOpenDynaset,_T("SELECT * FROM Control"));
+						rs.MoveFirst();					
+						rs.GetFieldValue (2,OleVariant);
+						for(int i=0;i<4;i++){
+						if(m_combo1ary[i]==OleVariant.bstrVal)	m_Control.m_combo1_i=i;						
+						}
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OleVariant);
+						for(int i=0;i<4;i++){
+						if(m_combo2ary[i]==OleVariant.bstrVal)	m_Control.m_combo2_i=i;
+						}
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OleVariant);
+						for(int i=0;i<1;i++){
+						if(m_combo3ary[i]==OleVariant.bstrVal)	m_Control.m_combo3_i=i;
+						}
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OleVariant);
+						for(int i=0;i<4;i++){
+						if(m_combo4ary[i]==OleVariant.bstrVal)	m_Control.m_combo4_i=i;
+						}
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OleVariant);
+						for(int i=0;i<6;i++){
+						if(m_combo5ary[i]==OleVariant.bstrVal) m_Control.m_combo5_i=i;
+						}
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit1=OleVariant.bstrVal;
+						rs.MoveNext();
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit2=OleVariant.bstrVal;
+						rs.MoveNext();
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit3=OleVariant.bstrVal;
+						rs.MoveNext();
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit4=OleVariant.bstrVal;
+						rs.MoveNext();
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit5=OleVariant.bstrVal;
+						rs.MoveNext();
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit6=OleVariant.bstrVal;
+						rs.MoveNext();
+
+						rs.GetFieldValue (2,OleVariant);
+						m_Control.m_edit7=OleVariant.bstrVal;
+						rs.MoveNext();
+					rs.Close();				
+					}
+					catch(CDaoException *e){
+					MessageBox(e->m_pErrorInfo->m_strDescription);
+					e->Delete();
+					}			
+}
+
+void CJobEditDlg::PowerInit(CString PowerMode){
+
+	//初始加电信息窗口				
+					CString m_combo1ary[]={_T("不加电"),_T("交流1"),_T("交流2"),_T("直流1[正]"),_T("直流1[负]"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo2ary[]={_T("不加电"),_T("直流1[正]"),_T("直流1[负]"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo3ary[]={_T("不加电"),_T("交流2"),_T("直流2[正]"),_T("直流2[负]"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo4ary[]={_T("不加电"),_T("交流1")};
+					CString m_combo5ary[]={_T("不加电"),_T("直流2[正]"),_T("直流2[负]"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo6ary[]={_T("不加电"),_T("交流1")};
+					CString m_combo7ary[]={_T("不加电"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo8ary[]={_T("不加电"),_T("交流2"),_T("直流1[正]"),_T("直流1[负]"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo9ary[]={_T("不加电"),_T("直流3[正]"),_T("直流3[负]")};
+					CString m_combo10ary[]={_T("NO"),_T("AMP LOGIC"),_T("CAL POWER"),_T("POLE POWER")};
+					CString m_combo11ary[]={_T("不加电"),_T("交流2"),_T("直流3[正]"),_T("直流3[负]")};
+
+				
+
+					CString m_modeary[]={_T("工作电"),_T("低刻挡"),_T("高刻挡"),_T("测井挡"),_T("步进加"),_T("步进减"),_T("开腿"),_T("收腿")};
+									
+					CString sMode;
+					for(int i=0;i<8;i++){
+					if(m_modeary[i]==PowerMode)
+					sMode.Format(_T("%d"),i);
+					}
+
+					COleVariant OV1,OV2,OV3;
+					try{						
+					    CDaoRecordset rs(&m_DataBase);						
+					    rs.Open(dbOpenDynaset,_T("SELECT * FROM Power where Mode='")+sMode+_T("'"));
+						rs.MoveFirst();					
+						rs.GetFieldValue (2,OV1);m_Power.m_combo1_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit1.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit12.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+						
+						rs.GetFieldValue (2,OV1);m_Power.m_combo2_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit2.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit13.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo3_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit3.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit14.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo4_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit4.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit15.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo5_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit5.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit16.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo6_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit6.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit17.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo7_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit7.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit18.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo8_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit8.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit19.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo9_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit9.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit20.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo10_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit10.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit21.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext() ;	
+
+						rs.GetFieldValue (2,OV1);m_Power.m_combo11_i=OV1.iVal;
+						rs.GetFieldValue (3,OV2);m_Power.m_edit11.Format(_T("%d"),OV2.iVal);
+						rs.GetFieldValue (4,OV3);m_Power.m_edit22.Format(_T("%d"),OV3.iVal);
+						rs.MoveNext();
+					rs.Close();				
+					}
+					catch(CDaoException *e){
+					MessageBox(e->m_pErrorInfo->m_strDescription);
+					e->Delete();
+					}			
 }
 
 void CJobEditDlg::ToolAdd()
@@ -440,6 +640,346 @@ void CJobEditDlg::OriginAdd()
      }
 }
 
+void CJobEditDlg::ControlAdd()
+{	
+	 try{				
+			   //新建数据库记录			    
+				CDaoRecordset rs(&m_DataBase);				
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM Control"));				
+				if(rs.IsBOF()){
+                CString strDataValue;                
+			    rs.AddNew();
+				rs.SetFieldValue(0,_T("DEPTHSTEP"));
+				rs.SetFieldValue(1,_T("mm"));				
+				rs.SetFieldValue(2,_T("100"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("TIMESTEP"));
+				rs.SetFieldValue(1,_T("ms"));					
+				rs.SetFieldValue(2,_T("600"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("DISPSTEP"));
+				rs.SetFieldValue(1,_T("ms"));					
+				rs.SetFieldValue(2,_T("3000"));
+				rs.Update();
+				
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Sonic_AdStep"));
+				rs.SetFieldValue(1,_T("uS"));						
+				rs.SetFieldValue(2,_T("2"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Pole_FreqNum"));
+				rs.SetFieldValue(1,_T("HZ"));					
+				rs.SetFieldValue(2,_T("30"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Speed_Max"));
+				rs.SetFieldValue(1,_T("m/h"));					
+				rs.SetFieldValue(2,_T("1200"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Load_Max"));
+				rs.SetFieldValue(1,_T("KG"));				
+				rs.SetFieldValue(2,_T("5000"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Load_Diff"));
+				rs.SetFieldValue(1,_T("KG"));						
+				rs.SetFieldValue(2,_T("500"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Sonic_FreqNum"));
+				rs.SetFieldValue(1,_T("10ms"));						
+				rs.SetFieldValue(2,_T("5"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("Sonic_LogicalWidth"));
+				rs.SetFieldValue(1,_T("200uS"));					
+				rs.SetFieldValue(2,_T("2"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("FORMATLABEL"));
+				rs.SetFieldValue(1,_T(" "));				
+				rs.SetFieldValue(2,_T("BORE.xml"));
+				rs.Update();
+
+				rs.AddNew();
+				rs.SetFieldValue(0,_T("HEADLABEL"));
+				rs.SetFieldValue(1,_T(" "));			
+				rs.SetFieldValue(2,_T("BOREHEAD.xml"));
+				rs.Update();
+				}else{
+				MessageBox(_T("控制信号已存在"),MB_OK);
+				}
+				rs.Close();	
+
+	 } catch(CDaoException *e){
+			MessageBox(e->m_pErrorInfo->m_strDescription);
+			e->Delete();
+     }
+}
+
+void CJobEditDlg::PowerAdd()
+{	
+	 try{				
+			   //新建数据库记录			    
+				CDaoRecordset rs(&m_DataBase);				
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM Power"));				
+				if(rs.IsBOF()){
+                for(int i=0;i<8;i++){
+					for(int j=0;j<11;j++){
+						 rs.AddNew();	
+						 CString sLabel;
+						 sLabel.Format(_T("%d"),256*i+j+1);
+						 CString sMode;
+						 sMode.Format(_T("%d"),i);
+						 rs.SetFieldValue(0,COleVariant(sLabel));
+						 rs.SetFieldValue(1,COleVariant(long(j+1)));	
+						 rs.SetFieldValue(2,_T("0"));
+						 rs.SetFieldValue(3,_T("0"));
+						 rs.SetFieldValue(4,_T("0"));
+						 rs.SetFieldValue(5,COleVariant(sMode));	
+						 rs.Update();
+					}
+				}	   			
+				}else{
+				MessageBox(_T("加电信息已存在"),MB_OK);
+				}
+				rs.Close();	
+
+	 } catch(CDaoException *e){
+			MessageBox(e->m_pErrorInfo->m_strDescription);
+			e->Delete();
+     }
+}
+
+
+void CJobEditDlg::ControlUpdate()
+{	
+	 try{				
+			   //新建数据库记录			    
+				CDaoRecordset rs(&m_DataBase);				
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM Control"));		
+				
+				if(!rs.IsBOF()){
+                CString strDataValue;  
+
+				rs.MoveFirst();
+				rs.Edit();
+				rs.SetFieldValue(0,_T("DEPTHSTEP"));
+				rs.SetFieldValue(1,_T("mm"));
+				m_Control.m_combo1.GetLBText(m_Control.m_combo1.GetCurSel(),strDataValue);				
+				rs.SetFieldValue(2,COleVariant(strDataValue));
+				rs.Update();
+				rs.MoveNext();
+
+                rs.Edit();
+				rs.SetFieldValue(0,_T("TIMESTEP"));
+				rs.SetFieldValue(1,_T("ms"));				
+				m_Control.m_combo2.GetLBText(m_Control.m_combo2.GetCurSel(),strDataValue);			
+				rs.SetFieldValue(2,COleVariant(strDataValue));
+				rs.Update();
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("DISPSTEP"));
+				rs.SetFieldValue(1,_T("ms"));						
+				m_Control.m_combo3.GetLBText(m_Control.m_combo3.GetCurSel(),strDataValue);				
+				rs.SetFieldValue(2,COleVariant(strDataValue));
+				rs.Update();				
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Sonic_AdStep"));
+				rs.SetFieldValue(1,_T("uS"));					
+				m_Control.m_combo4.GetLBText(m_Control.m_combo4.GetCurSel(),strDataValue);
+				rs.SetFieldValue(2,COleVariant(strDataValue));
+				rs.Update();
+			    rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Pole_FreqNum"));
+				rs.SetFieldValue(1,_T("HZ"));				
+				m_Control.m_combo5.GetLBText(m_Control.m_combo5.GetCurSel(),strDataValue);
+				rs.SetFieldValue(2,COleVariant(strDataValue));
+				rs.Update();
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Speed_Max"));
+				rs.SetFieldValue(1,_T("m/h"));	
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit1));
+				rs.Update();
+				rs.MoveNext();	
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Load_Max"));
+				rs.SetFieldValue(1,_T("KG"));						
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit2));
+				rs.Update();
+				rs.MoveNext();
+ 
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Load_Diff"));
+				rs.SetFieldValue(1,_T("KG"));				
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit3));
+				rs.Update();
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Sonic_FreqNum"));
+				rs.SetFieldValue(1,_T("10ms"));				
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit4));
+				rs.Update();
+				rs.MoveNext();	
+ 
+				rs.Edit();
+				rs.SetFieldValue(0,_T("Sonic_LogicalWidth"));
+				rs.SetFieldValue(1,_T("200uS"));				
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit5));
+				rs.Update();
+			    rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("FORMATLABEL"));
+				rs.SetFieldValue(1,_T(" "));				
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit6));
+				rs.Update();
+				rs.MoveNext();		
+
+				rs.Edit();
+				rs.SetFieldValue(0,_T("HEADLABEL"));
+				rs.SetFieldValue(1,_T(" "));				
+				rs.SetFieldValue(2,COleVariant(m_Control.m_edit7));
+				rs.Update();
+
+				}else{
+				MessageBox(_T("控制信号添加失败"),MB_OK);
+				}
+				rs.Close();	
+
+	 } catch(CDaoException *e){
+			MessageBox(e->m_pErrorInfo->m_strDescription);
+			e->Delete();
+     }
+}
+
+void CJobEditDlg::PowerUpdate(CString PowerMode)
+{	
+	 try{				
+			   //新建数据库记录			    
+				CDaoRecordset rs(&m_DataBase);				
+				CString m_modeary[]={_T("工作电"),_T("低刻挡"),_T("高刻挡"),_T("测井挡"),_T("步进加"),_T("步进减"),_T("开腿"),_T("收腿")};
+									
+				CString sMode;
+				for(int i=0;i<8;i++){
+					if(m_modeary[i]==m_PowerMode)
+					sMode.Format(_T("%d"),i);
+				}
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM Power where Mode='")+sMode+_T("'"));
+				
+				if(!rs.IsBOF()){
+                CString strDataValue;  
+
+				rs.MoveFirst();
+				rs.Edit();			
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo1.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit1)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit12)));
+				rs.Update();
+				rs.MoveNext();
+
+                rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo2.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit2)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit13)));
+				rs.Update();
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo3.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit3)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit14)));
+				rs.Update();				
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo4.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit4)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit15)));
+				rs.Update();
+			    rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo5.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit5)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit16)));
+				rs.Update();
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo6.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit6)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit17)));
+				rs.Update();
+				rs.MoveNext();	
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo7.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit7)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit18)));
+				rs.Update();
+				rs.MoveNext();
+ 
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo8.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit8)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit19)));
+				rs.Update();
+				rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo9.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit9)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit20)));
+				rs.Update();
+				rs.MoveNext();	
+ 
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo10.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit10)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit21)));
+				rs.Update();
+			    rs.MoveNext();
+
+				rs.Edit();
+				rs.SetFieldValue(2,COleVariant(long(m_Power.m_combo11.GetCurSel())));	
+				rs.SetFieldValue(3,COleVariant(_ttol(m_Power.m_edit11)));
+				rs.SetFieldValue(4,COleVariant(_ttol(m_Power.m_edit22)));
+				rs.Update();
+				rs.MoveNext();		
+				}else{
+				MessageBox(_T("控制信号添加失败"),MB_OK);
+				}
+				rs.Close();	
+
+	 } catch(CDaoException *e){
+			MessageBox(e->m_pErrorInfo->m_strDescription);
+			e->Delete();
+     }
+}
+
 void CJobEditDlg::OnBnClickedAdd()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -506,7 +1046,30 @@ void CJobEditDlg::JobInit(){
 				td.CreateField(_T("UNIT"),dbInteger,0L);		
 				td.CreateField(_T("FILTER"),dbInteger,0L);		
 			    td.Append();
-				td.Close();				    
+				td.Close();
+
+				//创建Control表
+				td.Create(_T("CONTROL"));
+				td.CreateField(_T("LABEL"),dbText,50,0L);
+				td.CreateField(_T("UNITS"),dbText,50,0L);		
+				td.CreateField(_T("DATAVALUE"),dbText,50,0L);		
+			    td.Append();
+				td.Close();
+
+				ControlAdd();//Control表数据初始化
+
+				//创建Power表
+				td.Create(_T("POWER"));
+				td.CreateField(_T("LABEL"),dbText,50,0L);
+				td.CreateField(_T("CABLE"),dbInteger,0L);	
+				td.CreateField(_T("TYPE"),dbInteger,0L);	
+				td.CreateField(_T("VOLTAGE"),dbInteger,0L);	
+				td.CreateField(_T("ElectricCurrent"),dbInteger,0L);	
+				td.CreateField(_T("MODE"),dbText,50,0L);						
+			    td.Append();
+				td.Close();
+
+				PowerAdd();//Power表数据初始化
 
 		}catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);

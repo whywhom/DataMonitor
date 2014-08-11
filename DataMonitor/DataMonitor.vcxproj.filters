@@ -104,6 +104,12 @@
     <ClInclude Include="TargetDepth.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="JobEditDlgControl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlgPower.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -173,6 +179,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TargetDepth.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgControl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgPower.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -116,8 +116,10 @@
     <ClInclude Include="JobCopyDlg.h" />
     <ClInclude Include="JobDlg.h" />
     <ClInclude Include="JobEditDlg.h" />
+    <ClInclude Include="JobEditDlgControl.h" />
     <ClInclude Include="JobEditDlgCurve.h" />
     <ClInclude Include="JobEditDlgOrigin.h" />
+    <ClInclude Include="JobEditDlgPower.h" />
     <ClInclude Include="JobEditDlgTool.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="PanelView.h" />
@@ -142,8 +144,10 @@
     <ClCompile Include="JobCopyDlg.cpp" />
     <ClCompile Include="JobDlg.cpp" />
     <ClCompile Include="JobEditDlg.cpp" />
+    <ClCompile Include="JobEditDlgControl.cpp" />
     <ClCompile Include="JobEditDlgCurve.cpp" />
     <ClCompile Include="JobEditDlgOrigin.cpp" />
+    <ClCompile Include="JobEditDlgPower.cpp" />
     <ClCompile Include="JobEditDlgTool.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="PanelView.cpp" />
