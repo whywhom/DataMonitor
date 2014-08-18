@@ -1,8 +1,8 @@
 #pragma once
 #include "afxwin.h"
 #include "afxcmn.h"
-
-
+#include "ColorButton.h"
+#include "ColorStatic.h"
 // CCurvePage 对话框
 
 class CCurvePage : public CPropertyPage
@@ -12,7 +12,8 @@ class CCurvePage : public CPropertyPage
 public:
 	CCurvePage();
 	virtual ~CCurvePage();
-
+	void AddCurveInfo(CCurveInfo* pCurveInfo, int item);
+	bool SetCurveInfo(int item);
 // 对话框数据
 	enum { IDD = IDD_CURVEPAGE };
 
@@ -31,6 +32,7 @@ public:
 	CComboBox combGuiDao;
 	CEdit editZuoBianJie;
 	CEdit editYouBianJie;
+	//CColorButton btColor;
 	CButton btColor;
 	CComboBox combKeDu;
 	CComboBox combXianXing;
@@ -38,4 +40,5 @@ public:
 	CComboBox combHuiRaoMoShi;
 	CEdit combHuiRaoCiShu;
 	CSpinButtonCtrl spinEdit;
+	CColorStatic mStaticColor;
 };

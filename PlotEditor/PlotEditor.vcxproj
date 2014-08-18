@@ -101,6 +101,8 @@
     <None Include="res\PlotEditorDoc.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ColorButton.h" />
+    <ClInclude Include="ColorStatic.h" />
     <ClInclude Include="CoordinateView.h" />
     <ClInclude Include="CurveInfo.h" />
     <ClInclude Include="CurvePage.h" />
@@ -114,6 +116,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ColorButton.cpp" />
+    <ClCompile Include="ColorStatic.cpp" />
     <ClCompile Include="CoordinateView.cpp" />
     <ClCompile Include="CurveInfo.cpp" />
     <ClCompile Include="CurvePage.cpp" />

@@ -61,6 +61,12 @@
     <ClInclude Include="CurveInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ColorButton.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorStatic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PlotEditor.cpp">
@@ -88,6 +94,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CurveInfo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorButton.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorStatic.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
