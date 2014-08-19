@@ -15,7 +15,8 @@ public:
 	void AddCurveInfo(CCurveInfo* pCurveInfo, int item);
 	bool SetCurveInfo(int item);
 	void InseertCurveInfo( );
-
+	void GetCurveData(CCurveInfo* pCurveInfo, CString strTemp);
+	void SetCurveData(int index);
 	COLORREF curveSelectColor; //颜色
 // 对话框数据
 	enum { IDD = IDD_CURVEPAGE };
@@ -44,4 +45,7 @@ public:
 	CEdit combHuiRaoCiShu;
 	CSpinButtonCtrl spinEdit;
 	CColorStatic mStaticColor;
+	afx_msg void OnBnClickedButtonColor();
+	afx_msg void OnCbnSelchangeComboBiaoshi();
+	afx_msg void OnCbnSelchangeComboShuju();
 };

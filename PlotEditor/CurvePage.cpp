@@ -45,6 +45,9 @@ BEGIN_MESSAGE_MAP(CCurvePage, CPropertyPage)
 	ON_BN_CLICKED(IDCANCEL, &CCurvePage::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_BUTTON_ADD, &CCurvePage::OnBnClickedButtonAdd)
 	ON_BN_CLICKED(IDC_BUTTON_DEL, &CCurvePage::OnBnClickedButtonDel)
+	ON_BN_CLICKED(IDC_BUTTON_COLOR, &CCurvePage::OnBnClickedButtonColor)
+	ON_CBN_SELCHANGE(IDC_COMBO_BIAOSHI, &CCurvePage::OnCbnSelchangeComboBiaoshi)
+	ON_CBN_SELCHANGE(IDC_COMBO_SHUJU, &CCurvePage::OnCbnSelchangeComboShuju)
 END_MESSAGE_MAP()
 
 
@@ -56,7 +59,13 @@ BOOL CCurvePage::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
+	spinEdit.SetBuddy(GetDlgItem(IDC_EDIT_HUIRAOCISHU));  //设置伙伴窗口
+	spinEdit.SetRange(0, 100);  //设置min~max
+
 	CWnd::SetWindowText(theApp.GetResString(IDS_CURVE_TAB1));
+
+	((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->ResetContent();
+	((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->ResetContent();
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_GUIDAO))->InsertString(0,_T("Track 1"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_GUIDAO))->InsertString(1,_T("Depth Track"));
@@ -96,6 +105,7 @@ BOOL CCurvePage::OnInitDialog()
 		editYouBianJie.SetWindowText(_T("100"));
 		mStaticColor.SetStaiticColor(curveSelectColor);
 		combHuiRaoCiShu.SetWindowText(_T("1"));
+		spinEdit.SetPos(1);  //设置起始位置
 	}
 	else
 	{
@@ -133,9 +143,9 @@ bool CCurvePage::SetCurveInfo(int item)
 	CCurveInfo* plist = theApp.curveList.GetAt(theApp.curveList.FindIndex(item));
 	CString str;
 
-	((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->SetCurSel(plist->curveName);
+	((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->SetCurSel(item);
 
-	((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->SetCurSel(plist->curveName);
+	((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->SetCurSel(item);
 	
 	((CComboBox*)GetDlgItem(IDC_COMBO_GUIDAO))->SetCurSel(plist->curveTrack);
 
@@ -159,13 +169,14 @@ bool CCurvePage::SetCurveInfo(int item)
 
 	str.Format(_T("%d"),plist->wrapCount);
 	combHuiRaoCiShu.SetWindowText(str);
-	
+	spinEdit.SetPos(plist->wrapCount);  //设置起始位置
 	return true;
 }
 
 void CCurvePage::InseertCurveInfo( )
 {
-	CString str;
+	int i = 0;
+	int j = 0;
 	POSITION pos,pos2;
 	bool bLast = true;
 	CString strTemp;
@@ -177,10 +188,13 @@ void CCurvePage::InseertCurveInfo( )
 	}
 	if(theApp.curveList.IsEmpty())
 	{
+		CCurveInfo* pCurveInfo = new CCurveInfo();
+		GetCurveData(pCurveInfo, strTemp);
+		theApp.curveList.AddTail(pCurveInfo);
 	}
 	else
 	{
-		int i = 0;
+		i = 0;
 		pos = theApp.curveList.GetHeadPosition();
 		while(pos)
 		{
@@ -203,23 +217,9 @@ void CCurvePage::InseertCurveInfo( )
 			i++;
 		}
 		CCurveInfo* pCurveInfo = new CCurveInfo();
-		pCurveInfo->strCurveName = strTemp;
-		pCurveInfo->curveTrack = combGuiDao.GetCurSel();
 
-		editZuoBianJie.GetWindowText(str);
-		pCurveInfo->leftLimit = _wtoi(str);
-		editYouBianJie.GetWindowText(str);
-		pCurveInfo->rightLimit = _wtoi(str);
-
-		pCurveInfo->curveColor = curveSelectColor;
-		pCurveInfo->graduation = combKeDu.GetCurSel();
-		pCurveInfo->lineType = combXianXing.GetCurSel();
-		pCurveInfo->lineWidth = combXianKuan.GetCurSel();
-		pCurveInfo->wrapMode = combHuiRaoMoShi.GetCurSel();
-
-		combHuiRaoCiShu.GetWindowText(str);
-		pCurveInfo->wrapCount = _wtoi(str);
-
+		GetCurveData(pCurveInfo, strTemp);
+		
 		if(bLast)
 		{
 			theApp.curveList.AddTail(pCurveInfo);
@@ -229,8 +229,43 @@ void CCurvePage::InseertCurveInfo( )
 			theApp.curveList.InsertBefore(pos2,pCurveInfo);
 		}
 	}
+	i = 0;
+	((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->ResetContent();
+	((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->ResetContent();
+	pos = theApp.curveList.GetHeadPosition();
+	while(pos)
+	{
+		CCurveInfo* plist = theApp.curveList.GetNext(pos);
+		AddCurveInfo(plist,i);
+		if(plist->strCurveName == strTemp)
+		{
+			j = i;
+		}
+		i++;
+	}
+	SetCurveInfo(j);
 }
+void CCurvePage::GetCurveData(CCurveInfo* pCurveInfo, CString strTemp)
+{
+	CString str;
+	pCurveInfo->strCurveName = strTemp;
+	pCurveInfo->curveTrack = combGuiDao.GetCurSel();
 
+	editZuoBianJie.GetWindowText(str);
+	pCurveInfo->leftLimit = _wtoi(str);
+	editYouBianJie.GetWindowText(str);
+	pCurveInfo->rightLimit = _wtoi(str);
+
+	pCurveInfo->curveColor = curveSelectColor;
+	pCurveInfo->graduation = combKeDu.GetCurSel();
+	pCurveInfo->lineType = combXianXing.GetCurSel();
+	pCurveInfo->lineWidth = combXianKuan.GetCurSel();
+	pCurveInfo->wrapMode = combHuiRaoMoShi.GetCurSel();
+
+	combHuiRaoCiShu.GetWindowText(str);
+	pCurveInfo->wrapCount = _wtoi(str);
+	spinEdit.SetPos(pCurveInfo->wrapCount);
+}
 void CCurvePage::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -254,4 +289,60 @@ void CCurvePage::OnBnClickedButtonAdd()
 void CCurvePage::OnBnClickedButtonDel()
 {
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CCurvePage::OnBnClickedButtonColor()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CColorDialog dlg;
+
+	if (dlg.DoModal() == IDOK)
+	{
+		curveSelectColor = dlg.GetColor();
+		mStaticColor.SetStaiticColor(curveSelectColor);
+	}
+}
+
+
+void CCurvePage::OnCbnSelchangeComboBiaoshi()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	int item = ((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->GetCurSel();
+	((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->SetCurSel(item);
+	SetCurveData(item);
+}
+
+
+void CCurvePage::OnCbnSelchangeComboShuju()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	int item = ((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->GetCurSel();
+	((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->SetCurSel(item);
+	SetCurveData(item);
+}
+
+void CCurvePage::SetCurveData(int index)
+{
+	CString str;
+	CCurveInfo* plist = theApp.curveList.GetAt(theApp.curveList.FindIndex(index));
+
+	combGuiDao.SetCurSel(plist->curveTrack);
+
+	str.Format(_T("%d"),plist->leftLimit);
+	editZuoBianJie.SetWindowText(str);
+	str.Format(_T("%d"),plist->rightLimit);
+	editYouBianJie.SetWindowText(str);
+
+	curveSelectColor = plist->curveColor;
+	mStaticColor.SetStaiticColor(curveSelectColor);
+
+	combKeDu.SetCurSel(plist->graduation);
+	combXianXing.SetCurSel(plist->lineType);
+	combXianKuan.SetCurSel(plist->lineWidth);
+	combHuiRaoMoShi.SetCurSel(plist->wrapMode);
+
+	str.Format(_T("%d"),plist->wrapCount);
+	combHuiRaoCiShu.SetWindowText(str);
+	spinEdit.SetPos(plist->wrapCount);
 }
