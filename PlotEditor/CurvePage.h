@@ -14,6 +14,9 @@ public:
 	virtual ~CCurvePage();
 	void AddCurveInfo(CCurveInfo* pCurveInfo, int item);
 	bool SetCurveInfo(int item);
+	void InseertCurveInfo( );
+
+	COLORREF curveSelectColor; //颜色
 // 对话框数据
 	enum { IDD = IDD_CURVEPAGE };
 

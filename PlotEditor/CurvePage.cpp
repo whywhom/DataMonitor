@@ -14,7 +14,7 @@ IMPLEMENT_DYNAMIC(CCurvePage, CPropertyPage)
 CCurvePage::CCurvePage()
 	: CPropertyPage(CCurvePage::IDD)
 {
-
+	curveSelectColor = RGB(0xFF,0x00,0x00);
 }
 
 CCurvePage::~CCurvePage()
@@ -85,8 +85,6 @@ BOOL CCurvePage::OnInitDialog()
 	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->InsertString(3,_T("不回绕"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->InsertString(4,_T("No Wrap"));
 
-	
-
 	if(theApp.curveList.IsEmpty())
 	{
 		((CComboBox*)GetDlgItem(IDC_COMBO_GUIDAO))->SetCurSel(0);
@@ -96,7 +94,7 @@ BOOL CCurvePage::OnInitDialog()
 		((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->SetCurSel(0);
 		editZuoBianJie.SetWindowText(_T("1"));
 		editYouBianJie.SetWindowText(_T("100"));
-		mStaticColor.SetStaiticColor(RGB(0xFF,0x00,0x00));
+		mStaticColor.SetStaiticColor(curveSelectColor);
 		combHuiRaoCiShu.SetWindowText(_T("1"));
 	}
 	else
@@ -148,6 +146,7 @@ bool CCurvePage::SetCurveInfo(int item)
 	editYouBianJie.SetWindowText(str);
 
 	mStaticColor.SetStaiticColor(plist->curveColor);
+	curveSelectColor = plist->curveColor;
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_KEDU))->SetCurSel(plist->graduation);
 
@@ -162,6 +161,74 @@ bool CCurvePage::SetCurveInfo(int item)
 	combHuiRaoCiShu.SetWindowText(str);
 	
 	return true;
+}
+
+void CCurvePage::InseertCurveInfo( )
+{
+	CString str;
+	POSITION pos,pos2;
+	bool bLast = true;
+	CString strTemp;
+	combShuJu.GetWindowText(strTemp);
+	if(strTemp.IsEmpty())
+	{
+		MessageBox(_T("请输入数据内容"),_T("提示"),MB_ICONQUESTION|MB_OK);
+		return;
+	}
+	if(theApp.curveList.IsEmpty())
+	{
+	}
+	else
+	{
+		int i = 0;
+		pos = theApp.curveList.GetHeadPosition();
+		while(pos)
+		{
+			pos2 = pos;
+			CCurveInfo* plist = theApp.curveList.GetNext(pos);
+			if(plist->strCurveName.Compare(strTemp) == 0)
+			{
+				MessageBox(_T("数据已存在，请重新输入！"),_T("提示"),MB_ICONQUESTION|MB_OK);
+				return;
+			}
+			else if(plist->strCurveName.Compare(strTemp) > 0)
+			{
+				bLast = false;
+				break;
+			}
+			else
+			{
+				continue;
+			}
+			i++;
+		}
+		CCurveInfo* pCurveInfo = new CCurveInfo();
+		pCurveInfo->strCurveName = strTemp;
+		pCurveInfo->curveTrack = combGuiDao.GetCurSel();
+
+		editZuoBianJie.GetWindowText(str);
+		pCurveInfo->leftLimit = _wtoi(str);
+		editYouBianJie.GetWindowText(str);
+		pCurveInfo->rightLimit = _wtoi(str);
+
+		pCurveInfo->curveColor = curveSelectColor;
+		pCurveInfo->graduation = combKeDu.GetCurSel();
+		pCurveInfo->lineType = combXianXing.GetCurSel();
+		pCurveInfo->lineWidth = combXianKuan.GetCurSel();
+		pCurveInfo->wrapMode = combHuiRaoMoShi.GetCurSel();
+
+		combHuiRaoCiShu.GetWindowText(str);
+		pCurveInfo->wrapCount = _wtoi(str);
+
+		if(bLast)
+		{
+			theApp.curveList.AddTail(pCurveInfo);
+		}
+		else
+		{
+			theApp.curveList.InsertBefore(pos2,pCurveInfo);
+		}
+	}
 }
 
 void CCurvePage::OnBnClickedOk()
@@ -179,13 +246,8 @@ void CCurvePage::OnBnClickedCancel()
 void CCurvePage::OnBnClickedButtonAdd()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	CString strTemp;
-	combShuJu.GetWindowText(strTemp);
-	if(strTemp.IsEmpty())
-	{
-		MessageBox(_T("请输入数据内容"),_T("提示"),MB_ICONQUESTION|MB_OK);
-		return;
-	}
+	InseertCurveInfo();
+	
 }
 
 
