@@ -39,7 +39,7 @@ public:
 	CJobEditDlgOrigin m_Origin;//原始信号对话框对应的类
 	CJobEditDlgControl m_Control;//控制信息对话框对应的类
 	CJobEditDlgPower m_Power;//加电信息对话框对应的类
-	afx_msg void OnBnClickedOk();
+
 private:	
 	void ToolAdd();
 	void ToolInit(CString Label);
@@ -62,13 +62,14 @@ private:
 	void PowerAdd();
 	void PowerUpdate(CString PowerMode);
 	void PowerInit(CString PowerMode);
-	void DisplayTree();
+	void DisplayTree(int EditTable);
 	void JobInit();//初始化作业数据库
 
 public:
 	afx_msg void OnBnClickedAdd();
 	int m_editTable;
-	CString m_PowerMode;
 	afx_msg void OnBnClickedDelete();
 	afx_msg void OnBnClickedUpdate();
+	afx_msg void OnBnClickedZcwJobeditImport();
+	afx_msg void OnBnClickedZcwJobeditExport();
 };
