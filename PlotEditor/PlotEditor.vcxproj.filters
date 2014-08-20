@@ -67,6 +67,12 @@
     <ClInclude Include="ColorStatic.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\DataMonitor\tinystr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DataMonitor\tinyxml.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PlotEditor.cpp">
@@ -100,6 +106,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ColorStatic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataMonitor\tinystr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataMonitor\tinyxml.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataMonitor\tinyxmlerror.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataMonitor\tinyxmlparser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

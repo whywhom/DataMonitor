@@ -15,6 +15,7 @@ public:
 	void AddCurveInfo(CCurveInfo* pCurveInfo, int item);
 	bool SetCurveInfo(int item);
 	void InseertCurveInfo( );
+	void DeleteCurveInfo( );
 	void GetCurveData(CCurveInfo* pCurveInfo, CString strTemp);
 	void SetCurveData(int index);
 	COLORREF curveSelectColor; //ÑÕÉ«

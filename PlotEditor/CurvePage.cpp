@@ -173,6 +173,21 @@ bool CCurvePage::SetCurveInfo(int item)
 	return true;
 }
 
+void CCurvePage::DeleteCurveInfo( )
+{
+	int item = combBiaoShi.GetCurSel();
+	theApp.curveList.RemoveAt(theApp.curveList.FindIndex(item));
+	combBiaoShi.DeleteString(item);
+	combShuJu.DeleteString(item);
+	if(item > 0)
+	{
+		SetCurveInfo(item - 1);
+	}
+	else
+	{
+		SetCurveInfo(0);
+	}
+}
 void CCurvePage::InseertCurveInfo( )
 {
 	int i = 0;
@@ -282,13 +297,13 @@ void CCurvePage::OnBnClickedButtonAdd()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	InseertCurveInfo();
-	
 }
 
 
 void CCurvePage::OnBnClickedButtonDel()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	DeleteCurveInfo();
 }
 
 

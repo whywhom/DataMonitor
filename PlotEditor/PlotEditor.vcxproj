@@ -101,6 +101,8 @@
     <None Include="res\PlotEditorDoc.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\DataMonitor\tinystr.h" />
+    <ClInclude Include="..\DataMonitor\tinyxml.h" />
     <ClInclude Include="ColorButton.h" />
     <ClInclude Include="ColorStatic.h" />
     <ClInclude Include="CoordinateView.h" />
@@ -116,6 +118,10 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\DataMonitor\tinystr.cpp" />
+    <ClCompile Include="..\DataMonitor\tinyxml.cpp" />
+    <ClCompile Include="..\DataMonitor\tinyxmlerror.cpp" />
+    <ClCompile Include="..\DataMonitor\tinyxmlparser.cpp" />
     <ClCompile Include="ColorButton.cpp" />
     <ClCompile Include="ColorStatic.cpp" />
     <ClCompile Include="CoordinateView.cpp" />

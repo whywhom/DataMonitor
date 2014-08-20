@@ -7,6 +7,7 @@
 #include "CoordinateView.h"
 #include "CurveSheet.h"
 #include "CurveInfo.h"
+#include "..\DataMonitor\tinyxml.h"
 class CMainFrame : public CFrameWnd
 {
 	
