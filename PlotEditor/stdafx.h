@@ -39,7 +39,11 @@
 #include <afxdlgs.h>
 
 
+//获取系统特殊文件夹的路径
+#include <shlobj.h>
 
+#include <iostream>
+#include <fstream>
 
 
 

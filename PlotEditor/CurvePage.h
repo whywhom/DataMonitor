@@ -40,7 +40,7 @@ public:
 	//CColorButton btColor;
 	CButton btColor;
 	CComboBox combKeDu;
-	CComboBox combXianXing;
+	CComboBoxEx combXianXing;
 	CComboBox combXianKuan;
 	CComboBox combHuiRaoMoShi;
 	CEdit combHuiRaoCiShu;

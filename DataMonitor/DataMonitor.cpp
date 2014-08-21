@@ -261,8 +261,20 @@ void CDataMonitorApp::GetModulePath()
 #ifdef FEATURE_LOG
 	LogFileName = LogPath + _T("log.txt");
 #endif
+	//»æÍ¼Ä£°å
+	strCurveFile = IniFilePath + _T("Curve.xml");
+	dwAttr=GetFileAttributes(strCurveFile);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		bCurveFileExist = false;
+	}
+	else
+	{
+		bCurveFileExist = true;
+	}
 	return;
 }
+
 int CDataMonitorApp::CreateIniFile(CString strFile)
 {
 	::WritePrivateProfileString(_T("TargetDepth"),_T("Depth1"),_T("100"),strFile); 

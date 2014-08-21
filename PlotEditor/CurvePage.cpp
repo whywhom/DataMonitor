@@ -74,12 +74,12 @@ BOOL CCurvePage::OnInitDialog()
 	((CComboBox*)GetDlgItem(IDC_COMBO_KEDU))->InsertString(0,_T("线性"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_KEDU))->InsertString(1,_T("对数"));
 
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(0,_T("实线"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(1,_T("虚线1"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(2,_T("虚线2"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(3,_T("虚线3"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(4,_T("虚线4"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(5,_T("虚线5"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(0,_T("实线"));//PS_SOLID
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(1,_T("虚线"));//PS_DASH
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(2,_T("点线"));//PS_DOT
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(3,_T("点划线"));//PS_DASHDOT
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(4,_T("双点划线"));//PS_DASHDOTDOT
+	//((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(5,_T("虚线5"));
 	
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(0,_T("0"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(1,_T("0.5"));

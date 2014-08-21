@@ -4,6 +4,8 @@
 
 // CCurveSheet
 #include "CurvePage.h"
+#include "..\DataMonitor\tinyxml.h"
+
 class CCurveSheet : public CPropertySheet
 {
 	DECLARE_DYNAMIC(CCurveSheet)
@@ -15,10 +17,15 @@ public:
 	virtual ~CCurveSheet();
 
 	void AddControlPages();
+	int CreateCurveFile(CString strFile);
+	void LinkElementeFuns(TiXmlElement * element,CCurveInfo* plist);
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
+	afx_msg void OnIdok();
+	afx_msg void OnIdno();
+	afx_msg void OnIdcancel();
 };
 
 

@@ -48,8 +48,10 @@ public:
 	CString JobPath;//作业文件夹的绝对路径
 	CString ToolPath;//仪器文件夹绝对路径
 	CString strUnitsFile;//记录度量单位的配置文件
+	CString strCurveFile;//记录绘图模板的配置文件
 	CString strSettingFile;//记录用户设置的常用数值配置文件
 	//发送给串口设备的数据buffer
+	bool bCurveFileExist;
 	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer
 	WORD sendDataSize;
 
