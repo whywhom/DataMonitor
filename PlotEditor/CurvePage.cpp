@@ -83,10 +83,10 @@ BOOL CCurvePage::OnInitDialog()
 	
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(0,_T("0"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(1,_T("0.5"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(2,_T("1"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(3,_T("1.5"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(4,_T("2"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(5,_T("2.5"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(0,_T("1"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(1,_T("1.5"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(2,_T("2"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(3,_T("2.5"));
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->InsertString(0,_T("◊Ûªÿ»∆"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->InsertString(1,_T("”“ªÿ»∆"));
@@ -176,6 +176,10 @@ bool CCurvePage::SetCurveInfo(int item)
 void CCurvePage::DeleteCurveInfo( )
 {
 	int item = combBiaoShi.GetCurSel();
+	if(item < 0)
+	{
+		return;
+	}
 	theApp.curveList.RemoveAt(theApp.curveList.FindIndex(item));
 	combBiaoShi.DeleteString(item);
 	combShuJu.DeleteString(item);

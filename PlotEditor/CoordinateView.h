@@ -3,14 +3,17 @@
 
 // CCoordinateView 视图
 
-class CCoordinateView : public CView
+class CCoordinateView : public CScrollView
 {
 	DECLARE_DYNCREATE(CCoordinateView)
-
+private:
+	CRect rect;
+	CRect rectTotal;
 protected:
 	CCoordinateView();           // 动态创建所使用的受保护的构造函数
 	virtual ~CCoordinateView();
 	void DrawCoordinateSystem(CDC* pDC);
+	void SetScrollTotalSizes(CRect rect);
 public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图
 #ifdef _DEBUG
@@ -29,6 +32,7 @@ public:
 	afx_msg void OnFileSaveplot();
 	afx_msg void OnFileNewplot();
 	afx_msg void OnClose();
+	virtual void OnInitialUpdate();
 };
 
 
