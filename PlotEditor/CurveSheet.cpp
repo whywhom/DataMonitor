@@ -82,21 +82,21 @@ void CCurveSheet::OnIdok()
 {
 	// TODO: 在此添加命令处理程序代码
 	CreateCurveFile(theApp.strCurveFile);
-	CPropertySheet::OnClose();
+	CPropertySheet::EndDialog(IDOK);
 }
 
 
 void CCurveSheet::OnIdno()
 {
 	// TODO: 在此添加命令处理程序代码
-	CPropertySheet::OnClose();
+	CPropertySheet::EndDialog(IDNO);
 }
 
 
 void CCurveSheet::OnIdcancel()
 {
 	// TODO: 在此添加命令处理程序代码
-	CPropertySheet::OnClose();
+	CPropertySheet::EndDialog(IDCANCEL);
 }
 int CCurveSheet::CreateCurveFile(CString strFile)
 {

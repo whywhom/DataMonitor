@@ -14,7 +14,7 @@ protected: // 仅从序列化创建
 // 特性
 public:
 	CPlotEditorDoc* GetDocument() const;
-
+	void DrawCoordinateSystem(CDC* pDC);
 // 操作
 public:
 
@@ -40,6 +40,8 @@ protected:
 // 生成的消息映射函数
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnPaint();
 };
 
 #ifndef _DEBUG  // PlotEditorView.cpp 中的调试版本
