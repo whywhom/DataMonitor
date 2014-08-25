@@ -67,6 +67,7 @@ protected:
 	void openDataFile(CString strFile);
 	void writeDataFile(BYTE* tmp, WPARAM wParam)  ;
 	void closeDataFile(CString strFile);
+	void myOnMenuWork(int myparameterFlag);
 
 	void initCmdList();
 // 生成的消息映射函数

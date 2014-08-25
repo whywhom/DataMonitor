@@ -15,10 +15,12 @@ CCurvePage::CCurvePage()
 	: CPropertyPage(CCurvePage::IDD)
 {
 	curveSelectColor = RGB(0xFF,0x00,0x00);
+	pCurList = NULL;
 }
 
 CCurvePage::~CCurvePage()
 {
+	pCurList = NULL;
 }
 
 void CCurvePage::DoDataExchange(CDataExchange* pDX)
@@ -48,6 +50,14 @@ BEGIN_MESSAGE_MAP(CCurvePage, CPropertyPage)
 	ON_BN_CLICKED(IDC_BUTTON_COLOR, &CCurvePage::OnBnClickedButtonColor)
 	ON_CBN_SELCHANGE(IDC_COMBO_BIAOSHI, &CCurvePage::OnCbnSelchangeComboBiaoshi)
 	ON_CBN_SELCHANGE(IDC_COMBO_SHUJU, &CCurvePage::OnCbnSelchangeComboShuju)
+	ON_CBN_SELCHANGE(IDC_COMBO_GUIDAO, &CCurvePage::OnCbnSelchangeComboGuidao)
+	ON_CBN_SELCHANGE(IDC_COMBO_KEDU, &CCurvePage::OnCbnSelchangeComboKedu)
+	ON_CBN_SELCHANGE(IDC_COMBO_XIANXING, &CCurvePage::OnCbnSelchangeComboXianxing)
+	ON_CBN_SELCHANGE(IDC_COMBO_XIANKUAN, &CCurvePage::OnCbnSelchangeComboXiankuan)
+	ON_CBN_SELCHANGE(IDC_COMBO_HUIRAOMOSHI, &CCurvePage::OnCbnSelchangeComboHuiraomoshi)
+	ON_EN_CHANGE(IDC_EDIT_HUIRAOCISHU, &CCurvePage::OnEnChangeEditHuiraocishu)
+	ON_EN_CHANGE(IDC_EDIT_YOUBIANJIE, &CCurvePage::OnEnChangeEditYoubianjie)
+	ON_EN_CHANGE(IDC_EDIT_ZUOBIANJIE, &CCurvePage::OnEnChangeEditZuobianjie)
 END_MESSAGE_MAP()
 
 
@@ -82,11 +92,11 @@ BOOL CCurvePage::OnInitDialog()
 	//((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->InsertString(5,_T("虚线5"));
 	
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(0,_T("0"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(1,_T("0.5"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(0,_T("1"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(1,_T("1.5"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(1,_T("1"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(2,_T("2"));
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(3,_T("2.5"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(3,_T("3"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(4,_T("4"));
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->InsertString(5,_T("5"));
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->InsertString(0,_T("左回绕"));
 	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->InsertString(1,_T("右回绕"));
@@ -141,6 +151,7 @@ bool CCurvePage::SetCurveInfo(int item)
 		return false;
 	}
 	CCurveInfo* plist = theApp.curveList.GetAt(theApp.curveList.FindIndex(item));
+	pCurList = plist;
 	CString str;
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->SetCurSel(item);
@@ -162,15 +173,37 @@ bool CCurvePage::SetCurveInfo(int item)
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_XIANXING))->SetCurSel(plist->lineType);
 	
-	str.Format(_T("%d"),plist->lineWidth);
-	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->SetCurSel(plist->lineWidth);
 
-	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->SetCurSel(plist->wrapMode);
+	((CComboBox*)GetDlgItem(IDC_COMBO_XIANKUAN))->SetCurSel(GetCurLineIndex(plist->lineWidth));
+	((CComboBox*)GetDlgItem(IDC_COMBO_HUIRAOMOSHI))->SetCurSel(GetCurLineIndex(plist->wrapMode));
 
 	str.Format(_T("%d"),plist->wrapCount);
 	combHuiRaoCiShu.SetWindowText(str);
 	spinEdit.SetPos(plist->wrapCount);  //设置起始位置
 	return true;
+}
+
+int CCurvePage::GetCurLineIndex(int lineWidth)
+{
+	if(lineWidth == 0)
+	{
+		return 0;
+	} else if(lineWidth == 1)
+	{
+		return 1;
+	} else if(lineWidth == 2)
+	{
+		return 2;
+	} else if(lineWidth == 3)
+	{
+		return 3;
+	} else if(lineWidth == 4)
+	{
+		return 4;
+	} else if(lineWidth == 5)
+	{
+		return 5;
+	}
 }
 
 void CCurvePage::DeleteCurveInfo( )
@@ -278,7 +311,12 @@ void CCurvePage::GetCurveData(CCurveInfo* pCurveInfo, CString strTemp)
 	pCurveInfo->curveColor = curveSelectColor;
 	pCurveInfo->graduation = combKeDu.GetCurSel();
 	pCurveInfo->lineType = combXianXing.GetCurSel();
-	pCurveInfo->lineWidth = combXianKuan.GetCurSel();
+
+	//pCurveInfo->lineWidth = combXianKuan.GetCurSel();
+	int index = combXianKuan.GetCurSel();
+	combXianKuan.GetLBText(index, str);
+	pCurveInfo->lineWidth = _wtoi(str);
+
 	pCurveInfo->wrapMode = combHuiRaoMoShi.GetCurSel();
 
 	combHuiRaoCiShu.GetWindowText(str);
@@ -320,6 +358,10 @@ void CCurvePage::OnBnClickedButtonColor()
 	{
 		curveSelectColor = dlg.GetColor();
 		mStaticColor.SetStaiticColor(curveSelectColor);
+		if(pCurList != NULL)
+		{
+			pCurList->curveColor = curveSelectColor;
+		}
 	}
 }
 
@@ -345,7 +387,7 @@ void CCurvePage::SetCurveData(int index)
 {
 	CString str;
 	CCurveInfo* plist = theApp.curveList.GetAt(theApp.curveList.FindIndex(index));
-
+	pCurList = plist;
 	combGuiDao.SetCurSel(plist->curveTrack);
 
 	str.Format(_T("%d"),plist->leftLimit);
@@ -358,10 +400,114 @@ void CCurvePage::SetCurveData(int index)
 
 	combKeDu.SetCurSel(plist->graduation);
 	combXianXing.SetCurSel(plist->lineType);
-	combXianKuan.SetCurSel(plist->lineWidth);
+	combXianKuan.SetCurSel(GetCurLineIndex(plist->lineWidth));
 	combHuiRaoMoShi.SetCurSel(plist->wrapMode);
 
 	str.Format(_T("%d"),plist->wrapCount);
 	combHuiRaoCiShu.SetWindowText(str);
 	spinEdit.SetPos(plist->wrapCount);
+}
+
+
+void CCurvePage::OnCbnSelchangeComboGuidao()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		pCurList->curveTrack = combGuiDao.GetCurSel();
+	}
+}
+
+
+void CCurvePage::OnCbnSelchangeComboKedu()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		pCurList->graduation = combKeDu.GetCurSel();
+	}
+}
+
+
+void CCurvePage::OnCbnSelchangeComboXianxing()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		pCurList->lineType = combXianXing.GetCurSel();
+	}
+}
+
+
+void CCurvePage::OnCbnSelchangeComboXiankuan()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		CString str;
+		int index = combXianKuan.GetCurSel();
+		combXianKuan.GetLBText(index, str);
+		pCurList->lineWidth = _wtoi(str);
+	}
+}
+
+
+void CCurvePage::OnCbnSelchangeComboHuiraomoshi()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		pCurList->wrapMode = combHuiRaoMoShi.GetCurSel();
+	}
+}
+
+
+void CCurvePage::OnEnChangeEditHuiraocishu()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CPropertyPage::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		CString str;
+		combHuiRaoCiShu.GetWindowText(str);
+		pCurList->wrapCount = _wtoi(str);
+	}
+}
+
+
+void CCurvePage::OnEnChangeEditYoubianjie()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CPropertyPage::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		CString str;
+		editYouBianJie.GetWindowText(str);
+		pCurList->rightLimit = _wtoi(str);
+	}
+}
+
+
+void CCurvePage::OnEnChangeEditZuobianjie()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CPropertyPage::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	if(pCurList != NULL)
+	{
+		CString str;
+		editZuoBianJie.GetWindowText(str);
+		pCurList->leftLimit = _wtoi(str);
+	}
 }

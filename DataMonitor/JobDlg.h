@@ -31,4 +31,6 @@ public:
 	CString m_Title;
 	CString m_TreeTitle;
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnJobLoad();
+	void LoadFile(CString strPath);
 };

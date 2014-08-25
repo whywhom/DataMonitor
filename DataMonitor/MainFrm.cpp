@@ -393,9 +393,14 @@ void CMainFrame::OnClose()
 void CMainFrame::OnMenuWork()
 {
 	// TODO: 在此添加命令处理程序代码
+	parameterFlag=0;
+	myOnMenuWork(parameterFlag);
+}
+
+void CMainFrame::myOnMenuWork(int myparameterFlag){	
 	CJobDlg m_jDlg;
 	m_jDlg.m_Path=theApp.JobPath;
-	m_jDlg.receiveFlag = parameterFlag;
+	m_jDlg.receiveFlag = myparameterFlag;
 	m_jDlg.m_Title=_T("力擎作业管理");
 	m_jDlg.m_TreeTitle=_T("作业列表");
 	m_jDlg.DoModal();
@@ -427,13 +432,15 @@ void CMainFrame::OnMenuNewjob()
 {
 	// TODO: 在此添加命令处理程序代码
 	parameterFlag = 1;
-	OnMenuWork();
+	myOnMenuWork(parameterFlag);
 }
 
 
 void CMainFrame::OnMenuJobload()
 {
 	// TODO: 在此添加命令处理程序代码
+	parameterFlag = 0;
+	myOnMenuWork(parameterFlag);
 }
 
 

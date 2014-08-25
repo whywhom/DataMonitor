@@ -134,6 +134,8 @@ void CPlotEditorView::DrawCoordinateSystem(CDC* pDC)
 	//GetDlgItem(IDC_STATIC_PIC)->GetWindowRect(&rect);//获取控件相对于屏幕的位置,这个控件必须隐藏
 	//ScreenToClient(rect);//转化为对话框上的相对位置
 	GetClientRect(rect);
+	rect.left = rect.left+10;
+	rect.right = rect.right-10;
 	UpdateData(FALSE);
 
 	int iCount=0;

@@ -130,7 +130,7 @@ void CCoordinateView::DrawCoordinateSystem(CDC* pDC)
 			//画线
 			CPen pen;//(iDrawType, iLineWidth, colorR); //画笔
 			//pen.CreatePen(PS_USERSTYLE|PS_GEOMETRIC|PS_ENDCAP_ROUND, plist->lineWidth, &logBrush,4,dwF);
-			pen.CreatePen(plist->lineType|PS_GEOMETRIC|PS_ENDCAP_ROUND, plist->lineWidth, &logBrush);
+			pen.CreatePen(plist->lineType|PS_GEOMETRIC|PS_ENDCAP_SQUARE, plist->lineWidth, &logBrush);
 			pDC->SelectObject(&pen);//画笔和画线区连接
 			
 			rectTop = rect;
@@ -149,6 +149,9 @@ void CCoordinateView::DrawCoordinateSystem(CDC* pDC)
 			pDC->SelectObject(&pen2);//画笔和画线区连接
 
 			pDC->MoveTo(0, rectBottom.bottom);
+			pDC->LineTo(rect.Width(), rectBottom.bottom);
+
+			pDC->MoveTo(rect.Width(), rectTop.top);
 			pDC->LineTo(rect.Width(), rectBottom.bottom);
 			//画标注
 			pDC->SelectObject(&font);
