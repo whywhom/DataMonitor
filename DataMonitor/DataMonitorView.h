@@ -6,12 +6,14 @@
 
 #include "DataMonitorDoc.h"
 
-class CDataMonitorView : public CView
+class CDataMonitorView : public CScrollView
 {
 protected: // 仅从序列化创建
 	CDataMonitorView();
 	DECLARE_DYNCREATE(CDataMonitorView)
 
+	void DrawData(CDC* pDC);
+	void SetScrollTotalSizes(CRect rect);
 // 特性
 public:
 	CDataMonitorDoc* GetDocument() const;
@@ -27,7 +29,9 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-
+private:
+	CRect rect;
+	CRect rectTotal;
 // 实现
 public:
 	virtual ~CDataMonitorView();
@@ -41,6 +45,9 @@ protected:
 // 生成的消息映射函数
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnPaint();
+	virtual void OnInitialUpdate();
 };
 
 #ifndef _DEBUG  // DMonitorView.cpp 中的调试版本

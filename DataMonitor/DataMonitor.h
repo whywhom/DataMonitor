@@ -12,7 +12,7 @@
 #include <Setupapi.h>
 #include <devguid.h>
 #include <string>
-
+#include "PetroData.h"
 #include "tinyxml.h"
 #include "tinystr.h"
 
@@ -58,6 +58,7 @@ public:
 	int targetDepth1;
 	int targetDepth2;
 
+	CTypedPtrList < CPtrList, CPetroData * >petroList;
 private:
 	void GetModulePath();
 	int CreateDmFile(CString strFile);

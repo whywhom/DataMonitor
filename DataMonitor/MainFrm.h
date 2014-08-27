@@ -11,6 +11,8 @@
 #include "DataMonitorView.h"
 #include "tinyxml.h"
 #include "TargetDepth.h"
+#include "PetroData.h"
+#include <string>
 class CMainFrame : public CFrameWnd
 {
 	
@@ -66,10 +68,14 @@ protected:
 	void stopWork();
 	void openDataFile(CString strFile);
 	void writeDataFile(BYTE* tmp, WPARAM wParam)  ;
+	void ParseData(BYTE* tmp, WPARAM wParam) ;
 	void closeDataFile(CString strFile);
 	void myOnMenuWork(int myparameterFlag);
-
+	CPanelView* GetPanelView();
+	CDataMonitorView* GetDataMonitorView();
+	CScaleView* GetScaleView();
 	void initCmdList();
+	int CheckString( std::string str );
 // 生成的消息映射函数
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

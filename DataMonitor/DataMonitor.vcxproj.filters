@@ -149,6 +149,9 @@
     <ClInclude Include="json\src\json_batchallocator.h">
       <Filter>源文件</Filter>
     </ClInclude>
+    <ClInclude Include="PetroData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -233,6 +236,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="json\src\json_writer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PetroData.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

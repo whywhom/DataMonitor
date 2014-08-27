@@ -4,12 +4,12 @@
 
 #include "stdafx.h"
 #include "DataMonitor.h"
-
+#include<iostream>
 #include "MainFrm.h"
 #include "DataMonitorView.h"
 #include "PanelView.h"
 #include "ScaleView.h"
-
+#include <cctype>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -62,6 +62,14 @@ CMainFrame::CMainFrame()
 	// TODO: 在此添加成员初始化代码
 	bConnect = false;
 	parameterFlag = 0;
+
+	CPetroData* pCurrent = NULL;
+	while(theApp.petroList.IsEmpty()==false)
+	{
+		pCurrent=theApp.petroList.RemoveHead();
+		delete pCurrent;
+		pCurrent=NULL;
+	}
 }
 
 CMainFrame::~CMainFrame()
@@ -167,6 +175,20 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	//return CFrameWnd::OnCreateClient(lpcs, pContext);
 }
 
+CPanelView* CMainFrame::GetPanelView()
+{
+    return (CPanelView*) m_wndSplitter.GetPane(0,0);
+}
+
+CDataMonitorView* CMainFrame::GetDataMonitorView()
+{
+    return (CDataMonitorView*) m_wndSplitterSub.GetPane(0,0);
+}
+
+CScaleView* CMainFrame::GetScaleView()
+{
+    return (CScaleView*) m_wndSplitterSub.GetPane(1,0);
+}
 
 void CMainFrame::OnSize(UINT nType, int cx, int cy)
 {
@@ -256,6 +278,7 @@ LRESULT CMainFrame::OnCommReceive(WPARAM wParam, LPARAM lParam)
 	totalReceiveByte += wParam;
 	str.Format(_T("已接收:%d字节"),totalReceiveByte);
 	m_wndStatusBar.SetPaneText(m_wndStatusBar.CommandToIndex(ID_INDICATOR_INFO),str);
+	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
 	writeDataFile(&theApp.commLayer.m_ReceiveBuff[0],wParam);
     return 0;
 }
@@ -355,6 +378,175 @@ void CMainFrame::openDataFile(CString strFile)
 	}
 	fp = _wfopen(strFile, _T("w")); 
 }  
+
+void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam) 
+{
+	std::string str,strTitle,strData;
+	CPetroData* pPData = NULL;
+	BYTE buf0 = 0;
+	for(int i = 0; i< wParam; i++)
+	{
+		if(tmp[i] == '$')//起始标示
+		{
+			//str.clear();
+			//theApp.petroList.AddTail(pPData);
+			//pPData = new CPetroData();
+		}
+		else if(tmp[i] == ',' || tmp[i] == '*')//数据结束
+		{
+			if(str == "DEPT" || str == "TEMP" || str == "RM" 
+				|| str == "GR" || str == "MAG" || str == "CCL" )
+			{
+				strTitle = str;
+				if(str == "DEPT")
+				{
+					if(pPData != NULL)
+					{
+						theApp.petroList.AddTail(pPData);
+						if(pDataMonitorView != NULL){
+							pDataMonitorView->Invalidate();
+						}
+					}
+					pPData = new CPetroData();
+				}
+				str.clear();
+			}
+			else
+			{
+				int result = CheckString(str);
+				if(result == 0)//整数
+				{
+					int num;
+					num=atoi(str.c_str());
+					if(pPData != NULL)
+					{
+						if(strTitle == "DEPT")
+						{
+							pPData->dept = num;
+						}
+						else if(strTitle == "TEMP")
+						{
+							pPData->temp = num;
+						}
+						else if(strTitle == "RM")
+						{
+							pPData->rm = num;
+						}
+						else if(strTitle == "GR")
+						{
+							pPData->gr = num;
+						}
+						else if(strTitle == "MAGX")
+						{
+							if(pPData->mag[0] == 0)
+							{
+								pPData->mag[0] = num;
+							}
+							else if(pPData->mag[1] == 0)
+							{
+								pPData->mag[1] = num;
+							}
+							else
+							{
+								pPData->mag[2] = num;
+							}
+						}
+						else if(strTitle == "CCL")
+						{
+							pPData->ccl = num;
+						}
+					}
+				}
+				else if(result == 1)//小数
+				{
+					float num;
+					num=atof(str.c_str());
+					if(pPData != NULL)
+					{
+						if(strTitle == "DEPT")
+						{
+							pPData->dept = num;
+						}
+						else if(strTitle == "TEMP")
+						{
+							pPData->temp = num;
+						}
+						else if(strTitle == "RM")
+						{
+							pPData->rm = num;
+						}
+						else if(strTitle == "GR")
+						{
+							pPData->gr = num;
+						}
+						else if(strTitle == "MAGX")
+						{
+							if(pPData->mag[0] == 0)
+							{
+								pPData->mag[0] = num;
+							}
+							else if(pPData->mag[1] == 0)
+							{
+								pPData->mag[1] = num;
+							}
+							else
+							{
+								pPData->mag[2] = num;
+							}
+						}
+						else if(strTitle == "CCL")
+						{
+							pPData->ccl = num;
+						}
+					}
+				}
+				else
+				{
+				
+				}
+				str.clear();
+			}
+		}
+		else
+		{
+			str += tmp[i];
+		}
+	}
+}
+
+int CMainFrame::CheckString( std::string str )
+{
+	bool bIsDigit = true;
+	bool bIsPoint = false;
+	int nCount = str.length(); // 获得字符个数
+	for ( int i = 0; i < nCount; i ++ )
+	{
+		if ( 0 == isdigit( str[i] ) ) // 不是数字就置标志位
+		{
+			if(str[i] == '.')//带小数点
+			{
+				bIsPoint = true;
+			}
+			else
+			{
+				bIsDigit = false;
+				break;// 退出
+			}
+		}
+	}
+	if(!bIsDigit)
+	{
+		return 2;//非数字
+	}
+	else if(bIsPoint)
+	{
+		return 1;//有小数点
+	}
+	else
+	{
+		return 0;//整数
+	}
+}
 
 void CMainFrame::writeDataFile(BYTE* tmp, WPARAM wParam)  
 {     
@@ -537,3 +729,5 @@ void CMainFrame::OnMenuTargetdeepth()
 	CTargetDepth targetDlg;
 	targetDlg.DoModal();
 }
+
+
