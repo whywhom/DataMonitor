@@ -1,6 +1,7 @@
 #pragma once
 #include "jobeditdlg.h"
 #include "dirtreectrl.h"
+#include "afxwin.h"
 
 // CJobDlg ¶Ô»°¿ò
 
@@ -33,4 +34,5 @@ public:
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnJobLoad();
 	void LoadFile(CString strPath);
+	afx_msg void OnBnClickedButton1();
 };
