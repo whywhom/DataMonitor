@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_CUT, &CMainFrame::OnEditCut)
 	ON_COMMAND(ID_EDIT_PASTE, &CMainFrame::OnEditPaste)
 	ON_COMMAND(ID_MENU_TARGETDEEPTH, &CMainFrame::OnMenuTargetdeepth)
+	ON_COMMAND(ID_FILE_OPEN, &CMainFrame::OnFileOpen)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -70,10 +71,15 @@ CMainFrame::CMainFrame()
 		delete pCurrent;
 		pCurrent=NULL;
 	}
+	pData = NULL;
 }
 
 CMainFrame::~CMainFrame()
 {
+	if(pData != NULL)
+	{
+		delete[] pData;
+	}
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -731,3 +737,28 @@ void CMainFrame::OnMenuTargetdeepth()
 }
 
 
+
+
+void CMainFrame::OnFileOpen()
+{
+	// TODO: 在此添加命令处理程序代码
+	bool bReturn=false;
+	TCHAR   *pFileBuffer = new TCHAR[MAX_PATH];//最多允许300个文件
+	CFileDialog dlg (TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_EXPLORER , _T("dmor文件(*.dmor)|*.dmor||"),this);
+	if (dlg.DoModal () == IDOK)
+	{
+		CString csFileName = dlg.GetPathName();
+		CFile fAddressImport;
+		CFileException eFileException;
+		if (!fAddressImport.Open (csFileName, CFile::modeRead | CFile::shareDenyWrite, &eFileException))
+		{
+			return;
+		}
+		DWORD dwFileLength = fAddressImport.GetLength ();
+		pData = new BYTE[dwFileLength];
+		memset(pData,0,dwFileLength);
+		fAddressImport.SeekToBegin ();
+		fAddressImport.Read (pData,dwFileLength);
+		ParseData(pData,dwFileLength);
+	}
+}

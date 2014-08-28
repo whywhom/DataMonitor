@@ -59,6 +59,7 @@ protected:  // 控件条嵌入成员
 
 	CWinThread*   m_Thread;
 
+	BYTE* pData;//存储文件数据
 	unsigned long totalReceiveByte;
 protected:
 	static UINT MainThread(LPVOID pParam);
@@ -105,6 +106,7 @@ public:
 	afx_msg void OnEditCut();
 	afx_msg void OnEditPaste();
 	afx_msg void OnMenuTargetdeepth();
+	afx_msg void OnFileOpen();
 };
 
 
