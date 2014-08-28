@@ -22,6 +22,7 @@
 IMPLEMENT_DYNCREATE(CDataMonitorDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CDataMonitorDoc, CDocument)
+
 END_MESSAGE_MAP()
 
 
@@ -143,3 +144,5 @@ void CDataMonitorDoc::SetTitle(LPCTSTR lpszTitle)
 	lpszTitle = _T("");
 	CDocument::SetTitle(lpszTitle);
 }
+
+

@@ -14,10 +14,10 @@ protected: // 仅从序列化创建
 
 // 特性
 public:
-
+	BYTE* pData;//存储文件数据
 // 操作
 public:
-
+	void ParseData(BYTE* tmp, WPARAM wParam) ;
 // 重写
 public:
 	virtual BOOL OnNewDocument();

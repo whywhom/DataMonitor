@@ -58,12 +58,13 @@ protected:  // 控件条嵌入成员
 	FILE* fp;//指向打开的文件
 
 	CWinThread*   m_Thread;
-
 	BYTE* pData;//存储文件数据
 	unsigned long totalReceiveByte;
 protected:
 	static UINT MainThread(LPVOID pParam);
+	
 	bool StartThread();
+	bool StartDrawThread();
 	void sendConnectCmd();
 	void startWork();
 	void stopWork();

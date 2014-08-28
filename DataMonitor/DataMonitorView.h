@@ -32,6 +32,7 @@ protected:
 private:
 	CRect rect;
 	CRect rectTotal;
+	
 // й╣ож
 public:
 	virtual ~CDataMonitorView();

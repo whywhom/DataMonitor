@@ -121,6 +121,7 @@ void CDataMonitorView::DrawData(CDC* pDC)
 	UpdateData(FALSE);
 	rectTotal = rect;
 	//rectTotal.bottom = rectTotal.top;
+
 	SetScrollTotalSizes(rectTotal);
 }
 

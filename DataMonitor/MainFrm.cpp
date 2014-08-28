@@ -15,6 +15,7 @@
 #endif
 
 static bool bRunning;
+
 static CTypedPtrList < CPtrList, SEND_COMMAND_LIST * >senCommandList;
 // CMainFrame
 
@@ -72,6 +73,9 @@ CMainFrame::CMainFrame()
 		pCurrent=NULL;
 	}
 	pData = NULL;
+	pPanelView = NULL; 
+	pScaleView = NULL; 
+	pDataMonitorView = NULL; 
 }
 
 CMainFrame::~CMainFrame()
@@ -234,6 +238,7 @@ void CMainFrame::OnToolbarConnect()
 	theApp.commLayer.SetConnectType(TYPE_NONE);
 	theApp.commLayer.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
 	bRunning = true;
+	
 	fp = NULL;
 	StartThread();//启动线程
 	startWork();
@@ -269,6 +274,7 @@ bool CMainFrame::StartThread()
 	TRACE(_T("Thread started\n"));
     return true;
 }
+
 
 LRESULT CMainFrame::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
@@ -392,26 +398,49 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 	BYTE buf0 = 0;
 	for(int i = 0; i< wParam; i++)
 	{
+		if(i == wParam-1)
+		{
+			if(pPData != NULL)
+			{
+				theApp.petroList.AddTail(pPData);
+				if(pDataMonitorView == NULL)
+				{
+					pDataMonitorView = GetDataMonitorView();
+				}
+				{
+					pDataMonitorView->Invalidate();
+				}
+			}
+		}
 		if(tmp[i] == '$')//起始标示
 		{
 			//str.clear();
 			//theApp.petroList.AddTail(pPData);
 			//pPData = new CPetroData();
+			str.clear();
+			TRACE(_T("Find Char '$' \r\n"));
 		}
 		else if(tmp[i] == ',' || tmp[i] == '*')//数据结束
 		{
 			if(str == "DEPT" || str == "TEMP" || str == "RM" 
-				|| str == "GR" || str == "MAG" || str == "CCL" )
+				|| str == "GM" || str == "MAGX" || str == "CCL" )
 			{
 				strTitle = str;
 				if(str == "DEPT")
 				{
+					TRACE(_T("Find Char 'DEPT' \r\n"));
 					if(pPData != NULL)
 					{
 						theApp.petroList.AddTail(pPData);
-						if(pDataMonitorView != NULL){
+						/*
+						if(pDataMonitorView == NULL)
+						{
+							pDataMonitorView = GetDataMonitorView();
+						}
+						{
 							pDataMonitorView->Invalidate();
 						}
+						*/
 					}
 					pPData = new CPetroData();
 				}
@@ -428,22 +457,27 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					{
 						if(strTitle == "DEPT")
 						{
+							TRACE(_T("strTitle == 'DEPT' \r\n"));
 							pPData->dept = num;
 						}
 						else if(strTitle == "TEMP")
 						{
+							TRACE(_T("strTitle == 'TEMP' \r\n"));
 							pPData->temp = num;
 						}
 						else if(strTitle == "RM")
 						{
+							TRACE(_T("strTitle == 'RM' \r\n"));
 							pPData->rm = num;
 						}
-						else if(strTitle == "GR")
+						else if(strTitle == "GM")
 						{
+							TRACE(_T("strTitle == 'GM' \r\n"));
 							pPData->gr = num;
 						}
 						else if(strTitle == "MAGX")
 						{
+							TRACE(_T("strTitle == 'MAGX' \r\n"));
 							if(pPData->mag[0] == 0)
 							{
 								pPData->mag[0] = num;
@@ -452,13 +486,17 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							{
 								pPData->mag[1] = num;
 							}
-							else
+							else if(pPData->mag[2] == 0)
 							{
 								pPData->mag[2] = num;
+							}
+							else
+							{
 							}
 						}
 						else if(strTitle == "CCL")
 						{
+							TRACE(_T("strTitle == 'CCL' \r\n"));
 							pPData->ccl = num;
 						}
 					}
@@ -471,22 +509,27 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					{
 						if(strTitle == "DEPT")
 						{
+							TRACE(_T("strTitle == 'DEPT' \r\n"));
 							pPData->dept = num;
 						}
 						else if(strTitle == "TEMP")
 						{
+							TRACE(_T("strTitle == 'TEMP' \r\n"));
 							pPData->temp = num;
 						}
 						else if(strTitle == "RM")
 						{
+							TRACE(_T("strTitle == 'RM' \r\n"));
 							pPData->rm = num;
 						}
-						else if(strTitle == "GR")
+						else if(strTitle == "GM")
 						{
+							TRACE(_T("strTitle == 'GM' \r\n"));
 							pPData->gr = num;
 						}
 						else if(strTitle == "MAGX")
 						{
+							TRACE(_T("strTitle == 'MAGX' \r\n"));
 							if(pPData->mag[0] == 0)
 							{
 								pPData->mag[0] = num;
@@ -495,13 +538,17 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							{
 								pPData->mag[1] = num;
 							}
-							else
+							else if(pPData->mag[2] == 0)
 							{
 								pPData->mag[2] = num;
+							}
+							else
+							{
 							}
 						}
 						else if(strTitle == "CCL")
 						{
+							TRACE(_T("strTitle == 'CCL' \r\n"));
 							pPData->ccl = num;
 						}
 					}
@@ -511,6 +558,10 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 				
 				}
 				str.clear();
+			}
+			if( tmp[i] == '*')
+			{
+				i+=2;
 			}
 		}
 		else
@@ -737,8 +788,6 @@ void CMainFrame::OnMenuTargetdeepth()
 }
 
 
-
-
 void CMainFrame::OnFileOpen()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -762,3 +811,4 @@ void CMainFrame::OnFileOpen()
 		ParseData(pData,dwFileLength);
 	}
 }
+
