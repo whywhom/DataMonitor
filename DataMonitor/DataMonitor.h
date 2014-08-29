@@ -129,6 +129,9 @@ public:
 	int targetDepth2;
 
 	CTypedPtrList < CPtrList, CPetroData * >petroList;
+
+	int nStartCoordinate;//ÆðÊ¼×ø±ê
+	bool bStart;
 private:
 	void GetModulePath();
 	int CreateDmFile(CString strFile);

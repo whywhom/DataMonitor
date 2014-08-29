@@ -76,6 +76,8 @@ CMainFrame::CMainFrame()
 	pPanelView = NULL; 
 	pScaleView = NULL; 
 	pDataMonitorView = NULL; 
+	theApp.nStartCoordinate = 0;
+	theApp.bStart = true;
 }
 
 CMainFrame::~CMainFrame()
@@ -393,6 +395,8 @@ void CMainFrame::openDataFile(CString strFile)
 
 void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam) 
 {
+	theApp.nStartCoordinate = 0;
+	theApp.bStart = true;
 	std::string str,strTitle,strData;
 	CPetroData* pPData = NULL;
 	BYTE buf0 = 0;
@@ -408,7 +412,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					pDataMonitorView = GetDataMonitorView();
 				}
 				{
-					pDataMonitorView->Invalidate();
+					pDataMonitorView->Invalidate(FALSE);
 				}
 			}
 		}
@@ -431,16 +435,17 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					TRACE(_T("Find Char 'DEPT' \r\n"));
 					if(pPData != NULL)
 					{
+						if(theApp.bStart)
+						{
+							theApp.nStartCoordinate = (int)(pPData->dept/10)*10;
+							theApp.bStart = false;
+						}
 						theApp.petroList.AddTail(pPData);
-						/*
-						if(pDataMonitorView == NULL)
+
+						if(pDataMonitorView != NULL)
 						{
-							pDataMonitorView = GetDataMonitorView();
+							pDataMonitorView->Invalidate(FALSE);
 						}
-						{
-							pDataMonitorView->Invalidate();
-						}
-						*/
 					}
 					pPData = new CPetroData();
 				}
@@ -510,26 +515,31 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						if(strTitle == "DEPT")
 						{
 							TRACE(_T("strTitle == 'DEPT' \r\n"));
+							num = (int)(num * 100 + 0.5)/100.0;
 							pPData->dept = num;
 						}
 						else if(strTitle == "TEMP")
 						{
 							TRACE(_T("strTitle == 'TEMP' \r\n"));
+							num = (int)(num * 100 + 0.5)/100.0;
 							pPData->temp = num;
 						}
 						else if(strTitle == "RM")
 						{
 							TRACE(_T("strTitle == 'RM' \r\n"));
+							num = (int)(num * 100 + 0.5)/100.0;
 							pPData->rm = num;
 						}
 						else if(strTitle == "GM")
 						{
 							TRACE(_T("strTitle == 'GM' \r\n"));
+							num = (int)(num * 100 + 0.5)/100.0;
 							pPData->gr = num;
 						}
 						else if(strTitle == "MAGX")
 						{
 							TRACE(_T("strTitle == 'MAGX' \r\n"));
+							num = (int)(num * 100 + 0.5)/100.0;
 							if(pPData->mag[0] == 0)
 							{
 								pPData->mag[0] = num;
@@ -549,6 +559,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						else if(strTitle == "CCL")
 						{
 							TRACE(_T("strTitle == 'CCL' \r\n"));
+							num = (int)(num * 100 + 0.5)/100.0;
 							pPData->ccl = num;
 						}
 					}

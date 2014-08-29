@@ -20,7 +20,8 @@ public:
 
 // 操作
 public:
-
+	int tempArray[2];
+	int gmArray[2];
 // 重写
 public:
 	virtual void OnDraw(CDC* pDC);  // 重写以绘制该视图
@@ -29,6 +30,8 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+	void DrawCoordinateSystem(CDC* pDC);
+	void DrawDataArray(CDC* pDC);
 private:
 	CRect rect;
 	CRect rectTotal;
@@ -49,6 +52,9 @@ protected:
 public:
 	afx_msg void OnPaint();
 	virtual void OnInitialUpdate();
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 };
 
 #ifndef _DEBUG  // DMonitorView.cpp 中的调试版本
