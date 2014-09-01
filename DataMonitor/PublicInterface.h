@@ -34,3 +34,15 @@ typedef struct _SEND_COMMAND_LIST
     UINT8* buf;
     DWORD size;
 }SEND_COMMAND_LIST;
+
+typedef struct _DATA_PART
+{
+	unsigned long integer;
+	int decimal;
+}DATA_PART;
+
+#define TIMER_CMD_DRAW 0x20
+#define TIME_REFRESH	50
+
+#define REALTIME_PROCESSING 0x0
+#define FILEDATA_PROCESSING 0x1

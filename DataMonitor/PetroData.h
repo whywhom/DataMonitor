@@ -1,14 +1,18 @@
 #pragma once
-class CPetroData
+
+// CPetroData 命令目标
+
+class CPetroData : public CObject
 {
 public:
-	CPetroData(void);
-	~CPetroData(void);
-	float dept;//深度			DEPT			m			一组，小数
-	float temp;//井温		    TEMP			C 			一组，小数
-	float rm;//电阻率			RM				rm			一组，小数
-	float gr;//放射性			GR				GAPI       一组，小数
-	float mag[3];//磁三分量		MAG			mag			三组，小数
-	int ccl;//磁定位器		CCL				CCL			一组，整数	
+	CPetroData();
+	virtual ~CPetroData();
+	DATA_PART dept;//深度			DEPT			m			一组，小数
+	DATA_PART temp;//井温		    TEMP			C 			一组，小数
+	DATA_PART rm;//电阻率			RM				rm			一组，小数
+	DATA_PART gr;//放射性			GR				GAPI       一组，小数
+	DATA_PART mag[3];//磁三分量		MAG			mag			三组，小数
+	DATA_PART ccl;//磁定位器		CCL				CCL			一组，整数	
 };
+
 

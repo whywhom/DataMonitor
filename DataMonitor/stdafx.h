@@ -59,3 +59,4 @@
 #ifndef _AFX_NO_DAO_SUPPORT
 #include <afxdao.h> // MFC DAO database classes
 #endif  // _AFX_NO_DAO_SUPPORT
+#include <afx.h>

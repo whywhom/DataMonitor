@@ -77,7 +77,9 @@ CMainFrame::CMainFrame()
 	pScaleView = NULL; 
 	pDataMonitorView = NULL; 
 	theApp.nStartCoordinate = 0;
-	theApp.bStart = true;
+	//theApp.bStart = true;
+	fileLimit = 1024*1024*4;
+	theApp.processType = REALTIME_PROCESSING;
 }
 
 CMainFrame::~CMainFrame()
@@ -243,6 +245,14 @@ void CMainFrame::OnToolbarConnect()
 	
 	fp = NULL;
 	StartThread();//启动线程
+	theApp.processType = REALTIME_PROCESSING;
+	pDataMonitorView = GetDataMonitorView();
+	pPanelView = GetPanelView();
+	pScaleView = GetScaleView();
+	if(pDataMonitorView)
+	{
+		pDataMonitorView->StartTimer();
+	}
 	startWork();
 }
 
@@ -252,6 +262,11 @@ void CMainFrame::OnToolbarDisconnect()
 	// TODO: 在此添加命令处理程序代码
 	bConnect = false;
 	stopWork();
+	pDataMonitorView = GetDataMonitorView();
+	if(pDataMonitorView)
+	{
+		pDataMonitorView->StopTimer();
+	}
 }
 
 void CMainFrame::OnUpdateToolbarConnect(CCmdUI *pCmdUI)
@@ -283,17 +298,45 @@ LRESULT CMainFrame::OnCommReceive(WPARAM wParam, LPARAM lParam)
     TRACE(_T("Communication Receive!\n"));
 	TRACE0("CMainFrame RX = ");
 	TRACE(_T(" %02X\n"),wParam);
+#ifdef _DEBUG
     for(WORD cont = 0; cont < wParam ; cont++)
     {
         TRACE(_T(" %02X"),theApp.commLayer.m_ReceiveBuff[cont]);
     }
-    TRACE0("\n");
+	TRACE0("\n");
+#endif
 	CString str;
 	totalReceiveByte += wParam;
-	str.Format(_T("已接收:%d字节"),totalReceiveByte);
+	if(totalReceiveByte>fileLimit)
+	{
+		fileNum++;
+		closeDataFile(sGetFileName);
+		sGetFilePreName = sGetFileName;
+		int pos = sGetFilePreName.ReverseFind(_T('.'));
+		int length = sGetFilePreName.GetLength();
+		CString strPre = sGetFilePreName.Left(pos);
+		CString strSub = sGetFilePreName.Right(length - pos);
+		CString strAdd;
+		strAdd.Format(_T("_%d"),fileNum);
+		sGetFileName = strPre + strAdd + strSub;
+		openDataFile(sGetFileName);
+	}
+	if(totalReceiveByte < 1024)
+	{
+		str.Format(_T("已接收数据: %d B"),totalReceiveByte);
+	}
+	else if(totalReceiveByte < 1024*1024)
+	{
+		str.Format(_T("已接收数据:%2f KB"),(float)totalReceiveByte/1024);
+	}
+	else
+	{
+		str.Format(_T("已接收数据:%2f MB"),(float)totalReceiveByte/(1024*1024));
+	}
 	m_wndStatusBar.SetPaneText(m_wndStatusBar.CommandToIndex(ID_INDICATOR_INFO),str);
-	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
+
 	writeDataFile(&theApp.commLayer.m_ReceiveBuff[0],wParam);
+	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
     return 0;
 }
 
@@ -351,13 +394,13 @@ void CMainFrame::startWork()
 {
 	//open and write file
 	//执行导出操作
-	CString sGetFileName;
+	//CString sGetFileName;
 	CString strTime;
 	//获取系统时间
 	CTime tm;
 	tm=CTime::GetCurrentTime();
 	strTime=tm.Format(_T("(%Y-%m-%d-%H-%M-%S)"));
-	CString fileName = theApp.DataPath + _T("export ")+strTime;
+	fileName = theApp.DataPath + _T("export ")+strTime;
 	CFileDialog dlg (FALSE, _T("dmor"), fileName, OFN_HIDEREADONLY | OFN_EXPLORER | OFN_OVERWRITEPROMPT, NULL);
 	if (dlg.DoModal () == IDOK)
 	{
@@ -365,6 +408,7 @@ void CMainFrame::startWork()
 		openDataFile(sGetFileName);
 	}
 	totalReceiveByte = 0;
+	fileNum = 0;
 	sendConnectCmd();
 }
 
@@ -396,7 +440,7 @@ void CMainFrame::openDataFile(CString strFile)
 void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam) 
 {
 	theApp.nStartCoordinate = 0;
-	theApp.bStart = true;
+	//theApp.bStart = true;
 	std::string str,strTitle,strData;
 	CPetroData* pPData = NULL;
 	BYTE buf0 = 0;
@@ -407,20 +451,10 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 			if(pPData != NULL)
 			{
 				theApp.petroList.AddTail(pPData);
-				if(pDataMonitorView == NULL)
-				{
-					pDataMonitorView = GetDataMonitorView();
-				}
-				{
-					pDataMonitorView->Invalidate(FALSE);
-				}
 			}
 		}
 		if(tmp[i] == '$')//起始标示
 		{
-			//str.clear();
-			//theApp.petroList.AddTail(pPData);
-			//pPData = new CPetroData();
 			str.clear();
 			TRACE(_T("Find Char '$' \r\n"));
 		}
@@ -435,17 +469,13 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					TRACE(_T("Find Char 'DEPT' \r\n"));
 					if(pPData != NULL)
 					{
-						if(theApp.bStart)
-						{
-							theApp.nStartCoordinate = (int)(pPData->dept/10)*10;
-							theApp.bStart = false;
-						}
 						theApp.petroList.AddTail(pPData);
-
+						/*
 						if(pDataMonitorView != NULL)
 						{
 							pDataMonitorView->Invalidate(FALSE);
 						}
+						*/
 					}
 					pPData = new CPetroData();
 				}
@@ -463,37 +493,37 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						if(strTitle == "DEPT")
 						{
 							TRACE(_T("strTitle == 'DEPT' \r\n"));
-							pPData->dept = num;
+							pPData->dept.integer = num;
 						}
 						else if(strTitle == "TEMP")
 						{
 							TRACE(_T("strTitle == 'TEMP' \r\n"));
-							pPData->temp = num;
+							pPData->temp.integer = num;
 						}
 						else if(strTitle == "RM")
 						{
 							TRACE(_T("strTitle == 'RM' \r\n"));
-							pPData->rm = num;
+							pPData->rm.integer = num;
 						}
 						else if(strTitle == "GM")
 						{
 							TRACE(_T("strTitle == 'GM' \r\n"));
-							pPData->gr = num;
+							pPData->gr.integer = num;
 						}
 						else if(strTitle == "MAGX")
 						{
 							TRACE(_T("strTitle == 'MAGX' \r\n"));
-							if(pPData->mag[0] == 0)
+							if(pPData->mag[0].integer == 0)
 							{
-								pPData->mag[0] = num;
+								pPData->mag[0].integer = num;
 							}
-							else if(pPData->mag[1] == 0)
+							else if(pPData->mag[1].integer == 0)
 							{
-								pPData->mag[1] = num;
+								pPData->mag[1].integer = num;
 							}
-							else if(pPData->mag[2] == 0)
+							else if(pPData->mag[2].integer == 0)
 							{
-								pPData->mag[2] = num;
+								pPData->mag[2].integer = num;
 							}
 							else
 							{
@@ -502,7 +532,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						else if(strTitle == "CCL")
 						{
 							TRACE(_T("strTitle == 'CCL' \r\n"));
-							pPData->ccl = num;
+							pPData->ccl.integer = num;
 						}
 					}
 				}
@@ -515,42 +545,51 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						if(strTitle == "DEPT")
 						{
 							TRACE(_T("strTitle == 'DEPT' \r\n"));
-							num = (int)(num * 100 + 0.5)/100.0;
-							pPData->dept = num;
+							pPData->dept.integer = (int)num;
+							num = num*10 - pPData->dept.integer*10;
+							pPData->dept.decimal = (int)(num + 0.5);
 						}
 						else if(strTitle == "TEMP")
 						{
 							TRACE(_T("strTitle == 'TEMP' \r\n"));
-							num = (int)(num * 100 + 0.5)/100.0;
-							pPData->temp = num;
+							pPData->temp.integer = (int)num;
+							num = num*10 - pPData->temp.integer*10;
+							pPData->temp.decimal = (int)(num + 0.5);
 						}
 						else if(strTitle == "RM")
 						{
 							TRACE(_T("strTitle == 'RM' \r\n"));
-							num = (int)(num * 100 + 0.5)/100.0;
-							pPData->rm = num;
+							pPData->rm.integer = (int)num;
+							num = num*10 - pPData->rm.integer*10;
+							pPData->rm.decimal = (int)(num + 0.5);
 						}
 						else if(strTitle == "GM")
 						{
 							TRACE(_T("strTitle == 'GM' \r\n"));
-							num = (int)(num * 100 + 0.5)/100.0;
-							pPData->gr = num;
+							pPData->gr.integer = (int)num;
+							num = num*10 - pPData->gr.integer*10;
+							pPData->gr.decimal = (int)(num + 0.5);
 						}
 						else if(strTitle == "MAGX")
 						{
 							TRACE(_T("strTitle == 'MAGX' \r\n"));
-							num = (int)(num * 100 + 0.5)/100.0;
-							if(pPData->mag[0] == 0)
+							if(pPData->mag[0].integer == 0 && pPData->mag[0].decimal == 0)
 							{
-								pPData->mag[0] = num;
+								pPData->mag[0].integer = (int)num;
+								num = num*10 - pPData->mag[0].integer*10;
+								pPData->mag[0].decimal = (int)(num + 0.5);
 							}
-							else if(pPData->mag[1] == 0)
+							else if(pPData->mag[1].integer == 0 && pPData->mag[1].decimal == 0)
 							{
-								pPData->mag[1] = num;
+								pPData->mag[1].integer = (int)num;
+								num = num*10 - pPData->mag[1].integer*10;
+								pPData->mag[1].decimal = (int)(num + 0.5);
 							}
-							else if(pPData->mag[2] == 0)
+							else if(pPData->mag[2].integer == 0 && pPData->mag[2].decimal == 0)
 							{
-								pPData->mag[2] = num;
+								pPData->mag[2].integer = (int)num;
+								num = num*10 - pPData->mag[2].integer*10;
+								pPData->mag[2].decimal = (int)(num + 0.5);
 							}
 							else
 							{
@@ -559,8 +598,9 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						else if(strTitle == "CCL")
 						{
 							TRACE(_T("strTitle == 'CCL' \r\n"));
-							num = (int)(num * 100 + 0.5)/100.0;
-							pPData->ccl = num;
+							pPData->ccl.integer = (int)num;
+							num = num*10 - pPData->ccl.integer*10;
+							pPData->ccl.decimal = (int)(num + 0.5);
 						}
 					}
 				}
@@ -574,6 +614,10 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 			{
 				i+=2;
 			}
+		}
+		else if(tmp[i] == 0x0D || tmp[i] == 0x0A)
+		{
+			continue;
 		}
 		else
 		{
@@ -798,11 +842,12 @@ void CMainFrame::OnMenuTargetdeepth()
 	targetDlg.DoModal();
 }
 
-
+#if 1
 void CMainFrame::OnFileOpen()
 {
 	// TODO: 在此添加命令处理程序代码
 	bool bReturn=false;
+	theApp.processType = FILEDATA_PROCESSING;
 	TCHAR   *pFileBuffer = new TCHAR[MAX_PATH];//最多允许300个文件
 	CFileDialog dlg (TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_EXPLORER , _T("dmor文件(*.dmor)|*.dmor||"),this);
 	if (dlg.DoModal () == IDOK)
@@ -820,6 +865,14 @@ void CMainFrame::OnFileOpen()
 		fAddressImport.SeekToBegin ();
 		fAddressImport.Read (pData,dwFileLength);
 		ParseData(pData,dwFileLength);
+		pDataMonitorView = GetDataMonitorView();
+		pPanelView = GetPanelView();
+		pScaleView = GetScaleView();
+		if(pDataMonitorView)
+		{
+			pDataMonitorView->StartTimer();
+		}
 	}
 }
+#endif
 

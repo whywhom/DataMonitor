@@ -26,16 +26,24 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // 重写以绘制该视图
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	void StartTimer();
+	void StopTimer();
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	void DrawCoordinateSystem(CDC* pDC);
 	void DrawDataArray(CDC* pDC);
+	void DrawData();
 private:
+	unsigned long base;//深度起点
+	unsigned long bias;//深度偏移量
 	CRect rect;
 	CRect rectTotal;
+
 	
+	CPetroData* pPData;//得到队列数据
+	CPetroData* pOldPData;//保存前一个数据队列
 // 实现
 public:
 	virtual ~CDataMonitorView();

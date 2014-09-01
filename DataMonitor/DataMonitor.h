@@ -131,7 +131,9 @@ public:
 	CTypedPtrList < CPtrList, CPetroData * >petroList;
 
 	int nStartCoordinate;//起始坐标
-	bool bStart;
+	//bool bStart;
+
+	int processType;//处理数据类型：0 - 从串口获得的数据，1 - 从文件获取的数据
 private:
 	void GetModulePath();
 	int CreateDmFile(CString strFile);

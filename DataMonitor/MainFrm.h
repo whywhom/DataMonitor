@@ -34,10 +34,13 @@ protected:
 	CPanelView* pPanelView; 
 	CScaleView* pScaleView; 
 	CDataMonitorView* pDataMonitorView; 
+	CString fileName;
+	//CString sGetFileName;
+	
 	int parameterFlag;//send flag to jobdlg for some action, 0-nothing;1-new job
 // 操作
 public:
-
+	
 // 重写
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -54,12 +57,15 @@ protected:  // 控件条嵌入成员
 	CToolBar          m_wndToolBar;
 	CStatusBar        m_wndStatusBar;
 
-	CString sGetFileName;//保存打开的文件名
+	CString sGetFileName;//保存打开的文件路径
+	int fileNum;
+	CString sGetFilePreName;//保存打开的文件名
 	FILE* fp;//指向打开的文件
 
 	CWinThread*   m_Thread;
 	BYTE* pData;//存储文件数据
 	unsigned long totalReceiveByte;
+	unsigned long fileLimit;//文件大小限制，超过的话则自动生成下一个文件
 protected:
 	static UINT MainThread(LPVOID pParam);
 	

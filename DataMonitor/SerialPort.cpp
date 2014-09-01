@@ -552,7 +552,7 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
                                nToRead,     // Read one byte
                                &BytesRead,   // Stores number of bytes read
                                &port->m_ov);  // pointer to the m_ov structure
-#if 1
+#if 0
             TRACE0("SerialPort RX = ");
             TRACE(_T(" %02X\n"),BytesRead);
             for(DWORD cont=0; cont < BytesRead; cont++)

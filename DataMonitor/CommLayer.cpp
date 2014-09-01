@@ -382,6 +382,7 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 				memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
 				m_bConnectEffective = true;
 				g_event.SetEvent();
+#if 0
 				TRACE0("CCommLayer RX = ");
 				TRACE(_T(" %02X\n"),dwSize);
 				for(DWORD cont=0; cont < dwSize; cont++)
@@ -389,6 +390,7 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 					TRACE(_T(" %02X"),inbuff[cont]);
 				}
 				TRACE0("\n");
+#endif
 				::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize, 0x0000);
 			}
 			else if(GetConnectType() == TYPE_INIT)
@@ -400,9 +402,9 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 					&& localReceiveBuff[2] == 'D' )
 				{
 					isNewData = true;
-					memcpy(m_ReceiveBuff,&localReceiveBuff[10],dwSize-10);
+					memcpy(m_ReceiveBuff,&localReceiveBuff[0],dwSize);
 					m_bConnectEffective = true;
-					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize-10, 0x0000);
+					::SendMessage(fatherHwnd,WM_USER_RECEIVEDATA, dwSize, 0x0000);
 				}
 				else
 				{

@@ -43,6 +43,10 @@ CDataMonitorView::CDataMonitorView()
 	gmArray[0] = 0;
 	gmArray[1] = 20000;
 
+	base = 0;
+	bias = 0;
+	pPData = NULL;
+	pOldPData = NULL;
 }
 
 CDataMonitorView::~CDataMonitorView()
@@ -62,12 +66,23 @@ BOOL CDataMonitorView::PreCreateWindow(CREATESTRUCT& cs)
 void CDataMonitorView::OnDraw(CDC* pDC)
 {
 	CDataMonitorDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc);
-	//if (!pDoc)
-	//	return;
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
 
 	// TODO: 在此处为本机数据添加绘制代码
-	DrawData(pDC);
+	if(theApp.processType == REALTIME_PROCESSING)
+	{
+		DrawData(pDC);
+	}
+	else if(theApp.processType == FILEDATA_PROCESSING)
+	{
+		DrawData(pDC);
+	}
+	else
+	{
+		//nothing to do
+	}
 }
 
 
@@ -124,7 +139,7 @@ void CDataMonitorView::OnPaint()
 }
 void CDataMonitorView::DrawData(CDC* pDC)
 {
-	TRACE(_T("DrawCoordinateSystem"));
+	TRACE(_T("DrawCoordinateSystem\r\n"));
 	GetClientRect(rect);
 	UpdateData(FALSE);
 	rectTotal = rect;
@@ -134,11 +149,10 @@ void CDataMonitorView::DrawData(CDC* pDC)
 }
 void CDataMonitorView::DrawDataArray(CDC* pDC)
 {
-	CPetroData* pPData = NULL ,*pOldPData = NULL;
-	float dept =0,temp = 0,olddept =0,oldtemp = 0;
-	float oldgr = 0,gr = 0;
+	int dept =0,temp = 0,olddept =0,oldtemp = 0;
+	int oldgr = 0,gr = 0;
 	int x1=0,y1=0,dx1=0,dy1=0,dgry1=0;
-	float x2=0,y2=0,dx2=0,dy2=0,dgry2=0;
+	int x2=0,y2=0,dx2=0,dy2=0,dgry2=0;
 	int iDrawType = PS_SOLID;
 	COLORREF color = RGB(255,0,0);
 	COLORREF colorBlue = RGB(0,0,255);
@@ -146,7 +160,59 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 	CPen pen2(iDrawType, 1,colorBlue); //画笔
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 	int gap = 20, gap1 = 300, gap2 = 350;
+	if(pPData)
+	{
+		dept = pPData->dept.integer;
+		dx1=pPData->dept.integer;
+		dx2=pPData->dept.decimal;
+		dx1-=base;
+
+		if(pOldPData != NULL)
+		{
+			pDC->SelectObject(&pen);
+			x1=pOldPData->dept.integer;
+			x2=pOldPData->dept.decimal;
+			x1-=base;
+
+			y1=pOldPData->temp.integer;
+			y2=pOldPData->temp.decimal;
+
+			int iTemp = (int)(x2*20/10);
+			int iTemp2 = (int)(pOldPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pOldPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+
+			int iTemp3 = (int)(dx2*20/10);
+			int iTemp4 = (int)(pPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+
+			pDC->MoveTo(iTemp2,x1+iTemp); // [0,0]
+			pDC->LineTo(iTemp4,dx1+iTemp3);
+			//gr
+#if 0
+			pDC->SelectObject(&pen2);
+
+			oldgr = pOldPData->gr;
+			if(oldgr - 0 > 0.01 && gr - 0 > 0.01 )
+			{
+				y1=(int)oldgr;    
+				y2=oldgr-(float)y1;
+
+				iTemp = (int)(x2*20/10);
+				iTemp2 = (int)(oldgr*gap1/(gmArray[1]-gmArray[0]));
+
+				iTemp3 = (int)(dx2*20/10);
+				iTemp4 = (int)(gr*gap1/(gmArray[1]-gmArray[0]));
+
+				pDC->MoveTo(x1+iTemp,iTemp2); // [0,0]
+				pDC->LineTo(dx1+iTemp3,iTemp4);
+			}
+#endif
+		}
+		
+		pOldPData = pPData;
+	}
+
+#if 0
 	POSITION pos = theApp.petroList.GetHeadPosition();
+
 	while(pos)
 	{
 		pOldPData = pPData;
@@ -200,11 +266,16 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 			}
 		}
 	}
+#endif
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 }
 void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 {
 	TRACE(_T("DrawCoordinateSystem"));
+	if(pPData->dept.integer > bias)
+	{
+		base = pPData->dept.integer;
+	}
 	//获得线的颜色颜色
 	COLORREF color = RGB(127,127,127);
 	CRect textRect;
@@ -272,7 +343,7 @@ void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 	{
 		pDC->MoveTo(0,j); // [0,0]
 		pDC->LineTo(gap1,j);
-		if(iCount != 0 && iCount%10 == 0)
+		if(iCount != 0 && (iCount+base)%10 == 0)
 		{
 			pDC->MoveTo(0,j+1); // [0,0]
 			pDC->LineTo(gap1,j+1);
@@ -282,13 +353,15 @@ void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 	{
 		pDC->MoveTo(gap2,j); // [0,0]
 		pDC->LineTo(rectTotal.Width(),j);
-		if(iCount != 0 && iCount%10 == 0)
+		if(iCount != 0 && (iCount+base)%10 == 0)
 		{
 			pDC->MoveTo(gap2,j+1); // [0,0]
 			pDC->LineTo(rectTotal.Width(),j+1);
 		}
 	}
-	for (int j=0,iCount = 0;j<=rectTotal.Height();j+=gap*10,iCount++)
+	bias = base + rectTotal.Height()/gap;//深度到屏幕底部的坐标偏移
+
+	for (int j=(base%10),iCount = 0;j<=rectTotal.Height();j+=gap*10,iCount++)
 	{
 		textRect = rectTotal;
 		textRect.left = gap1+2;
@@ -297,11 +370,12 @@ void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 		textRect.bottom = textRect.top +gap;
 		pDC->SelectObject(&font);
 		pDC->SetTextAlign(TA_LEFT);
-		str.Format(_T("%d"),(j/gap+theApp.nStartCoordinate));
+		str.Format(_T("%d"),(j/gap+base));
 		//pDC->TextOut(1,30*i+16,str);   //输出文本值
 		pDC->DrawText(str,textRect,DT_LEFT);
 
 	}
+	
 	//画笔刷新
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 
@@ -384,16 +458,57 @@ void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
 #endif
 }
+void CDataMonitorView::StartTimer()
+{
+	base = 0;
+	bias = 0;
+	SetTimer(TIMER_CMD_DRAW,TIME_REFRESH,NULL);
+}
 
+void CDataMonitorView::StopTimer()
+{
+	KillTimer(TIMER_CMD_DRAW);
+}
 
 void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
+	//KillTimer(nIDEvent);
+	switch(nIDEvent)
+	{
+	case TIMER_CMD_DRAW:
+		{
+			TRACE(_T("\r\n OnTimer() for + %d + ms \r\n"),TIME_REFRESH);
+			if(theApp.petroList.IsEmpty() && theApp.processType == FILEDATA_PROCESSING)
+			{
+				KillTimer(nIDEvent);
+			}
+			else
+			{
+				DrawData();
+			}
+			SetTimer(TIMER_CMD_DRAW,TIME_REFRESH,NULL);
+		}
+		break;
+	default:
+		break;
+	}
 	CScrollView::OnTimer(nIDEvent);
 }
 
-
+void CDataMonitorView::DrawData()
+{
+	if(!theApp.petroList.IsEmpty())
+	{
+		pPData = theApp.petroList.RemoveHead();
+		//if(theApp.bStart)
+		{
+			theApp.nStartCoordinate = pPData->dept.integer/10;
+			//theApp.bStart = false;
+		}
+	}
+	Invalidate();
+}
 int CDataMonitorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CScrollView::OnCreate(lpCreateStruct) == -1)
