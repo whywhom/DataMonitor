@@ -71,8 +71,6 @@ CDataMonitorView::CDataMonitorView()
 	bias = 0;
 	pPData = NULL;
 	pOldPData = NULL;
-
-	theApp.processType == NO_PROCESSING;
 }
 
 CDataMonitorView::~CDataMonitorView()

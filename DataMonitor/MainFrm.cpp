@@ -76,10 +76,8 @@ CMainFrame::CMainFrame()
 	pPanelView = NULL; 
 	pScaleView = NULL; 
 	pDataMonitorView = NULL; 
-	//theApp.nStartCoordinate = 0;
-	//theApp.bStart = true;
 	fileLimit = 1024*1024*4;
-	theApp.processType = REALTIME_PROCESSING;
+	theApp.processType == NO_PROCESSING;
 }
 
 CMainFrame::~CMainFrame()
@@ -470,12 +468,6 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					if(pPData != NULL)
 					{
 						theApp.petroList.AddTail(pPData);
-						/*
-						if(pDataMonitorView != NULL)
-						{
-							pDataMonitorView->Invalidate(FALSE);
-						}
-						*/
 					}
 					pPData = new CPetroData();
 				}
@@ -494,21 +486,25 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						{
 							TRACE(_T("strTitle == 'DEPT' \r\n"));
 							pPData->dept.integer = num;
+							pPData->dept.bAssign = true;
 						}
 						else if(strTitle == "TEMP")
 						{
 							TRACE(_T("strTitle == 'TEMP' \r\n"));
 							pPData->temp.integer = num;
+							pPData->temp.bAssign = true;
 						}
 						else if(strTitle == "RM")
 						{
 							TRACE(_T("strTitle == 'RM' \r\n"));
 							pPData->rm.integer = num;
+							pPData->rm.bAssign = true;
 						}
 						else if(strTitle == "GM")
 						{
 							TRACE(_T("strTitle == 'GM' \r\n"));
 							pPData->gr.integer = num;
+							pPData->gr.bAssign = true;
 						}
 						else if(strTitle == "MAGX")
 						{
@@ -516,14 +512,17 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							if(pPData->mag[0].integer == 0)
 							{
 								pPData->mag[0].integer = num;
+								pPData->mag[0].bAssign = true;
 							}
 							else if(pPData->mag[1].integer == 0)
 							{
 								pPData->mag[1].integer = num;
+								pPData->mag[1].bAssign = true;
 							}
 							else if(pPData->mag[2].integer == 0)
 							{
 								pPData->mag[2].integer = num;
+								pPData->mag[2].bAssign = true;
 							}
 							else
 							{
@@ -548,6 +547,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->dept.integer = (int)num;
 							num = num*10 - pPData->dept.integer*10;
 							pPData->dept.decimal = (int)(num + 0.5);
+							pPData->dept.bAssign = true;
 						}
 						else if(strTitle == "TEMP")
 						{
@@ -555,6 +555,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->temp.integer = (int)num;
 							num = num*10 - pPData->temp.integer*10;
 							pPData->temp.decimal = (int)(num + 0.5);
+							pPData->temp.bAssign = true;
 						}
 						else if(strTitle == "RM")
 						{
@@ -562,6 +563,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->rm.integer = (int)num;
 							num = num*10 - pPData->rm.integer*10;
 							pPData->rm.decimal = (int)(num + 0.5);
+							pPData->rm.bAssign = true;
 						}
 						else if(strTitle == "GM")
 						{
@@ -569,6 +571,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->gr.integer = (int)num;
 							num = num*10 - pPData->gr.integer*10;
 							pPData->gr.decimal = (int)(num + 0.5);
+							pPData->gr.bAssign = true;
 						}
 						else if(strTitle == "MAGX")
 						{
@@ -578,18 +581,21 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 								pPData->mag[0].integer = (int)num;
 								num = num*10 - pPData->mag[0].integer*10;
 								pPData->mag[0].decimal = (int)(num + 0.5);
+								pPData->mag[0].bAssign = true;
 							}
 							else if(pPData->mag[1].integer == 0 && pPData->mag[1].decimal == 0)
 							{
 								pPData->mag[1].integer = (int)num;
 								num = num*10 - pPData->mag[1].integer*10;
 								pPData->mag[1].decimal = (int)(num + 0.5);
+								pPData->mag[1].bAssign = true;
 							}
 							else if(pPData->mag[2].integer == 0 && pPData->mag[2].decimal == 0)
 							{
 								pPData->mag[2].integer = (int)num;
 								num = num*10 - pPData->mag[2].integer*10;
 								pPData->mag[2].decimal = (int)(num + 0.5);
+								pPData->mag[2].bAssign = true;
 							}
 							else
 							{
@@ -601,6 +607,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->ccl.integer = (int)num;
 							num = num*10 - pPData->ccl.integer*10;
 							pPData->ccl.decimal = (int)(num + 0.5);
+							pPData->ccl.bAssign = true;
 						}
 					}
 				}

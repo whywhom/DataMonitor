@@ -39,6 +39,7 @@ typedef struct _DATA_PART
 {
 	unsigned long integer;
 	int decimal;
+	bool bAssign;
 }DATA_PART;
 
 #define TIMER_CMD_DRAW 0x20
