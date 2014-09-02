@@ -226,87 +226,11 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 			pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
 			pDC->LineTo(iTemp4,dx1*gap+iTemp3);
 			//gr
-#if 0
-			pDC->SelectObject(&pen2);
 
-			oldgr = pOldPData->gr;
-			if(oldgr - 0 > 0.01 && gr - 0 > 0.01 )
-			{
-				y1=(int)oldgr;    
-				y2=oldgr-(float)y1;
-
-				iTemp = (int)(x2*20/10);
-				iTemp2 = (int)(oldgr*gap1/(gmArray[1]-gmArray[0]));
-
-				iTemp3 = (int)(dx2*20/10);
-				iTemp4 = (int)(gr*gap1/(gmArray[1]-gmArray[0]));
-
-				pDC->MoveTo(x1+iTemp,iTemp2); // [0,0]
-				pDC->LineTo(dx1+iTemp3,iTemp4);
-			}
-#endif
 		}
 		Sleep(1000);
 		pOldPData = pPData;
 	}
-
-#if 0
-	POSITION pos = theApp.petroList.GetHeadPosition();
-
-	while(pos)
-	{
-		pOldPData = pPData;
-		pPData = theApp.petroList.GetNext(pos);
-		dept = pPData->dept;
-		dx1=(int)dept;    
-		dx2=dept-(float)dx1;
-		dx1-=theApp.nStartCoordinate;
-
-		temp = pPData->temp;
-		//dy1=(int)temp;    
-		//dy2=temp-(float)dy1;
-
-		gr = pPData->gr;
-		if(pOldPData != NULL)
-		{
-			pDC->SelectObject(&pen);
-			olddept = pOldPData->dept;
-			x1=(int)olddept;    
-			x2=olddept-(float)x1;
-			x1-=theApp.nStartCoordinate;
-
-			oldtemp = pOldPData->temp;
-			y1=(int)oldtemp;    
-			y2=oldtemp-(float)y1;
-
-			int iTemp = (int)(x2*20/10);
-			int iTemp2 = (int)(oldtemp*gap1/(tempArray[1]-tempArray[0]));
-
-			int iTemp3 = (int)(dx2*20/10);
-			int iTemp4 = (int)(temp*gap1/(tempArray[1]-tempArray[0]));
-
-			pDC->MoveTo(x1+iTemp,iTemp2); // [0,0]
-			pDC->LineTo(dx1+iTemp3,iTemp4);
-			//gr
-			pDC->SelectObject(&pen2);
-			oldgr = pOldPData->gr;
-			if(oldgr - 0 > 0.01 && gr - 0 > 0.01 )
-			{
-				y1=(int)oldgr;    
-				y2=oldgr-(float)y1;
-
-				iTemp = (int)(x2*20/10);
-				iTemp2 = (int)(oldgr*gap1/(gmArray[1]-gmArray[0]));
-
-				iTemp3 = (int)(dx2*20/10);
-				iTemp4 = (int)(gr*gap1/(gmArray[1]-gmArray[0]));
-
-				pDC->MoveTo(x1+iTemp,iTemp2); // [0,0]
-				pDC->LineTo(dx1+iTemp3,iTemp4);
-			}
-		}
-	}
-#endif
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 }
 
@@ -861,10 +785,75 @@ void CDataMonitorView::OnInitialUpdate()
 void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	SCROLLINFO	scrollinfo;
+	SCROLLINFO scrollinfo;
 	GetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
-	
-#if 1
+	switch (nSBCode)
+	{
+	case SB_BOTTOM:
+		ScrollWindow(0,(scrollinfo.nPos-scrollinfo.nMax)*10);
+		scrollinfo.nPos = scrollinfo.nMax;
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		break;
+	case SB_TOP:
+		ScrollWindow(0,(scrollinfo.nPos-scrollinfo.nMin)*10);
+		scrollinfo.nPos = scrollinfo.nMin;
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		break;
+	case SB_LINEUP:
+		scrollinfo.nPos -= 1;
+		if (scrollinfo.nPos<scrollinfo.nMin)
+		{
+			scrollinfo.nPos = scrollinfo.nMin;
+			break;
+		}
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		ScrollWindow(0,15);
+		break;
+	case SB_LINEDOWN:
+		scrollinfo.nPos += 1;
+		if (scrollinfo.nPos>scrollinfo.nMax)
+		{
+			scrollinfo.nPos = scrollinfo.nMax;
+			break;
+		}
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		ScrollWindow(0,-15);
+		break;
+	case SB_PAGEUP:
+		scrollinfo.nPos -= 5;
+		if (scrollinfo.nPos<scrollinfo.nMin)
+		{
+			scrollinfo.nPos = scrollinfo.nMin;
+			break;
+		}
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		ScrollWindow(0,10*5);
+		break;
+	case SB_PAGEDOWN:
+		scrollinfo.nPos += 5;
+		if (scrollinfo.nPos>scrollinfo.nMax)
+		{
+			scrollinfo.nPos = scrollinfo.nMax;
+			break;
+		}
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		ScrollWindow(0,-10*5);
+		break;
+	case SB_ENDSCROLL:
+		// MessageBox("SB_ENDSCROLL");
+		break;
+	case SB_THUMBPOSITION:
+		// ScrollWindow(0,(scrollinfo.nPos-nPos)*10);
+		// scrollinfo.nPos = nPos;
+		// SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		break;
+	case SB_THUMBTRACK:
+		ScrollWindow(0,(scrollinfo.nPos-nPos)*15);
+		scrollinfo.nPos = nPos;
+		SetScrollInfo(SB_VERT,&scrollinfo,SIF_ALL);
+		break;
+	}
+#if 0
 	pScrollBar = GetScrollBarCtrl(SB_VERT);
 	int temp_01=GetScrollPos(SB_VERT);//取得当前值
 
@@ -909,7 +898,7 @@ void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 		SetScrollPos(SB_VERT, nPos & 0xFFFF);
 		return;
 	}
-
+	DrawData();
 	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
 #endif
 }
