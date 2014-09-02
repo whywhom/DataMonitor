@@ -76,7 +76,7 @@ CMainFrame::CMainFrame()
 	pPanelView = NULL; 
 	pScaleView = NULL; 
 	pDataMonitorView = NULL; 
-	theApp.nStartCoordinate = 0;
+	//theApp.nStartCoordinate = 0;
 	//theApp.bStart = true;
 	fileLimit = 1024*1024*4;
 	theApp.processType = REALTIME_PROCESSING;
