@@ -42,6 +42,14 @@ typedef struct _DATA_PART
 	bool bAssign;
 }DATA_PART;
 
+typedef struct _DATA_TEMP
+{
+	unsigned long dy;
+	unsigned long dx_i;
+	unsigned long dx_d;
+	bool bAssign;
+}DATA_TEMP;
+
 #define TIMER_CMD_DRAW 0x20
 #define TIME_REFRESH_REALTIME	50
 #define TIME_REFRESH_FILE	1000
@@ -49,3 +57,9 @@ typedef struct _DATA_PART
 #define NO_PROCESSING 0x0
 #define REALTIME_PROCESSING 0x1
 #define FILEDATA_PROCESSING 0x2
+
+#define FEATURE_TEMP
+#define FEATURE_GR
+#define FEATURE_RM
+#define FEATURE_CCL
+#define FEATURE_MAG

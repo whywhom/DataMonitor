@@ -37,35 +37,9 @@ END_MESSAGE_MAP()
 CDataMonitorView::CDataMonitorView()
 {
 	// TODO: 在此处添加构造代码
-	tempArray[0] = 0;
-	tempArray[1] = 0;
+	InitArrayData();
 
-	gmArray[0] = 0;
-	gmArray[1] = 0;
-
-	rmArray[0] = 0;
-	rmArray[1] = 0;
-
-	cclArray[0] = 0;
-	cclArray[1] = 0;
-
-	magArray[0] = 0;
-	magArray[1] = 0;
-
-	oldtempArray[0] = 0;
-	oldtempArray[1] = 0;
-
-	oldgmArray[0] = 0;
-	oldgmArray[1] = 0;
-
-	oldrmArray[0] = 0;
-	oldrmArray[1] = 0;
-
-	oldcclArray[0] = 0;
-	oldcclArray[1] = 0;
-
-	oldmagArray[0] = 0;
-	oldmagArray[1] = 0;
+	InitOldArrayData();
 
 	base = 0;
 	bias = 0;
@@ -187,8 +161,8 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 {
 	int dept =0,temp = 0,olddept =0,oldtemp = 0;
 	int oldgr = 0,gr = 0;
-	int x1=0,y1=0,dx1=0,dy1=0,dgry1=0;
-	int x2=0,y2=0,dx2=0,dy2=0,dgry2=0;
+	int old_iy=0,y1=0,dold_iy=0,dy1=0,dgry1=0;
+	int old_dy=0,y2=0,cur_dy=0,dy2=0,dgry2=0;
 	int iDrawType = PS_SOLID;
 	COLORREF color = RGB(255,0,0);
 	COLORREF colorBlue = RGB(0,0,255);
@@ -201,28 +175,28 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 	{
 		pPData = theApp.petroList.GetNext(nPos);
 		dept = pPData->dept.integer;
-		dx1=pPData->dept.integer;
-		dx2=pPData->dept.decimal;
-		dx1-=base;
+		dold_iy=pPData->dept.integer;
+		cur_dy=pPData->dept.decimal;
+		dold_iy-=base;
 
 		if(pOldPData != NULL)
 		{
 			pDC->SelectObject(&pen);
-			x1=pOldPData->dept.integer;
-			x2=pOldPData->dept.decimal;
-			x1-=base;
+			old_iy=pOldPData->dept.integer;
+			old_dy=pOldPData->dept.decimal;
+			old_iy-=base;
 
 			y1=pOldPData->temp.integer;
 			y2=pOldPData->temp.decimal;
 
-			int iTemp = (int)(x2*gap/10);
-			int iTemp2 = (int)(pOldPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pOldPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+			int iOldDept_y = (int)(old_dy*gap/10);
+			int iOld_ix = (int)(pOldPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pOldPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
 
-			int iTemp3 = (int)(dx2*gap/10);
-			int iTemp4 = (int)(pPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+			int iCurDept_y = (int)(cur_dy*gap/10);
+			int iCur_ix = (int)(pPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
 
-			pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-			pDC->LineTo(iTemp4,dx1*gap+iTemp3);
+			pDC->MoveTo(iOld_ix,old_iy*gap+iOldDept_y); // [0,0]
+			pDC->LineTo(iCur_ix,dold_iy*gap+iCurDept_y);
 			//gr
 
 		}
@@ -234,11 +208,11 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 
 void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 {
-	int dept =0,temp = 0,olddept =0,oldtemp = 0;
-	int oldgr = 0,gr = 0;
-	long x1=0,y1=0,dx1=0,dy1=0,dgry1=0;
-	long x2=0,y2=0,dx2=0,dy2=0,dgry2=0;
-	long iTemp=0,iTemp2=0,iTemp3=0,iTemp4=0;
+	unsigned long dept =0,temp = 0,olddept =0,oldtemp = 0;
+	unsigned long oldgr = 0,gr = 0;
+	unsigned long old_iy=0,y1=0,cur_iy=0,dy1=0,dgry1=0;
+	unsigned long old_dy=0,y2=0,cur_dy=0,dy2=0,dgry2=0;
+	unsigned long iOldDept_y=0,iOld_ix=0,iCurDept_y=0,iCur_ix=0;
 	int iDrawType = PS_SOLID;
 	COLORREF colorRed = RGB(255,0,0);
 	COLORREF colorBlue = RGB(0,0,255);
@@ -251,237 +225,163 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 	CPen pen4(iDrawType, 1,color1); //画笔4
 	CPen pen5(iDrawType, 1,colorBlack); //画笔5
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-	int gap = 20, gap1 = 300, gap2 = 350;
+	int gap = 20, gap1 = 300, gap2 = 400;
 	counter = 0;
 	long length = theApp.petroList.GetCount();
 	POSITION nPos = theApp.petroList.GetHeadPosition();
+	
 	while(nPos)
 	{
 		pPData = theApp.petroList.GetNext(nPos);
-		dept = pPData->dept.integer;
-		dx1=pPData->dept.integer;
-		dx2=pPData->dept.decimal;
-		dx1-=base;
-
-		if(pOldPData != NULL)
+		//if(pOldPData != NULL)
 		{
-			//pDC->SelectObject(&pen);
-			x1=pOldPData->dept.integer;
-			x2=pOldPData->dept.decimal;
-			x1-=base;
-			//temp
-			if(pOldPData->temp.integer >0 || pOldPData->temp.decimal >0)
+			if(pPData->dept.bAssign)
 			{
-				oldtempArray[0] = pOldPData->temp.integer;
-				oldtempArray[1] = pOldPData->temp.decimal;
-			}
-			if(pPData->temp.integer >0 || pPData->temp.decimal >0)
-			{
-				pDC->SelectObject(&pen);
-				if(pOldPData->temp.integer >0 || pOldPData->temp.decimal >0)
+				if(olddeptArray.bAssign)
 				{
-					oldtempArray[0] = pOldPData->temp.integer;
-					oldtempArray[1] = pOldPData->temp.decimal;
-
-					iTemp = (int)(x2*gap/10);
-					iTemp2 = (int)((oldtempArray[0]-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+oldtempArray[1]*gap1/(10*(tempArray[1]-tempArray[0])));
-
-					iTemp3 = (int)(dx2*gap/10);
-					iTemp4 = (int)((pPData->temp.integer-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
-
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp4,dx1*gap+iTemp3);
+					old_iy=olddeptArray.dx_i;
+					old_dy=olddeptArray.dx_d;
 				}
-			}
-#if 1
+				
+				cur_iy=pPData->dept.integer;
+				cur_dy=pPData->dept.decimal;
+				cur_iy-=base;
+
+				iOldDept_y = (int)(old_dy*gap/10);
+				iCurDept_y = (int)(cur_dy*gap/10);
+			
+#ifdef FEATURE_TEMP
+				//temp
+				if(pPData->temp.bAssign)
+				{
+					if(oldtempArray.bAssign)
+					{
+						old_iy=oldtempArray.dx_i;
+						old_dy=oldtempArray.dx_d;
+
+						pDC->SelectObject(&pen);
+						iOld_ix = (int)((oldtempArray.dx_i-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+oldtempArray.dx_d*gap1/(10*(tempArray[1]-tempArray[0])));
+						iCur_ix = (int)((pPData->temp.integer-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+
+						pDC->MoveTo(iOld_ix,oldtempArray.dy); // [0,0]
+						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
+						TRACE(_T("TEMP %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldtempArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
+					}
+					
+					oldtempArray.dx_i = pPData->temp.integer;
+					oldtempArray.dx_d = pPData->temp.decimal;
+					oldtempArray.dy = cur_iy*gap+iCurDept_y;
+					oldtempArray.bAssign = true;
+				}
+#endif
+#ifdef FEATURE_GR
 			//gr
-			if(pOldPData->gr.integer >0 || pOldPData->gr.decimal >0)
-			{
-				oldgmArray[0] = pOldPData->gr.integer;
-				oldgmArray[1] = pOldPData->gr.decimal;
-			}
-			if(pPData->gr.integer >0 || pPData->gr.decimal >0)
-			{
-				pDC->SelectObject(&pen2);
-
-				if(oldgmArray[0] >0 || oldgmArray[1] >0)
+				if(pPData->gr.bAssign)
 				{
-					iTemp2 = (int)((oldgmArray[0]-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+oldgmArray[1]*gap1/(10*(gmArray[1]-gmArray[0])));
-					iTemp4 = (int)((pPData->gr.integer-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+pPData->gr.decimal*gap1/(10*(gmArray[1]-gmArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp4,dx1*gap+iTemp3);
-				}
-			}
-			else
-			{
-				pDC->SelectObject(&pen2);
+					if(oldgmArray.bAssign)
+					{
+						old_iy=oldgmArray.dx_i;
+						old_dy=oldgmArray.dx_d;
 
-				if(oldgmArray[0] >0 || oldgmArray[1] >0)
-				{
-					iTemp2 = (int)((oldgmArray[0]-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+oldgmArray[1]*gap1/(10*(gmArray[1]-gmArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp2,dx1*gap+iTemp3);
+						pDC->SelectObject(&pen2);
+						iOld_ix = (int)((oldgmArray.dx_i-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+oldgmArray.dx_d*gap1/(10*(gmArray[1]-gmArray[0])));
+						iCur_ix = (int)((pPData->gr.integer-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+pPData->gr.decimal*gap1/(10*(gmArray[1]-gmArray[0])));
+
+						pDC->MoveTo(iOld_ix,oldgmArray.dy); // [0,0]
+						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
+						TRACE(_T("GR %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldgmArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
+					}
+					
+					oldgmArray.dx_i = pPData->gr.integer;
+					oldgmArray.dx_d = pPData->gr.decimal;
+					oldgmArray.dy = cur_iy*gap+iCurDept_y;
+					oldgmArray.bAssign = true;
 				}
-			}
 #endif
-
-#if 1
+#ifdef FEATURE_RM
 			//rm
-			if(pOldPData->rm.integer >0 || pOldPData->rm.decimal >0)
-			{
-				oldrmArray[0] = pOldPData->rm.integer;
-				oldrmArray[1] = pOldPData->rm.decimal;
-			}
-			if(pPData->rm.integer >0 || pPData->rm.decimal >0)
-			{
-				pDC->SelectObject(&pen3);
-
-				if(oldrmArray[0] >0 || oldrmArray[1] >0)
+				if(pPData->rm.bAssign)
 				{
-					iTemp2 = (int)((oldrmArray[0]-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+oldrmArray[1]*gap1/(10*(rmArray[1]-rmArray[0])));
-					iTemp4 = (int)((pPData->rm.integer-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+pPData->rm.decimal*gap1/(10*(rmArray[1]-rmArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp4,dx1*gap+iTemp3);
-				}
-			}
-			else
-			{
-				pDC->SelectObject(&pen3);
+					if(oldrmArray.bAssign)
+					{
+						old_iy=oldrmArray.dx_i;
+						old_dy=oldrmArray.dx_d;
 
-				if(oldrmArray[0] >0 || oldrmArray[1] >0)
-				{
-					iTemp2 = (int)((oldrmArray[0]-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+oldrmArray[1]*gap1/(10*(rmArray[1]-rmArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp2,dx1*gap+iTemp3);
+						pDC->SelectObject(&pen3);
+						iOld_ix = (int)((oldrmArray.dx_i-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+oldrmArray.dx_d*gap1/(10*(rmArray[1]-rmArray[0])));
+						iCur_ix = (int)((pPData->rm.integer-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+pPData->rm.decimal*gap1/(10*(rmArray[1]-rmArray[0])));
+
+						pDC->MoveTo(iOld_ix,oldrmArray.dy); // [0,0]
+						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
+						TRACE(_T("RM %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldgmArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
+					}
+					
+					oldrmArray.dx_i = pPData->rm.integer;
+					oldrmArray.dx_d = pPData->rm.decimal;
+					oldrmArray.dy = cur_iy*gap+iCurDept_y;
+					oldrmArray.bAssign = true;
 				}
-			}
 #endif
-#if 1
+#ifdef FEATURE_CCL
 			//ccl
-			if(pOldPData->ccl.integer >0 || pOldPData->ccl.decimal >0)
-			{
-				oldcclArray[0] = pOldPData->ccl.integer;
-				oldcclArray[1] = pOldPData->ccl.decimal;
-			}
-			if(pPData->ccl.integer >0 || pPData->ccl.decimal >0)
-			{
-				pDC->SelectObject(&pen4);
-
-				if(oldcclArray[0] >0 || oldcclArray[1] >0)
+				if(pPData->ccl.bAssign)
 				{
-					iTemp2 = (int)((oldcclArray[0]-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+oldcclArray[1]*gap1/(10*(cclArray[1]-cclArray[0])));
-					iTemp4 = (int)((pPData->ccl.integer-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+pPData->ccl.decimal*gap1/(10*(cclArray[1]-cclArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp4,dx1*gap+iTemp3);
+					if(oldcclArray.bAssign)
+					{
+						old_iy=oldcclArray.dx_i;
+						old_dy=oldcclArray.dx_d;
+
+						pDC->SelectObject(&pen4);
+						iOld_ix = (int)((oldcclArray.dx_i-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+oldcclArray.dx_d*gap1/(10*(cclArray[1]-cclArray[0])));
+						iCur_ix = (int)((pPData->ccl.integer-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+pPData->ccl.decimal*gap1/(10*(cclArray[1]-cclArray[0])));
+
+						pDC->MoveTo(iOld_ix,oldcclArray.dy); // [0,0]
+						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
+						TRACE(_T("CCL %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldcclArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
+					}
+					
+					oldcclArray.dx_i = pPData->ccl.integer;
+					oldcclArray.dx_d = pPData->ccl.decimal;
+					oldcclArray.dy = cur_iy*gap+iCurDept_y;
+					oldcclArray.bAssign = true;
 				}
+#endif
+#ifdef FEATURE_MAG
+				//mag
+				if(pPData->mag[0].bAssign)
+				{
+					if(oldmagArray.bAssign)
+					{
+						old_iy=oldmagArray.dx_i;
+						old_dy=oldmagArray.dx_d;
+
+						pDC->SelectObject(&pen5);
+						iOld_ix = (int)((oldmagArray.dx_i-magArray[0])*gap1/(magArray[1]-magArray[0])+oldmagArray.dx_d*gap1/(10*(magArray[1]-magArray[0])));
+						iCur_ix = (int)((pPData->mag[0].integer-magArray[0])*gap1/(magArray[1]-magArray[0])+pPData->mag[0].decimal*gap1/(10*(magArray[1]-magArray[0])));
+
+						pDC->MoveTo(iOld_ix,oldmagArray.dy); // [0,0]
+						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
+						TRACE(_T("CCL %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldmagArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
+					}
+					
+					oldmagArray.dx_i = pPData->mag[0].integer;
+					oldmagArray.dx_d = pPData->mag[0].decimal;
+					oldmagArray.dy = cur_iy*gap+iCurDept_y;
+					oldmagArray.bAssign = true;
+				}
+#endif
 			}
 			else
 			{
-				pDC->SelectObject(&pen4);
-
-				if(oldcclArray[0] >0 || oldcclArray[1] >0)
-				{
-					iTemp2 = (int)((oldcclArray[0]-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+oldcclArray[1]*gap1/(10*(cclArray[1]-cclArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp2,dx1*gap+iTemp3);
-				}
+			
 			}
-#endif
-#if 1
-			//mag
-			if(pOldPData->mag[0].integer >0 || pOldPData->mag[0].decimal >0)
-			{
-				oldmagArray[0] = pOldPData->mag[0].integer;
-				oldmagArray[1] = pOldPData->mag[0].decimal;
-			}
-			if(pPData->mag[0].integer >0 || pPData->mag[0].decimal >0)
-			{
-				pDC->SelectObject(&pen5);
-
-				if(oldmagArray[0] >0 || oldmagArray[1] >0)
-				{
-					iTemp2 = (int)((oldmagArray[0]-magArray[0])*gap1/(magArray[1]-magArray[0])+oldmagArray[1]*gap1/(10*(magArray[1]-magArray[0])));
-					iTemp4 = (int)((pPData->mag[0].integer-magArray[0])*gap1/(magArray[1]-magArray[0])+pPData->ccl.decimal*gap1/(10*(magArray[1]-magArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp4,dx1*gap+iTemp3);
-				}
-			}
-			else
-			{
-				pDC->SelectObject(&pen5);
-
-				if(oldmagArray[0] >0 || oldmagArray[1] >0)
-				{
-					iTemp2 = (int)((oldmagArray[0]-magArray[0])*gap1/(magArray[1]-magArray[0])+oldmagArray[1]*gap1/(10*(magArray[1]-magArray[0])));
-					pDC->MoveTo(iTemp2,x1*gap+iTemp); // [0,0]
-					pDC->LineTo(iTemp2,dx1*gap+iTemp3);
-				}
-			}
-#endif
 		}
 		//Sleep(1000);
 		pOldPData = pPData;
 		counter++;
 		TRACE(_T("current %d / Total %d \r\n"),counter,length);
 	}
-
-#if 0
-	POSITION pos = theApp.petroList.GetHeadPosition();
-
-	while(pos)
-	{
-		pOldPData = pPData;
-		pPData = theApp.petroList.GetNext(pos);
-		dept = pPData->dept;
-		dx1=(int)dept;    
-		dx2=dept-(float)dx1;
-		dx1-=theApp.nStartCoordinate;
-
-		temp = pPData->temp;
-		//dy1=(int)temp;    
-		//dy2=temp-(float)dy1;
-
-		gr = pPData->gr;
-		if(pOldPData != NULL)
-		{
-			pDC->SelectObject(&pen);
-			olddept = pOldPData->dept;
-			x1=(int)olddept;    
-			x2=olddept-(float)x1;
-			x1-=theApp.nStartCoordinate;
-
-			oldtemp = pOldPData->temp;
-			y1=(int)oldtemp;    
-			y2=oldtemp-(float)y1;
-
-			int iTemp = (int)(x2*20/10);
-			int iTemp2 = (int)(oldtemp*gap1/(tempArray[1]-tempArray[0]));
-
-			int iTemp3 = (int)(dx2*20/10);
-			int iTemp4 = (int)(temp*gap1/(tempArray[1]-tempArray[0]));
-
-			pDC->MoveTo(x1+iTemp,iTemp2); // [0,0]
-			pDC->LineTo(dx1+iTemp3,iTemp4);
-			//gr
-			pDC->SelectObject(&pen2);
-			oldgr = pOldPData->gr;
-			if(oldgr - 0 > 0.01 && gr - 0 > 0.01 )
-			{
-				y1=(int)oldgr;    
-				y2=oldgr-(float)y1;
-
-				iTemp = (int)(x2*20/10);
-				iTemp2 = (int)(oldgr*gap1/(gmArray[1]-gmArray[0]));
-
-				iTemp3 = (int)(dx2*20/10);
-				iTemp4 = (int)(gr*gap1/(gmArray[1]-gmArray[0]));
-
-				pDC->MoveTo(x1+iTemp,iTemp2); // [0,0]
-				pDC->LineTo(dx1+iTemp3,iTemp4);
-			}
-		}
-	}
-#endif
+	InitOldArrayData();
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 	//theApp.processType = NO_PROCESSING;
 }
@@ -662,27 +562,6 @@ void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
 	CPetroData* pStartPData = theApp.petroList.GetHead();
 	CPetroData* pEndPData = theApp.petroList.GetTail();
 
-	POSITION nPos = theApp.petroList.GetHeadPosition();
-	while(nPos)
-	{
-		unsigned long m = 0;
-		CPetroData* pData = theApp.petroList.GetNext(nPos);
-		
-		tempArray[0] = GetMinData(pData->temp,tempArray[0]);
-		tempArray[1] = max(tempArray[1], pData->temp.integer/10*10+10);
-
-		gmArray[0] = GetMinData(pData->gr,gmArray[0]);
-		gmArray[1] = max(gmArray[1], pData->gr.integer/10*10+10);
-
-		rmArray[0] = GetMinData(pData->rm,rmArray[0]);
-		rmArray[1] = max(rmArray[1], pData->rm.integer/10*10+10);
-
-		cclArray[0] = GetMinData(pData->ccl,cclArray[0]);
-		cclArray[1] = max(cclArray[1], pData->ccl.integer/10*10+10);
-
-		magArray[0] = GetMinData(pData->mag[0],magArray[0]);
-		magArray[1] = max(magArray[1], pData->mag[0].integer/10*10+10);
-	}
 	CRect rect;
 	//以下两句讲获得控件在屏幕中的位置
 	//GetDlgItem(IDC_STATIC_PIC)->GetWindowRect(&rect);//获取控件相对于屏幕的位置,这个控件必须隐藏
@@ -932,8 +811,9 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 			//TRACE(_T("\r\n OnTimer() for + %d + ms \r\n"),TIME_REFRESH);
 			if(theApp.processType == FILEDATA_PROCESSING)
 			{
-				DrawData();
 				KillTimer(nIDEvent);
+				GetDataLimit();
+				DrawData();
 				return;
 			}
 			if(theApp.processType == REALTIME_PROCESSING)
@@ -948,7 +828,30 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 	}
 	CScrollView::OnTimer(nIDEvent);
 }
+void CDataMonitorView::GetDataLimit()
+{
+	POSITION nPos = theApp.petroList.GetHeadPosition();
+	while(nPos)
+	{
+		unsigned long m = 0;
+		CPetroData* pData = theApp.petroList.GetNext(nPos);
+		
+		tempArray[0] = GetMinData(pData->temp,tempArray[0]);
+		tempArray[1] = max(tempArray[1], pData->temp.integer/10*10+10);
 
+		gmArray[0] = GetMinData(pData->gr,gmArray[0]);
+		gmArray[1] = max(gmArray[1], pData->gr.integer/10*10+10);
+
+		rmArray[0] = GetMinData(pData->rm,rmArray[0]);
+		rmArray[1] = max(rmArray[1], pData->rm.integer/10*10+10);
+
+		cclArray[0] = GetMinData(pData->ccl,cclArray[0]);
+		cclArray[1] = max(cclArray[1], pData->ccl.integer/10*10+10);
+
+		magArray[0] = GetMinData(pData->mag[0],magArray[0]);
+		magArray[1] = max(magArray[1], pData->mag[0].integer/10*10+10);
+	}
+}
 void CDataMonitorView::DrawData()
 {
 #if 0
@@ -966,4 +869,25 @@ int CDataMonitorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// TODO:  在此添加您专用的创建代码
 	return 0;
+}
+
+void CDataMonitorView::InitArrayData()
+{
+	for(int i = 0;i<3;i++)
+	{
+		tempArray[i] = 0;//0-整数部分;1-小数部分;2-对应的深度坐标
+		gmArray[i] = 0;
+		rmArray[i] = 0;
+		cclArray[i] = 0;
+		magArray[i] = 0;
+	}
+}
+void CDataMonitorView::InitOldArrayData()
+{
+	memset((void*)&olddeptArray,0,sizeof(DATA_TEMP));
+	memset((void*)&oldtempArray,0,sizeof(DATA_TEMP));
+	memset((void*)&oldgmArray,0,sizeof(DATA_TEMP));
+	memset((void*)&oldrmArray,0,sizeof(DATA_TEMP));
+	memset((void*)&oldcclArray,0,sizeof(DATA_TEMP));
+	memset((void*)&oldmagArray,0,sizeof(DATA_TEMP));
 }

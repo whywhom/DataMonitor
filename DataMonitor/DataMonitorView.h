@@ -15,23 +15,27 @@ protected: // 仅从序列化创建
 	void DrawData(CDC* pDC);
 	void DrawDataFile(CDC* pDC);
 	void SetScrollTotalSizes(CRect rect);
+	void InitArrayData();
+	void InitOldArrayData();
+	void GetDataLimit();
 // 特性
 public:
 	CDataMonitorDoc* GetDocument() const;
 
 // 操作
 public:
-	unsigned long tempArray[2];
-	unsigned long gmArray[2];
-	unsigned long rmArray[2];
-	unsigned long cclArray[2];
-	unsigned long magArray[2];
+	unsigned long tempArray[3];
+	unsigned long gmArray[3];
+	unsigned long rmArray[3];
+	unsigned long cclArray[3];
+	unsigned long magArray[3];
 
-	unsigned long oldtempArray[2];
-	unsigned long oldgmArray[2];
-	unsigned long oldrmArray[2];
-	unsigned long oldcclArray[2];
-	unsigned long oldmagArray[2];
+	DATA_TEMP olddeptArray;
+	DATA_TEMP oldtempArray;
+	DATA_TEMP oldgmArray;
+	DATA_TEMP oldrmArray;
+	DATA_TEMP oldcclArray;
+	DATA_TEMP oldmagArray;
 
 // 重写
 public:
