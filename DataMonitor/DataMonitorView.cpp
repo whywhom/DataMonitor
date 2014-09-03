@@ -557,6 +557,7 @@ void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
 	
     //设置线的画笔"风格"和"颜色"还有"粗细"
 	CPen pen(iDrawType, 1,color); //画笔
+	CPen pen2(PS_DOT, 1,color); //画笔
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 	
 	CPetroData* pStartPData = theApp.petroList.GetHead();
@@ -577,42 +578,73 @@ void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
 
 	for (int i=0,iCount = 0;i<=gap1;i+=gap,iCount++)
 	{
-		pDC->MoveTo(i,0); // [0,0]
-		pDC->LineTo(i,rectTotalFile.Height());
 		if(iCount != 0 && iCount%5 == 0)
 		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,0); // [0,0]
+			pDC->LineTo(i,rectTotalFile.Height());
 			pDC->MoveTo(i+1,0); // [0,0]
 			pDC->LineTo(i+1,rectTotalFile.Height());
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,0); // [0,0]
+			pDC->LineTo(i,rectTotalFile.Height());
 		}
 	}
 	for (int i=gap2,iCount = 0;i<=rectTotalFile.Width();i+=gap,iCount++)
 	{
-		pDC->MoveTo(i,0); // [0,0]
-		pDC->LineTo(i,rectTotalFile.Height());
-		if(iCount != 0 && iCount%5 == 0)
+		
+		if(iCount%5 == 0)
 		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,0); // [0,0]
+			pDC->LineTo(i,rectTotalFile.Height());
 			pDC->MoveTo(i+1,0); // [0,0]
 			pDC->LineTo(i+1,rectTotalFile.Height());
 		}
-	}
-	for (int j=0,iCount = 0;j<=rectTotalFile.Height();j+=gap,iCount++)
-	{
-		pDC->MoveTo(0,j); // [0,0]
-		pDC->LineTo(gap1,j);
-		if(iCount != 0 && (iCount)%10 == 0)
+		else
 		{
-			pDC->MoveTo(0,j+1); // [0,0]
-			pDC->LineTo(gap1,j+1);
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,0); // [0,0]
+			pDC->LineTo(i,rectTotalFile.Height());
 		}
 	}
 	for (int j=0,iCount = 0;j<=rectTotalFile.Height();j+=gap,iCount++)
 	{
-		pDC->MoveTo(gap2,j); // [0,0]
-		pDC->LineTo(rectTotalFile.Width(),j);
+		
 		if(iCount != 0 && (iCount)%10 == 0)
 		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(0,j); // [0,0]
+			pDC->LineTo(gap1,j);
+			pDC->MoveTo(0,j+1); // [0,0]
+			pDC->LineTo(gap1,j+1);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(0,j); // [0,0]
+			pDC->LineTo(gap1,j);
+		}
+	}
+	for (int j=0,iCount = 0;j<=rectTotalFile.Height();j+=gap,iCount++)
+	{
+		
+		if(iCount != 0 && (iCount)%10 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(gap2,j); // [0,0]
+			pDC->LineTo(rectTotalFile.Width(),j);
 			pDC->MoveTo(gap2,j+1); // [0,0]
 			pDC->LineTo(rectTotalFile.Width(),j+1);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(gap2,j); // [0,0]
+			pDC->LineTo(rectTotalFile.Width(),j);
 		}
 	}
 	//bias = base + coordinateLimit;//深度到屏幕底部的坐标偏移
