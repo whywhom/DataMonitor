@@ -5,7 +5,7 @@
 #pragma once
 
 #include "DataMonitorDoc.h"
-
+#include "clPlot.h"
 class CDataMonitorView : public CScrollView
 {
 protected: // 仅从序列化创建
@@ -18,6 +18,7 @@ protected: // 仅从序列化创建
 	void InitArrayData();
 	void InitOldArrayData();
 	void GetDataLimit();
+	void InitPlot(CRect Rect);
 // 特性
 public:
 	CDataMonitorDoc* GetDocument() const;
@@ -36,6 +37,8 @@ public:
 	DATA_TEMP oldrmArray;
 	DATA_TEMP oldcclArray;
 	DATA_TEMP oldmagArray;
+
+	clPlot m_Plot;
 
 // 重写
 public:
@@ -83,6 +86,7 @@ public:
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 #ifndef _DEBUG  // DMonitorView.cpp 中的调试版本

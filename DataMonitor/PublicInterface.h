@@ -51,6 +51,8 @@ typedef struct _DATA_TEMP
 }DATA_TEMP;
 
 #define TIMER_CMD_DRAW 0x20
+#define TIMER_CMD_TEST 0x21
+
 #define TIME_REFRESH_REALTIME	50
 #define TIME_REFRESH_FILE	1000
 

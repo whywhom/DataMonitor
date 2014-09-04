@@ -152,6 +152,12 @@
     <ClInclude Include="PetroData.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="clPlot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GridMemDC.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -239,6 +245,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="PetroData.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="clPlot.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

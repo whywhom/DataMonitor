@@ -111,6 +111,7 @@
     <None Include="res\Toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="clPlot.h" />
     <ClInclude Include="CommLayer.h" />
     <ClInclude Include="DataMonitor.h" />
     <ClInclude Include="DataMonitorDoc.h" />
@@ -135,6 +136,7 @@
     <ClInclude Include="json\include\writer.h" />
     <ClInclude Include="json\src\json_batchallocator.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="GridMemDC.h" />
     <ClInclude Include="PanelView.h" />
     <ClInclude Include="PetroData.h" />
     <ClInclude Include="PublicInterface.h" />
@@ -149,6 +151,7 @@
     <ClInclude Include="tinyxml.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="clPlot.cpp" />
     <ClCompile Include="CommLayer.cpp" />
     <ClCompile Include="DataMonitor.cpp" />
     <ClCompile Include="DataMonitorDoc.cpp" />

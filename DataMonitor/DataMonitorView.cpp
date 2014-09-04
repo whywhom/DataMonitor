@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CDataMonitorView, CScrollView)
 	ON_WM_VSCROLL()
 	ON_WM_TIMER()
 	ON_WM_CREATE()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 // CDataMonitorView 构造/析构
@@ -77,9 +78,13 @@ void CDataMonitorView::OnDraw(CDC* pDC)
 	{
 		DrawDataFile(pDC);
 	}
-	else
+	else if(theApp.processType == NO_PROCESSING)
 	{
 		//nothing to do
+	}
+	else
+	{
+	
 	}
 }
 
@@ -683,14 +688,32 @@ void CDataMonitorView::OnInitialUpdate()
 	CScrollView::OnInitialUpdate();
 
 	// TODO: 在此添加专用代码和/或调用基类
+	CRect Rect;
+	GetClientRect(Rect);
 	SIZE sizeTotal;
 	sizeTotal.cx = rect.Width();
 	sizeTotal.cy = rect.Height();
-
+	InitPlot(Rect);
     SetScrollSizes(MM_TEXT, sizeTotal);
+	SetTimer(TIMER_CMD_TEST,TIME_REFRESH_FILE,NULL);
 }
 
+void CDataMonitorView::InitPlot(CRect Rect)
+{
+	m_Plot.Create(WS_CHILD|WS_VISIBLE,Rect,this,12000);
 
+	m_Plot.SetSerie(0, PS_SOLID, RGB(255,0,0), 0.0, 2000.0, "Pressure");
+	m_Plot.SetSerie(1, PS_DOT, RGB(0,255,0), 0.0, 2000.0, "Pressure");
+	m_Plot.SetSerie(2, PS_DASH, RGB(0,0,255), 0.0, 2000.0, "Pressure");
+	m_Plot.SetSerie(3, PS_SOLID, RGB(255,255,0), 0.0, 2000.0, "Pressure");
+
+	m_Plot.SetLegend(0, PS_SOLID, RGB(255,0,0), "Temperature");
+	m_Plot.SetLegend(1, PS_DOT, RGB(0,255,0), "Pressure");
+	m_Plot.SetLegend(2, PS_DASH, RGB(0,0,255), "Pressure");
+	m_Plot.SetLegend(3, PS_SOLID, RGB(255,255,0), "Pressure");
+
+	m_Plot.m_bAutoScrollX=TRUE;
+}
 void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -840,7 +863,7 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 	{
 	case TIMER_CMD_DRAW:
 		{
-			//TRACE(_T("\r\n OnTimer() for + %d + ms \r\n"),TIME_REFRESH);
+			KillTimer(TIMER_CMD_TEST);
 			if(theApp.processType == FILEDATA_PROCESSING)
 			{
 				KillTimer(nIDEvent);
@@ -848,11 +871,45 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 				DrawData();
 				return;
 			}
-			if(theApp.processType == REALTIME_PROCESSING)
+			else if(theApp.processType == REALTIME_PROCESSING)
 			{
 				DrawData();
 				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 			}
+			else if(theApp.processType == NO_PROCESSING)
+			{
+				
+			}
+		}
+		break;
+	case TIMER_CMD_TEST:
+		{
+			if(theApp.processType == NO_PROCESSING)
+			{
+				static BOOL pros={FALSE};
+				double y;
+				if(!pros)
+				{
+					pros=TRUE;
+
+					y =(double)(abs(rand())%2000);
+					m_Plot.AddPoint(0,  CTime::GetCurrentTime(), y);
+
+					y =(double)(abs(rand())%2000);
+					m_Plot.AddPoint(1,  CTime::GetCurrentTime(), y);
+
+					y =(double)(abs(rand())%2000);
+					m_Plot.AddPoint(2,  CTime::GetCurrentTime(), y);
+
+					//double y =(double)(abs(rand())%2000);
+					y=500.0;
+					m_Plot.AddPoint(3,  CTime::GetCurrentTime(), y);
+					Invalidate();
+					pros=FALSE;
+				}
+				
+			}
+			
 		}
 		break;
 	default:
@@ -922,4 +979,17 @@ void CDataMonitorView::InitOldArrayData()
 	memset((void*)&oldrmArray,0,sizeof(DATA_TEMP));
 	memset((void*)&oldcclArray,0,sizeof(DATA_TEMP));
 	memset((void*)&oldmagArray,0,sizeof(DATA_TEMP));
+}
+
+void CDataMonitorView::OnSize(UINT nType, int cx, int cy)
+{
+	CScrollView::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
+	CRect Rect;
+	GetClientRect(Rect);
+	if(m_Plot.m_hWnd)
+	{
+		m_Plot.MoveWindow(Rect);
+	}
 }
