@@ -6,19 +6,24 @@
 
 #include "DataMonitorDoc.h"
 #include "clPlot.h"
-class CDataMonitorView : public CScrollView
+class CDataMonitorView : public CView
 {
 protected: // 仅从序列化创建
 	CDataMonitorView();
 	DECLARE_DYNCREATE(CDataMonitorView)
 
+	//绘图函数
 	void DrawData(CDC* pDC);
 	void DrawDataFile(CDC* pDC);
 	void SetScrollTotalSizes(CRect rect);
 	void InitArrayData();
 	void InitOldArrayData();
 	void GetDataLimit();
+	void KillDrawTimer();
+#ifdef FEATURE_TEST_DRAW
 	void InitPlot(CRect Rect);
+#endif
+	
 // 特性
 public:
 	CDataMonitorDoc* GetDocument() const;
@@ -37,23 +42,26 @@ public:
 	DATA_TEMP oldrmArray;
 	DATA_TEMP oldcclArray;
 	DATA_TEMP oldmagArray;
-
+#ifdef FEATURE_TEST_DRAW
 	clPlot m_Plot;
-
+#endif
 // 重写
 public:
 	virtual void OnDraw(CDC* pDC);  // 重写以绘制该视图
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	void StartTimer();
 	void StopTimer();
+
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	void DrawCoordinateSystem(CDC* pDC);
 	void DrawCoordinateSystemFile(CDC* pDC);
+#if 0
 	void DrawDataArray(CDC* pDC);
 	void DrawDataArrayFile(CDC* pDC);
+#endif
 	void DrawData();
 	unsigned long GetMinData(DATA_PART tmp, unsigned long m);
 private:
@@ -87,6 +95,7 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 };
 
 #ifndef _DEBUG  // DMonitorView.cpp 中的调试版本

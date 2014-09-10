@@ -37,8 +37,8 @@ typedef struct _SEND_COMMAND_LIST
 
 typedef struct _DATA_PART
 {
-	unsigned long integer;
-	int decimal;
+	double iData;
+	CString strData;
 	bool bAssign;
 }DATA_PART;
 

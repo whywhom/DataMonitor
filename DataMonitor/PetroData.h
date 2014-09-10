@@ -7,6 +7,7 @@ class CPetroData : public CObject
 public:
 	CPetroData();
 	virtual ~CPetroData();
+	void CPetroData::InitData();
 	DATA_PART dept;//深度			DEPT			m			一组，小数
 	DATA_PART temp;//井温		    TEMP			C 			一组，小数
 	DATA_PART rm;//电阻率			RM				rm			一组，小数

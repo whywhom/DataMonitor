@@ -19,18 +19,19 @@
 
 // CDataMonitorView
 
-IMPLEMENT_DYNCREATE(CDataMonitorView, CScrollView)
+IMPLEMENT_DYNCREATE(CDataMonitorView, CView)
 
-BEGIN_MESSAGE_MAP(CDataMonitorView, CScrollView)
+BEGIN_MESSAGE_MAP(CDataMonitorView, CView)
 	// 标准打印命令
-	ON_COMMAND(ID_FILE_PRINT, &CScrollView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CScrollView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CScrollView::OnFilePrintPreview)
+	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
 	ON_WM_PAINT()
 	ON_WM_VSCROLL()
 	ON_WM_TIMER()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 // CDataMonitorView 构造/析构
@@ -57,7 +58,7 @@ BOOL CDataMonitorView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: 在此处通过修改
 	//  CREATESTRUCT cs 来修改窗口类或样式
 	
-	return CScrollView::PreCreateWindow(cs);
+	return CView::PreCreateWindow(cs);
 }
 
 // CDataMonitorView 绘制
@@ -72,7 +73,7 @@ void CDataMonitorView::OnDraw(CDC* pDC)
 	// TODO: 在此处为本机数据添加绘制代码
 	if(theApp.processType == REALTIME_PROCESSING)
 	{
-		DrawData(pDC);
+		//DrawData(pDC);
 	}
 	else if(theApp.processType == FILEDATA_PROCESSING)
 	{
@@ -113,12 +114,12 @@ void CDataMonitorView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 #ifdef _DEBUG
 void CDataMonitorView::AssertValid() const
 {
-	CScrollView::AssertValid();
+	CView::AssertValid();
 }
 
 void CDataMonitorView::Dump(CDumpContext& dc) const
 {
-	CScrollView::Dump(dc);
+	CView::Dump(dc);
 }
 
 CDataMonitorDoc* CDataMonitorView::GetDocument() const // 非调试版本是内联的
@@ -136,7 +137,7 @@ void CDataMonitorView::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 	// TODO: 在此处添加消息处理程序代码
-	// 不为绘图消息调用 CScrollView::OnPaint()
+	// 不为绘图消息调用 CView::OnPaint()
 	OnPrepareDC(&dc);
 	OnDraw(&dc);
 }
@@ -147,7 +148,9 @@ void CDataMonitorView::DrawData(CDC* pDC)
 	UpdateData(FALSE);
 	rectTotal = rect;
 	DrawCoordinateSystem(pDC);
+#if 0
 	DrawDataArray(pDC);
+#endif
 	
 }
 
@@ -158,10 +161,11 @@ void CDataMonitorView::DrawDataFile(CDC* pDC)
 	UpdateData(FALSE);
 	rectTotal = rect;
 	DrawCoordinateSystemFile(pDC);
+#if 0
 	DrawDataArrayFile(pDC);
-	
+#endif
 }
-
+#if 0
 void CDataMonitorView::DrawDataArray(CDC* pDC)
 {
 	int dept =0,temp = 0,olddept =0,oldtemp = 0;
@@ -179,26 +183,26 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 	while(nPos)
 	{
 		pPData = theApp.petroList.GetNext(nPos);
-		dept = pPData->dept.integer;
-		dold_iy=pPData->dept.integer;
+		dept = pPData->dept.iData;
+		dold_iy=pPData->dept.iData;
 		cur_dy=pPData->dept.decimal;
 		dold_iy-=base;
 
 		if(pOldPData != NULL)
 		{
 			pDC->SelectObject(&pen);
-			old_iy=pOldPData->dept.integer;
+			old_iy=pOldPData->dept.iData;
 			old_dy=pOldPData->dept.decimal;
 			old_iy-=base;
 
-			y1=pOldPData->temp.integer;
+			y1=pOldPData->temp.iData;
 			y2=pOldPData->temp.decimal;
 
 			int iOldDept_y = (int)(old_dy*gap/10);
-			int iOld_ix = (int)(pOldPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pOldPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+			int iOld_ix = (int)(pOldPData->temp.iData*gap1/(tempArray[1]-tempArray[0])+pOldPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
 
 			int iCurDept_y = (int)(cur_dy*gap/10);
-			int iCur_ix = (int)(pPData->temp.integer*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+			int iCur_ix = (int)(pPData->temp.iData*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
 
 			pDC->MoveTo(iOld_ix,old_iy*gap+iOldDept_y); // [0,0]
 			pDC->LineTo(iCur_ix,dold_iy*gap+iCurDept_y);
@@ -210,6 +214,7 @@ void CDataMonitorView::DrawDataArray(CDC* pDC)
 	}
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 }
+
 
 void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 {
@@ -248,7 +253,7 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 					old_dy=olddeptArray.dx_d;
 				}
 				
-				cur_iy=pPData->dept.integer;
+				cur_iy=pPData->dept.iData;
 				cur_dy=pPData->dept.decimal;
 				cur_iy-=base;
 
@@ -266,14 +271,14 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 
 						pDC->SelectObject(&pen);
 						iOld_ix = (int)((oldtempArray.dx_i-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+oldtempArray.dx_d*gap1/(10*(tempArray[1]-tempArray[0])));
-						iCur_ix = (int)((pPData->temp.integer-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
+						iCur_ix = (int)((pPData->temp.iData-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
 
 						pDC->MoveTo(iOld_ix,oldtempArray.dy); // [0,0]
 						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
 						TRACE(_T("TEMP %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldtempArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
 					}
 					
-					oldtempArray.dx_i = pPData->temp.integer;
+					oldtempArray.dx_i = pPData->temp.iData;
 					oldtempArray.dx_d = pPData->temp.decimal;
 					oldtempArray.dy = cur_iy*gap+iCurDept_y;
 					oldtempArray.bAssign = true;
@@ -290,14 +295,14 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 
 						pDC->SelectObject(&pen2);
 						iOld_ix = (int)((oldgmArray.dx_i-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+oldgmArray.dx_d*gap1/(10*(gmArray[1]-gmArray[0])));
-						iCur_ix = (int)((pPData->gr.integer-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+pPData->gr.decimal*gap1/(10*(gmArray[1]-gmArray[0])));
+						iCur_ix = (int)((pPData->gr.iData-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+pPData->gr.decimal*gap1/(10*(gmArray[1]-gmArray[0])));
 
 						pDC->MoveTo(iOld_ix,oldgmArray.dy); // [0,0]
 						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
 						TRACE(_T("GR %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldgmArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
 					}
 					
-					oldgmArray.dx_i = pPData->gr.integer;
+					oldgmArray.dx_i = pPData->gr.iData;
 					oldgmArray.dx_d = pPData->gr.decimal;
 					oldgmArray.dy = cur_iy*gap+iCurDept_y;
 					oldgmArray.bAssign = true;
@@ -314,14 +319,14 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 
 						pDC->SelectObject(&pen3);
 						iOld_ix = (int)((oldrmArray.dx_i-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+oldrmArray.dx_d*gap1/(10*(rmArray[1]-rmArray[0])));
-						iCur_ix = (int)((pPData->rm.integer-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+pPData->rm.decimal*gap1/(10*(rmArray[1]-rmArray[0])));
+						iCur_ix = (int)((pPData->rm.iData-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+pPData->rm.decimal*gap1/(10*(rmArray[1]-rmArray[0])));
 
 						pDC->MoveTo(iOld_ix,oldrmArray.dy); // [0,0]
 						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
 						TRACE(_T("RM %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldgmArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
 					}
 					
-					oldrmArray.dx_i = pPData->rm.integer;
+					oldrmArray.dx_i = pPData->rm.iData;
 					oldrmArray.dx_d = pPData->rm.decimal;
 					oldrmArray.dy = cur_iy*gap+iCurDept_y;
 					oldrmArray.bAssign = true;
@@ -338,14 +343,14 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 
 						pDC->SelectObject(&pen4);
 						iOld_ix = (int)((oldcclArray.dx_i-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+oldcclArray.dx_d*gap1/(10*(cclArray[1]-cclArray[0])));
-						iCur_ix = (int)((pPData->ccl.integer-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+pPData->ccl.decimal*gap1/(10*(cclArray[1]-cclArray[0])));
+						iCur_ix = (int)((pPData->ccl.iData-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+pPData->ccl.decimal*gap1/(10*(cclArray[1]-cclArray[0])));
 
 						pDC->MoveTo(iOld_ix,oldcclArray.dy); // [0,0]
 						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
 						TRACE(_T("CCL %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldcclArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
 					}
 					
-					oldcclArray.dx_i = pPData->ccl.integer;
+					oldcclArray.dx_i = pPData->ccl.iData;
 					oldcclArray.dx_d = pPData->ccl.decimal;
 					oldcclArray.dy = cur_iy*gap+iCurDept_y;
 					oldcclArray.bAssign = true;
@@ -362,14 +367,14 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 
 						pDC->SelectObject(&pen5);
 						iOld_ix = (int)((oldmagArray.dx_i-magArray[0])*gap1/(magArray[1]-magArray[0])+oldmagArray.dx_d*gap1/(10*(magArray[1]-magArray[0])));
-						iCur_ix = (int)((pPData->mag[0].integer-magArray[0])*gap1/(magArray[1]-magArray[0])+pPData->mag[0].decimal*gap1/(10*(magArray[1]-magArray[0])));
+						iCur_ix = (int)((pPData->mag[0].iData-magArray[0])*gap1/(magArray[1]-magArray[0])+pPData->mag[0].decimal*gap1/(10*(magArray[1]-magArray[0])));
 
 						pDC->MoveTo(iOld_ix,oldmagArray.dy); // [0,0]
 						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
 						TRACE(_T("CCL %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldmagArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
 					}
 					
-					oldmagArray.dx_i = pPData->mag[0].integer;
+					oldmagArray.dx_i = pPData->mag[0].iData;
 					oldmagArray.dx_d = pPData->mag[0].decimal;
 					oldmagArray.dy = cur_iy*gap+iCurDept_y;
 					oldmagArray.bAssign = true;
@@ -390,7 +395,7 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 	//theApp.processType = NO_PROCESSING;
 }
-
+#endif
 void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 {
 	TRACE(_T("DrawCoordinateSystem"));
@@ -438,9 +443,9 @@ void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 	UpdateData(FALSE);
 	if(pPData)
 	{
-		if(pPData->dept.integer > bias)
+		if(pPData->dept.iData > bias)
 		{
-			base = pPData->dept.integer/10*10;//坐标起始取10的整数倍
+			base = pPData->dept.iData/10*10;//坐标起始取10的整数倍
 		}
 	}
 	int iCount=0;
@@ -505,21 +510,21 @@ void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
 	//画笔刷新
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 
-	SetScrollTotalSizes(rectTotal);
+	//SetScrollTotalSizes(rectTotal);
 }
 
 unsigned long CDataMonitorView::GetMinData(DATA_PART tmp,unsigned long m)
 {
 	unsigned long t = 0;
-	if(tmp.integer > 0)
+	if(tmp.iData > 0)
 	{
 		if(m == 0)
 		{
-			t = tmp.integer/10*10;
+			t = tmp.iData/10*10;
 		}
 		else
 		{
-			t = min(m,tmp.integer/10*10);
+			t = min(m,tmp.iData/10*10);
 		}
 		return t;
 	}
@@ -575,8 +580,8 @@ void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
 	GetClientRect(rect);
 	rectTotalFile = rect;
 	rectTotalFile.right = rectTotalFile.left + 750;
-	rectTotalFile.bottom = rectTotalFile.top + gap*(pEndPData->dept.integer/10*10+10 - pStartPData->dept.integer/10*10);
-	base = pStartPData->dept.integer/10*10;
+	rectTotalFile.bottom = rectTotalFile.top + gap*(pEndPData->dept.iData/10*10+10 - pStartPData->dept.iData/10*10);
+	base = pStartPData->dept.iData/10*10;
 	UpdateData(FALSE);
 	
 	int iCount=0;
@@ -672,7 +677,7 @@ void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
 	//画笔刷新
 	pDC->SelectObject(pOldPen);  //[可以不需要]
 
-	SetScrollTotalSizes(rectTotalFile);
+	//SetScrollTotalSizes(rectTotalFile);
 }
 
 void CDataMonitorView::SetScrollTotalSizes(CRect rect)
@@ -680,12 +685,12 @@ void CDataMonitorView::SetScrollTotalSizes(CRect rect)
 	SIZE sizeTotal;
 	sizeTotal.cx = rect.Width();
 	sizeTotal.cy = rect.Height();
-	SetScrollSizes(MM_TEXT, sizeTotal);
+	//SetScrollSizes(MM_TEXT, sizeTotal);
 }
 
 void CDataMonitorView::OnInitialUpdate()
 {
-	CScrollView::OnInitialUpdate();
+	CView::OnInitialUpdate();
 
 	// TODO: 在此添加专用代码和/或调用基类
 	CRect Rect;
@@ -693,13 +698,17 @@ void CDataMonitorView::OnInitialUpdate()
 	SIZE sizeTotal;
 	sizeTotal.cx = rect.Width();
 	sizeTotal.cy = rect.Height();
+#ifdef FEATURE_TEST_DRAW
 	InitPlot(Rect);
-    SetScrollSizes(MM_TEXT, sizeTotal);
-	SetTimer(TIMER_CMD_TEST,TIME_REFRESH_FILE,NULL);
+#endif
+    //SetScrollSizes(MM_TEXT, sizeTotal);
+	//SetTimer(TIMER_CMD_TEST,TIME_REFRESH_FILE,NULL);
 }
 
+#ifdef FEATURE_TEST_DRAW
 void CDataMonitorView::InitPlot(CRect Rect)
 {
+
 	m_Plot.Create(WS_CHILD|WS_VISIBLE,Rect,this,12000);
 
 	m_Plot.SetSerie(0, PS_SOLID, RGB(255,0,0), 0.0, 2000.0, "Pressure");
@@ -713,7 +722,9 @@ void CDataMonitorView::InitPlot(CRect Rect)
 	m_Plot.SetLegend(3, PS_SOLID, RGB(255,255,0), "Pressure");
 
 	m_Plot.m_bAutoScrollX=TRUE;
+
 }
+#endif
 void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -820,7 +831,7 @@ void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 
 	}
 	
-	CScrollView::OnVScroll(nSBCode, scrollinfo.nPos, pScrollBar);
+	CView::OnVScroll(nSBCode, scrollinfo.nPos, pScrollBar);
 #else
 	if((nSBCode == SB_THUMBTRACK || nSBCode == SB_THUMBPOSITION) && ((nPos & 0xffff) > 0x7d00)){
 		int yOrig, y;
@@ -831,8 +842,12 @@ void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 		return;
 	}
 	DrawData();
-	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
+	CView::OnVScroll(nSBCode, nPos, pScrollBar);
 #endif
+}
+void CDataMonitorView::KillDrawTimer()
+{
+	KillTimer(TIMER_CMD_TEST);
 }
 void CDataMonitorView::StartTimer()
 {
@@ -882,6 +897,7 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 			}
 		}
 		break;
+#ifdef FEATURE_TEST_DRAW
 	case TIMER_CMD_TEST:
 		{
 			if(theApp.processType == NO_PROCESSING)
@@ -912,10 +928,11 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 			
 		}
 		break;
+#endif
 	default:
 		break;
 	}
-	CScrollView::OnTimer(nIDEvent);
+	CView::OnTimer(nIDEvent);
 }
 void CDataMonitorView::GetDataLimit()
 {
@@ -926,19 +943,19 @@ void CDataMonitorView::GetDataLimit()
 		CPetroData* pData = theApp.petroList.GetNext(nPos);
 		
 		tempArray[0] = GetMinData(pData->temp,tempArray[0]);
-		tempArray[1] = max(tempArray[1], pData->temp.integer/10*10+10);
+		tempArray[1] = max(tempArray[1], pData->temp.iData/10*10+10);
 
 		gmArray[0] = GetMinData(pData->gr,gmArray[0]);
-		gmArray[1] = max(gmArray[1], pData->gr.integer/10*10+10);
+		gmArray[1] = max(gmArray[1], pData->gr.iData/10*10+10);
 
 		rmArray[0] = GetMinData(pData->rm,rmArray[0]);
-		rmArray[1] = max(rmArray[1], pData->rm.integer/10*10+10);
+		rmArray[1] = max(rmArray[1], pData->rm.iData/10*10+10);
 
 		cclArray[0] = GetMinData(pData->ccl,cclArray[0]);
-		cclArray[1] = max(cclArray[1], pData->ccl.integer/10*10+10);
+		cclArray[1] = max(cclArray[1], pData->ccl.iData/10*10+10);
 
 		magArray[0] = GetMinData(pData->mag[0],magArray[0]);
-		magArray[1] = max(magArray[1], pData->mag[0].integer/10*10+10);
+		magArray[1] = max(magArray[1], pData->mag[0].iData/10*10+10);
 	}
 }
 void CDataMonitorView::DrawData()
@@ -953,7 +970,7 @@ void CDataMonitorView::DrawData()
 }
 int CDataMonitorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CScrollView::OnCreate(lpCreateStruct) == -1)
+	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	// TODO:  在此添加您专用的创建代码
@@ -983,13 +1000,53 @@ void CDataMonitorView::InitOldArrayData()
 
 void CDataMonitorView::OnSize(UINT nType, int cx, int cy)
 {
-	CScrollView::OnSize(nType, cx, cy);
+	CView::OnSize(nType, cx, cy);
 
 	// TODO: 在此处添加消息处理程序代码
 	CRect Rect;
 	GetClientRect(Rect);
+#ifdef FEATURE_TEST_DRAW
 	if(m_Plot.m_hWnd)
 	{
-		m_Plot.MoveWindow(Rect);
+		//m_Plot.MoveWindow(Rect);
 	}
+#endif
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CDataMonitorView message handlers
+//这里运用了两点技术使得重绘的图形看起来不闪烁
+//1.重载了OnEraseBkgnd函数,它是用来在每次重绘之前用空白位图擦除背景的函数,让它每次用自定义的
+//位图来作为背景
+//2.使用了双缓存的结构,即先把背景图形绘制在内存中,绘制好了一起显示出去
+BOOL CDataMonitorView::OnEraseBkgnd(CDC* pDC)
+{
+#if 0
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	CDC MemDC; //首先定义一个显示设备对象
+	CBitmap MemBitmap;//定义一个位图对象
+	//随后建立与屏幕显示兼容的内存显示设备
+	MemDC.CreateCompatibleDC(NULL);
+	//这时还不能绘图，因为没有地方画
+	//下面建立一个与屏幕显示兼容的位图，至于位图的大小嘛，可以用窗口的大小
+	MemBitmap.CreateCompatibleBitmap(pDC,m_plot.m_ctlRect.Width(),m_plot.m_ctlRect.Height());
+	//将位图选入到内存显示设备中
+	//只有选入了位图的内存显示设备才有地方绘图，画到指定的位图上
+	CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
+	//先用背景色将位图清除干净，这里我用的是白色作为背景
+	//你也可以用自己应该用的颜色
+	m_plot.DrawBasic(&MemDC);
+//	m_plot.DrawLegendShadow(&MemDC);
+	m_plot.DrawXAxisGrid(&MemDC);
+	m_plot.DrawYAxisGrid(&MemDC);
+//	m_plot.DrawLegend(&MemDC);
+	//将内存中的图拷贝到屏幕上进行显示
+	pDC->BitBlt(0,0,m_plot.m_ctlRect.Width(),m_plot.m_ctlRect.Height(),&MemDC,0,0,SRCCOPY);
+	//绘图完成后的清理
+	MemBitmap.DeleteObject();
+	MemDC.DeleteDC();
+	return TRUE;
+#else
+	return CView::OnEraseBkgnd(pDC);
+#endif
 }
