@@ -19,13 +19,13 @@
 
 // CDataMonitorView
 
-IMPLEMENT_DYNCREATE(CDataMonitorView, CView)
+IMPLEMENT_DYNCREATE(CDataMonitorView, CScrollView)
 
-BEGIN_MESSAGE_MAP(CDataMonitorView, CView)
+BEGIN_MESSAGE_MAP(CDataMonitorView, CScrollView)
 	// 标准打印命令
-	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
+	ON_COMMAND(ID_FILE_PRINT, &CScrollView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CScrollView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CScrollView::OnFilePrintPreview)
 	ON_WM_PAINT()
 	ON_WM_VSCROLL()
 	ON_WM_TIMER()
@@ -43,6 +43,26 @@ CDataMonitorView::CDataMonitorView()
 
 	InitOldArrayData();
 
+	unitPixel = 20;//20 pixel = 1 m
+
+	m_bDirectDown = true;
+
+	VERIFY(m_font.CreateFont(
+		18,                        // nHeight
+		0,                         // nWidth
+		0,                         // nEscapement
+		0,                         // nOrientation
+		FW_NORMAL,                 // nWeight
+		FALSE,                     // bItalic
+		FALSE,                     // bUnderline
+		0,                         // cStrikeOut
+		ANSI_CHARSET,              // nCharSet
+		OUT_DEFAULT_PRECIS,        // nOutPrecision
+		CLIP_DEFAULT_PRECIS,       // nClipPrecision
+		DEFAULT_QUALITY,           // nQuality
+		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
+		_T("Arial")));                 // lpszFacename
+
 	base = 0;
 	bias = 0;
 	pPData = NULL;
@@ -58,7 +78,7 @@ BOOL CDataMonitorView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: 在此处通过修改
 	//  CREATESTRUCT cs 来修改窗口类或样式
 	
-	return CView::PreCreateWindow(cs);
+	return CScrollView::PreCreateWindow(cs);
 }
 
 // CDataMonitorView 绘制
@@ -68,27 +88,172 @@ void CDataMonitorView::OnDraw(CDC* pDC)
 	CDataMonitorDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
+	{
 		return;
-
+	}
 	// TODO: 在此处为本机数据添加绘制代码
-	if(theApp.processType == REALTIME_PROCESSING)
-	{
-		//DrawData(pDC);
-	}
-	else if(theApp.processType == FILEDATA_PROCESSING)
-	{
-		DrawDataFile(pDC);
-	}
-	else if(theApp.processType == NO_PROCESSING)
-	{
-		//nothing to do
-	}
-	else
-	{
-	
-	}
+	GetClientRect(m_clientRect);
+	UpdateData(FALSE);
+	//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
+	MemDC.CreateCompatibleDC(NULL);  
+	//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
+	MemBitmap.CreateCompatibleBitmap(pDC,m_clientRect.Width(),m_clientRect.Height());  
+	CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
+	MemDC.FillSolidRect(m_clientRect,RGB(255,255,255));
+
+	DrawData(&MemDC);
+
+	//将内存中的图拷贝到屏幕上进行显示  
+	pDC->BitBlt(m_clientRect.left,m_clientRect.top,m_clientRect.Width(),m_clientRect.Height(),&MemDC,0,0,SRCCOPY);  
+	//绘图完成后的清理  
+	MemBitmap.DeleteObject();  
+	MemDC.DeleteDC();  
 }
 
+void CDataMonitorView::DrawBasic(CDC * pDC)
+{
+	if(m_bDirectDown)
+	{
+		minDepth = 0;
+		maxDepth = 0;
+	}
+}
+void CDataMonitorView::DrawGrid(CDC * pDC)
+{
+	DrawXYAxisGrid(pDC);
+}
+
+void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
+{
+	m_plot1Rect = m_clientRect;
+	m_plot1Rect.right = m_plot1Rect.left + 400;
+
+	m_plot2Rect = m_clientRect;
+	m_plot2Rect.left = m_plot1Rect.right;
+	m_plot2Rect.right = m_plot2Rect.left + 200;
+
+	m_plot3Rect = m_clientRect;
+	m_plot3Rect.left = m_plot2Rect.right;
+
+	m_gridColor = RGB(127,127,127);
+
+	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
+	CPen stick(PS_SOLID,0,RGB(0,0,0));
+	CPen mline(PS_SOLID,0,RGB(192,192,192));
+	//绘制坐标系
+	int iCount=0;
+
+	for (int i=m_plot1Rect.left,iCount= 0;i<=m_plot1Rect.right;i+=unitPixel,iCount++)
+	{
+		if(iCount != 0 && iCount%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,m_plot1Rect.top); //
+			pDC->LineTo(i,m_plot1Rect.bottom);
+			pDC->MoveTo(i+1,m_plot1Rect.top); //
+			pDC->LineTo(i+1,m_plot1Rect.bottom);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,m_plot1Rect.top); // [0,0]
+			pDC->LineTo(i,m_plot1Rect.bottom);
+		}
+	}
+	for (int i=m_plot3Rect.left,iCount = 0;i<=m_plot3Rect.right;i+=unitPixel,iCount++)
+	{
+		
+		if(iCount%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,m_plot3Rect.top);
+			pDC->LineTo(i,m_plot3Rect.bottom);
+			pDC->MoveTo(i+1,m_plot3Rect.top);
+			pDC->LineTo(i+1,m_plot3Rect.bottom);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,m_plot3Rect.top);
+			pDC->LineTo(i,m_plot3Rect.bottom);
+		}
+	}
+	for (int j=m_plot1Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
+	{
+		
+		if(iCount != 0 && (iCount)%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(m_plot1Rect.left,j); // [0,0]
+			pDC->LineTo(m_plot1Rect.right,j);
+			pDC->MoveTo(m_plot1Rect.left,j+1); // [0,0]
+			pDC->LineTo(m_plot1Rect.right,j+1);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(m_plot1Rect.left,j); // [0,0]
+			pDC->LineTo(m_plot1Rect.right,j);
+		}
+	}
+	for (int j=m_plot3Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
+	{
+		
+		if(iCount != 0 && (iCount)%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(m_plot3Rect.left,j);
+			pDC->LineTo(m_plot3Rect.right,j);
+			pDC->MoveTo(m_plot3Rect.left,j+1);
+			pDC->LineTo(m_plot3Rect.right,j+1);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(m_plot3Rect.left,j); // [0,0]
+			pDC->LineTo(m_plot3Rect.right,j);
+		}
+	}
+	//画笔刷新
+	pDC->SelectObject(old);
+}
+void CDataMonitorView::DrawPlot(CDC* pDC)
+{
+	m_zoomFont.lfHeight			= -13;
+	m_zoomFont.lfWidth			= 0;
+	m_zoomFont.lfEscapement		= 0;
+	m_zoomFont.lfOrientation		= 0;
+	m_zoomFont.lfWeight			= 400;
+	m_zoomFont.lfItalic			= FALSE;
+	m_zoomFont.lfUnderline		= FALSE;
+	m_zoomFont.lfStrikeOut		= FALSE;
+	m_zoomFont.lfCharSet			= ANSI_CHARSET;
+	m_zoomFont.lfOutPrecision	= OUT_DEFAULT_PRECIS;
+	m_zoomFont.lfClipPrecision	= CLIP_DEFAULT_PRECIS;
+	m_zoomFont.lfQuality			= PROOF_QUALITY;
+	m_zoomFont.lfPitchAndFamily	= DEFAULT_PITCH;
+	wcscpy(m_zoomFont.lfFaceName,_T("Ariel"));
+	
+	m_font.Detach();
+	m_font.CreateFontIndirect(&m_zoomFont);
+	CFont *oFont = pDC->SelectObject(&m_font);
+	CRect textRect;
+	CSize z=pDC->GetTextExtent(CString("A"));
+	textRect = m_plot2Rect;
+	textRect.left += 2;
+	textRect.right -= 2;
+	CString str;
+	for (int i=m_plot2Rect.top,iCount = 0;i<=m_plot2Rect.bottom;i+=unitPixel*10,iCount++)
+	{
+		textRect.top = m_plot2Rect.top + i-z.cy/2;
+		textRect.bottom = textRect.top + z.cy;
+		double tmp = i/unitPixel+minDepth;
+		str.Format(_T("%.1f"),tmp);
+		pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
+
+	}
+	pDC->SelectObject(oFont);
+}
 
 // CDataMonitorView 打印
 
@@ -114,12 +279,12 @@ void CDataMonitorView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 #ifdef _DEBUG
 void CDataMonitorView::AssertValid() const
 {
-	CView::AssertValid();
+	CScrollView::AssertValid();
 }
 
 void CDataMonitorView::Dump(CDumpContext& dc) const
 {
-	CView::Dump(dc);
+	CScrollView::Dump(dc);
 }
 
 CDataMonitorDoc* CDataMonitorView::GetDocument() const // 非调试版本是内联的
@@ -137,34 +302,18 @@ void CDataMonitorView::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 	// TODO: 在此处添加消息处理程序代码
-	// 不为绘图消息调用 CView::OnPaint()
+	// 不为绘图消息调用 CScrollView::OnPaint()
 	OnPrepareDC(&dc);
 	OnDraw(&dc);
 }
 void CDataMonitorView::DrawData(CDC* pDC)
 {
-	TRACE(_T("DrawCoordinateSystem\r\n"));
-	GetClientRect(rect);
-	UpdateData(FALSE);
-	rectTotal = rect;
-	DrawCoordinateSystem(pDC);
-#if 0
-	DrawDataArray(pDC);
-#endif
-	
+	DrawBasic(pDC);
+	DrawGrid(pDC);
+	DrawPlot(pDC);
 }
 
-void CDataMonitorView::DrawDataFile(CDC* pDC)
-{
-	TRACE(_T("DrawCoordinateSystem\r\n"));
-	GetClientRect(rect);
-	UpdateData(FALSE);
-	rectTotal = rect;
-	DrawCoordinateSystemFile(pDC);
-#if 0
-	DrawDataArrayFile(pDC);
-#endif
-}
+
 #if 0
 void CDataMonitorView::DrawDataArray(CDC* pDC)
 {
@@ -396,122 +545,6 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 	//theApp.processType = NO_PROCESSING;
 }
 #endif
-void CDataMonitorView::DrawCoordinateSystem(CDC* pDC)
-{
-	TRACE(_T("DrawCoordinateSystem"));
-	
-	//获得线的颜色颜色
-	COLORREF color = RGB(127,127,127);
-	CRect textRect;
-	int gap = 20, gap1 = 300, gap2 = 350;
-	int coordinateLimit = 25;
-	CString str;
-	CFont font;
-	VERIFY(font.CreateFont(
-		18,                        // nHeight
-		0,                         // nWidth
-		0,                         // nEscapement
-		0,                         // nOrientation
-		FW_NORMAL,                 // nWeight
-		FALSE,                     // bItalic
-		FALSE,                     // bUnderline
-		0,                         // cStrikeOut
-		ANSI_CHARSET,              // nCharSet
-		OUT_DEFAULT_PRECIS,        // nOutPrecision
-		CLIP_DEFAULT_PRECIS,       // nClipPrecision
-		DEFAULT_QUALITY,           // nQuality
-		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
-		_T("Arial")));                 // lpszFacename
-
-	 LOGBRUSH logBrush;
-	//获得线的风格
-	int iDrawType = PS_SOLID;
-	//iDrawType = _wtoi(_T("1"));
-	
-    //设置线的画笔"风格"和"颜色"还有"粗细"
-	CPen pen(iDrawType, 1,color); //画笔
-	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-	
-	CRect rect;
-	//以下两句讲获得控件在屏幕中的位置
-	//GetDlgItem(IDC_STATIC_PIC)->GetWindowRect(&rect);//获取控件相对于屏幕的位置,这个控件必须隐藏
-	//ScreenToClient(rect);//转化为对话框上的相对位置
-	GetClientRect(rect);
-	rectTotal = rect;
-	rectTotal.right = rectTotal.left + 750;
-	rectTotal.bottom = rectTotal.top + gap*coordinateLimit;
-	UpdateData(FALSE);
-	if(pPData)
-	{
-		if(pPData->dept.iData > bias)
-		{
-			base = pPData->dept.iData/10*10;//坐标起始取10的整数倍
-		}
-	}
-	int iCount=0;
-
-	for (int i=0,iCount = 0;i<=gap1;i+=gap,iCount++)
-	{
-		pDC->MoveTo(i,0); // [0,0]
-		pDC->LineTo(i,rectTotal.Height());
-		if(iCount != 0 && iCount%5 == 0)
-		{
-			pDC->MoveTo(i+1,0); // [0,0]
-			pDC->LineTo(i+1,rectTotal.Height());
-		}
-	}
-	for (int i=gap2,iCount = 0;i<=rectTotal.Width();i+=gap,iCount++)
-	{
-		pDC->MoveTo(i,0); // [0,0]
-		pDC->LineTo(i,rectTotal.Height());
-		if(iCount != 0 && iCount%5 == 0)
-		{
-			pDC->MoveTo(i+1,0); // [0,0]
-			pDC->LineTo(i+1,rectTotal.Height());
-		}
-	}
-	for (int j=0,iCount = 0;j<=rectTotal.Height();j+=gap,iCount++)
-	{
-		pDC->MoveTo(0,j); // [0,0]
-		pDC->LineTo(gap1,j);
-		if(iCount != 0 && (iCount)%10 == 0)
-		{
-			pDC->MoveTo(0,j+1); // [0,0]
-			pDC->LineTo(gap1,j+1);
-		}
-	}
-	for (int j=0,iCount = 0;j<=rectTotal.Height();j+=gap,iCount++)
-	{
-		pDC->MoveTo(gap2,j); // [0,0]
-		pDC->LineTo(rectTotal.Width(),j);
-		if(iCount != 0 && (iCount)%10 == 0)
-		{
-			pDC->MoveTo(gap2,j+1); // [0,0]
-			pDC->LineTo(rectTotal.Width(),j+1);
-		}
-	}
-	bias = base + coordinateLimit;//深度到屏幕底部的坐标偏移
-
-	for (int j=0,iCount = 0;j<=rectTotal.Height();j+=gap*10,iCount++)
-	{
-		textRect = rectTotal;
-		textRect.left = gap1+2;
-		textRect.right = gap2-2;
-		textRect.top = rectTotal.top + j-10;
-		textRect.bottom = textRect.top +gap;
-		pDC->SelectObject(&font);
-		pDC->SetTextAlign(TA_LEFT);
-		str.Format(_T("%d"),(j/gap+base));
-		//pDC->TextOut(1,30*i+16,str);   //输出文本值
-		pDC->DrawText(str,textRect,DT_LEFT);
-
-	}
-	
-	//画笔刷新
-	pDC->SelectObject(pOldPen);  //[可以不需要]
-
-	//SetScrollTotalSizes(rectTotal);
-}
 
 unsigned long CDataMonitorView::GetMinData(DATA_PART tmp,unsigned long m)
 {
@@ -682,26 +715,23 @@ void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
 
 void CDataMonitorView::SetScrollTotalSizes(CRect rect)
 {
-	SIZE sizeTotal;
 	sizeTotal.cx = rect.Width();
 	sizeTotal.cy = rect.Height();
-	//SetScrollSizes(MM_TEXT, sizeTotal);
+	SetScrollSizes(MM_TEXT, sizeTotal);
 }
 
 void CDataMonitorView::OnInitialUpdate()
 {
-	CView::OnInitialUpdate();
+	CScrollView::OnInitialUpdate();
 
 	// TODO: 在此添加专用代码和/或调用基类
 	CRect Rect;
 	GetClientRect(Rect);
-	SIZE sizeTotal;
-	sizeTotal.cx = rect.Width();
-	sizeTotal.cy = rect.Height();
+	SetScrollTotalSizes(Rect);
 #ifdef FEATURE_TEST_DRAW
 	InitPlot(Rect);
 #endif
-    //SetScrollSizes(MM_TEXT, sizeTotal);
+	SetScrollTotalSizes(Rect);
 	//SetTimer(TIMER_CMD_TEST,TIME_REFRESH_FILE,NULL);
 }
 
@@ -831,7 +861,7 @@ void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 
 	}
 	
-	CView::OnVScroll(nSBCode, scrollinfo.nPos, pScrollBar);
+	CScrollView::OnVScroll(nSBCode, scrollinfo.nPos, pScrollBar);
 #else
 	if((nSBCode == SB_THUMBTRACK || nSBCode == SB_THUMBPOSITION) && ((nPos & 0xffff) > 0x7d00)){
 		int yOrig, y;
@@ -841,8 +871,8 @@ void CDataMonitorView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 		SetScrollPos(SB_VERT, nPos & 0xFFFF);
 		return;
 	}
-	DrawData();
-	CView::OnVScroll(nSBCode, nPos, pScrollBar);
+	//DrawData();
+	CScrollView::OnVScroll(nSBCode, nPos, pScrollBar);
 #endif
 }
 void CDataMonitorView::KillDrawTimer()
@@ -878,17 +908,19 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 	{
 	case TIMER_CMD_DRAW:
 		{
+#ifdef FEATURE_TEST_DRAW
 			KillTimer(TIMER_CMD_TEST);
+#endif
 			if(theApp.processType == FILEDATA_PROCESSING)
 			{
 				KillTimer(nIDEvent);
-				GetDataLimit();
-				DrawData();
+				GetMaxMinData();
+				Invalidate();
 				return;
 			}
 			else if(theApp.processType == REALTIME_PROCESSING)
 			{
-				DrawData();
+				Invalidate();
 				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 			}
 			else if(theApp.processType == NO_PROCESSING)
@@ -932,15 +964,31 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 	default:
 		break;
 	}
-	CView::OnTimer(nIDEvent);
+	CScrollView::OnTimer(nIDEvent);
 }
-void CDataMonitorView::GetDataLimit()
+void CDataMonitorView::GetMaxMinData()
 {
+	if(!theApp.petroList.IsEmpty())
+	{
+		minDepth = theApp.petroList.GetHead()->dept.iData;
+		maxDepth = minDepth;
+	}
 	POSITION nPos = theApp.petroList.GetHeadPosition();
 	while(nPos)
 	{
-		unsigned long m = 0;
 		CPetroData* pData = theApp.petroList.GetNext(nPos);
+
+		//查找当前最小深度值
+		if(minDepth > pData->dept.iData)
+		{
+			minDepth = pData->dept.iData;
+		}
+		if(maxDepth < pData->dept.iData)
+		{
+			maxDepth = pData->dept.iData;
+		}
+
+		unsigned long m = 0;
 		
 		tempArray[0] = GetMinData(pData->temp,tempArray[0]);
 		tempArray[1] = max(tempArray[1], pData->temp.iData/10*10+10);
@@ -958,19 +1006,10 @@ void CDataMonitorView::GetDataLimit()
 		magArray[1] = max(magArray[1], pData->mag[0].iData/10*10+10);
 	}
 }
-void CDataMonitorView::DrawData()
-{
-#if 0
-	if(!theApp.petroList.IsEmpty())
-	{
-		pPData = theApp.petroList.RemoveHead();
-	}
-#endif
-	Invalidate();
-}
+
 int CDataMonitorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CView::OnCreate(lpCreateStruct) == -1)
+	if (CScrollView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	// TODO:  在此添加您专用的创建代码
@@ -1000,7 +1039,7 @@ void CDataMonitorView::InitOldArrayData()
 
 void CDataMonitorView::OnSize(UINT nType, int cx, int cy)
 {
-	CView::OnSize(nType, cx, cy);
+	CScrollView::OnSize(nType, cx, cy);
 
 	// TODO: 在此处添加消息处理程序代码
 	CRect Rect;
@@ -1047,6 +1086,7 @@ BOOL CDataMonitorView::OnEraseBkgnd(CDC* pDC)
 	MemDC.DeleteDC();
 	return TRUE;
 #else
-	return CView::OnEraseBkgnd(pDC);
+	//return CScrollView::OnEraseBkgnd(pDC);
+	return TRUE;   
 #endif
 }
