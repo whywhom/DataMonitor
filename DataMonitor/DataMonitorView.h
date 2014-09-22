@@ -36,6 +36,7 @@ protected:
 
 	double		minDepth;//可见范围最小深度
 	double		maxDepth;//可见范围最大深度
+	double		maxPreDepth;//可见范围移动之前的最大深度
 	double		minDepthLimit;//作业中最小深度
 	double		maxDepthLimit;//作业中最大深度
 	bool		m_bAutoScrollY;		// automatic y range scrolling
@@ -56,14 +57,14 @@ protected:
 	long gmLimitArray[2];
 	long rmLimitArray[2];
 	long cclLimitArray[2];
-	long magLimitArray[2];
+	long magLimitArray[3][2];
 
 	DATA_TEMP olddeptArray;
 	DATA_TEMP oldtempArray;
 	DATA_TEMP oldgmArray;
 	DATA_TEMP oldrmArray;
 	DATA_TEMP oldcclArray;
-	DATA_TEMP oldmagArray;
+	DATA_TEMP oldmagArray[3];
 #ifdef FEATURE_TEST_DRAW
 	clPlot m_Plot;
 #endif
@@ -75,6 +76,12 @@ protected:
 	void DrawPlot(CDC* pDC);//绘制坐标数据
 	//void DrawCurve(CDC* pDC);//绘制测绘数据
 	void DrawCurve(CDC* pDC , double upDepth, double DownDepth);//绘制测绘数据
+	void DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制高度曲线
+	void DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制温度曲线
+	void DrawRmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Rm曲线
+	void DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制磁三分量曲线
+	void DrawGmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Gm曲线
+	void DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Ccl曲线
 	void DrawData(CDC* pDC);
 	void DrawDataFile(CDC* pDC);
 	void SetScrollTotalSizes(CRect rect);
@@ -135,6 +142,8 @@ public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnClose();
+	afx_msg void OnDestroy();
 };
 
 #ifndef _DEBUG  // DMonitorView.cpp 中的调试版本

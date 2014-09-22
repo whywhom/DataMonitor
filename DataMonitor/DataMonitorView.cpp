@@ -32,6 +32,8 @@ BEGIN_MESSAGE_MAP(CDataMonitorView, CScrollView)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
+	ON_WM_CLOSE()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 // CDataMonitorView 构造/析构
@@ -52,6 +54,7 @@ CDataMonitorView::CDataMonitorView()
 	
 	minDepth = 0;
 	maxDepth = 0;
+	maxPreDepth = 0;
 	minDepthLimit = 0;
 	maxDepthLimit = 0;
 	
@@ -84,6 +87,48 @@ CDataMonitorView::CDataMonitorView()
 CDataMonitorView::~CDataMonitorView()
 {
 }
+
+// CDataMonitorView 打印
+
+BOOL CDataMonitorView::OnPreparePrinting(CPrintInfo* pInfo)
+{
+	// 默认准备
+	return DoPreparePrinting(pInfo);
+}
+
+void CDataMonitorView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+{
+	// TODO: 添加额外的打印前进行的初始化过程
+}
+
+void CDataMonitorView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+{
+	// TODO: 添加打印后进行的清理过程
+}
+
+
+// CDataMonitorView 诊断
+
+#ifdef _DEBUG
+void CDataMonitorView::AssertValid() const
+{
+	CScrollView::AssertValid();
+}
+
+void CDataMonitorView::Dump(CDumpContext& dc) const
+{
+	CScrollView::Dump(dc);
+}
+
+CDataMonitorDoc* CDataMonitorView::GetDocument() const // 非调试版本是内联的
+{
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDataMonitorDoc)));
+	return (CDataMonitorDoc*)m_pDocument;
+}
+#endif //_DEBUG
+
+
+// CDataMonitorView 消息处理程序
 
 BOOL CDataMonitorView::PreCreateWindow(CREATESTRUCT& cs)
 {
@@ -130,6 +175,7 @@ void CDataMonitorView::SetDirectionDown(bool bDown)
 void CDataMonitorView::DrawBasic(CDC * pDC)
 {
 	m_totalRect = m_clientRect;
+	maxPreDepth = maxDepth;
 	maxDepth = minDepth + m_clientRect.Height()/unitPixel;
 	int depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 	m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
@@ -153,6 +199,7 @@ void CDataMonitorView::DrawGrid(CDC * pDC)
 	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
 	CPen stick(PS_SOLID,0,RGB(0,0,0));
 	CPen mline(PS_SOLID,0,RGB(192,192,192));
+	old = pDC->SelectObject(&pen);
 	//绘制坐标系
 	int iCount=0;
 
@@ -163,8 +210,8 @@ void CDataMonitorView::DrawGrid(CDC * pDC)
 			pDC->SelectObject(&pen);
 			pDC->MoveTo(i,m_plot1Rect.top); //
 			pDC->LineTo(i,m_plot1Rect.bottom);
-			pDC->MoveTo(i+1,m_plot1Rect.top); //
-			pDC->LineTo(i+1,m_plot1Rect.bottom);
+			//pDC->MoveTo(i+1,m_plot1Rect.top); //
+			//pDC->LineTo(i+1,m_plot1Rect.bottom);
 		}
 		else
 		{
@@ -181,8 +228,8 @@ void CDataMonitorView::DrawGrid(CDC * pDC)
 			pDC->SelectObject(&pen);
 			pDC->MoveTo(i,m_plot3Rect.top);
 			pDC->LineTo(i,m_plot3Rect.bottom);
-			pDC->MoveTo(i+1,m_plot3Rect.top);
-			pDC->LineTo(i+1,m_plot3Rect.bottom);
+			//pDC->MoveTo(i+1,m_plot3Rect.top);
+			//pDC->LineTo(i+1,m_plot3Rect.bottom);
 		}
 		else
 		{
@@ -194,40 +241,35 @@ void CDataMonitorView::DrawGrid(CDC * pDC)
 	for (int j=m_plot1Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
 	{
 		
-		if(iCount != 0 && (iCount)%5 == 0)
+		if(iCount != 0 && (iCount)%10 == 0)
 		{
-#if 0
 			pDC->SelectObject(&pen);
-			pDC->MoveTo(m_plot1Rect.left,j); // [0,0]
+			pDC->MoveTo(m_plot1Rect.left,j); 
 			pDC->LineTo(m_plot1Rect.right,j);
-			pDC->MoveTo(m_plot1Rect.left,j+1); // [0,0]
-			pDC->LineTo(m_plot1Rect.right,j+1);
+			//pDC->MoveTo(m_plot1Rect.left,j+1); 
+			//pDC->LineTo(m_plot1Rect.right,j+1);
 		}
-		else
+		else if(iCount != 0 && (iCount)%5 == 0)
 		{
-#endif
 			pDC->SelectObject(&pen2);
-			pDC->MoveTo(m_plot1Rect.left,j); // [0,0]
+			pDC->MoveTo(m_plot1Rect.left,j); 
 			pDC->LineTo(m_plot1Rect.right,j);
 		}
 	}
 	for (int j=m_plot3Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
 	{
-		
-		if(iCount != 0 && (iCount)%5 == 0)
+		if(iCount != 0 && (iCount)%10 == 0)
 		{
-#if 0
 			pDC->SelectObject(&pen);
 			pDC->MoveTo(m_plot3Rect.left,j);
 			pDC->LineTo(m_plot3Rect.right,j);
-			pDC->MoveTo(m_plot3Rect.left,j+1);
-			pDC->LineTo(m_plot3Rect.right,j+1);
+			//pDC->MoveTo(m_plot3Rect.left,j+1);
+			//pDC->LineTo(m_plot3Rect.right,j+1);
 		}
-		else
+		else if(iCount != 0 && (iCount)%5 == 0)
 		{
-#endif
 			pDC->SelectObject(&pen2);
-			pDC->MoveTo(m_plot3Rect.left,j); // [0,0]
+			pDC->MoveTo(m_plot3Rect.left,j); 
 			pDC->LineTo(m_plot3Rect.right,j);
 		}
 	}
@@ -309,73 +351,62 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 			}
 			else
 			{
-				if(mCounter < m_drawCount*m_iterator && pPData->dept.iData < maxDepth)
+				if(pPData->dept.iData <= maxPreDepth)
 				{
 					if(pPData->dept.bAssign)
 					{
-						//深度
-						if(olddeptArray.bAssign)
-						{
-							
-						}
-						else
-						{
-						
-						}
-						//draw tepm
-						if(pPData->temp.bAssign)
-						{
-							if(oldtempArray.bAssign)
-							{
-								pDC->SelectObject(&pen);
-								long tempRange = tempLimitArray[1]-tempLimitArray[0];
-								int i_dx = (int)((oldtempArray.dx - (int)oldtempArray.dx)*10);
-								int d_dx = (int)(oldtempArray.dx);
-								pre_ix = (int)((d_dx-tempLimitArray[0])*m_plot1Rect.Width()/tempRange
-									+i_dx*m_plot1Rect.Width()/(10*tempRange));
-								double mid = (pPData->temp.iData-tempLimitArray[0])*m_plot1Rect.Width()/tempRange;
-								cur_ix = (int)mid;
-								pre_iy = (oldtempArray.dy - minDepth)*unitPixel;
-								cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-								pDC->MoveTo(pre_ix,pre_iy);
-								pDC->LineTo(cur_ix,cur_iy);
-							}
-							else
-							{
-								oldtempArray.bAssign = pPData->temp.bAssign;
-								oldtempArray.dx = pPData->temp.iData;
-								oldtempArray.dy = pPData->dept.iData;
-							}
-						}
+						DrawDeptData(pDC,pPData,&pen);//深度
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						DrawRmData(pDC,pPData,&pen2);//rm
+						DrawGmData(pDC,pPData,&pen3);//gm
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						DrawMagxData(pDC,pPData,&pen5);//magx
 					}
-					
-					if(pPData->dept.iData > maxDepth)
-					{
-						minDepth =(int) (minDepth+ unitPixel*5);
-						m_iterator = 1;
-						mCounter = 0;
-						break;
-					}
-					if(mCounter < m_drawCount*m_iterator )
-					{
-						mCounter++;
-					}
+					continue;
 				}
-				else
-				{
-					if(pPData->dept.iData > maxDepth)
+				else{
+					if(mCounter < m_drawCount*m_iterator && pPData->dept.iData < maxDepth)
 					{
-						minDepth = (int) (minDepth+ unitPixel*5);//minDepth = (int)pPData->dept.iData;
-						m_iterator = 1;
-						mCounter = 0;
-						break;
-					}
-					if(mCounter >= m_drawCount*m_iterator )
-					{
-						m_iterator++;
-						break;
-					}
+						if(pPData->dept.bAssign)
+						{
+							DrawDeptData(pDC,pPData,&pen);//深度
+							DrawTempData(pDC,pPData,&pen);//draw tepm
+							DrawRmData(pDC,pPData,&pen2);//rm
+							DrawGmData(pDC,pPData,&pen3);//gm
+							DrawCclData(pDC,pPData,&pen4);//ccl
+							DrawMagxData(pDC,pPData,&pen5);//magx
+						}
 					
+						if(pPData->dept.iData > maxDepth)
+						{
+							minDepth =(int) (minDepth+ unitPixel*5);
+							m_iterator = 1;
+							mCounter = 0;
+							break;
+						}
+						if(mCounter < m_drawCount*m_iterator )
+						{
+							mCounter++;
+						}
+					}
+					else
+					{
+						if(pPData->dept.iData > maxDepth)
+						{
+							minDepth = (int) (minDepth+ unitPixel*5);//minDepth = (int)pPData->dept.iData;
+							m_iterator = 1;
+							mCounter = 0;
+							pDC->SelectObject(pOldPen);
+							break;
+						}
+						if(mCounter >= m_drawCount*m_iterator )
+						{
+							m_iterator++;
+							pDC->SelectObject(pOldPen);
+							break;
+						}
+					
+					}
 				}
 			}
 			
@@ -391,47 +422,225 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
-// CDataMonitorView 打印
 
-BOOL CDataMonitorView::OnPreparePrinting(CPrintInfo* pInfo)
+void CDataMonitorView::DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	// 默认准备
-	return DoPreparePrinting(pInfo);
+	if(olddeptArray.bAssign)
+	{
+							
+	}
+	else
+	{
+						
+	}
 }
-
-void CDataMonitorView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+void CDataMonitorView::DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	// TODO: 添加额外的打印前进行的初始化过程
+	long pre_iy=0,cur_iy=0;
+	long pre_ix=0,cur_ix=0;
+	if(pPData->temp.bAssign)
+	{
+		if(oldtempArray.bAssign)
+		{
+			pDC->SelectObject(pPpen);
+			long tempRange = tempLimitArray[1]-tempLimitArray[0];
+			int i_dx = (int)((oldtempArray.dx - (int)oldtempArray.dx)*10);
+			int d_dx = (int)(oldtempArray.dx);
+			pre_ix = (int)((d_dx-tempLimitArray[0])*m_plot1Rect.Width()/tempRange
+				+i_dx*m_plot1Rect.Width()/(10*tempRange));
+			double mid = (pPData->temp.iData-tempLimitArray[0])*m_plot1Rect.Width()/tempRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldtempArray.dy - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldtempArray.bAssign = pPData->temp.bAssign;
+			oldtempArray.dx = pPData->temp.iData;
+			oldtempArray.dy = pPData->dept.iData;
+		}
+	}
 }
-
-void CDataMonitorView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+void CDataMonitorView::DrawRmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	// TODO: 添加打印后进行的清理过程
+	long pre_iy=0,cur_iy=0;
+	long pre_ix=0,cur_ix=0;
+	if(pPData->rm.bAssign)
+	{
+		if(oldtempArray.bAssign)
+		{
+			pDC->SelectObject(pPpen);
+			long rmRange = rmLimitArray[1]-rmLimitArray[0];
+			int i_dx = (int)((oldrmArray.dx - (int)oldrmArray.dx)*10);
+			int d_dx = (int)(oldrmArray.dx);
+			pre_ix = (int)((d_dx-rmLimitArray[0])*m_plot1Rect.Width()/rmRange
+				+i_dx*m_plot1Rect.Width()/(10*rmRange));
+			double mid = (pPData->rm.iData-rmLimitArray[0])*m_plot1Rect.Width()/rmRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldrmArray.dy - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldrmArray.bAssign = pPData->rm.bAssign;
+			oldrmArray.dx = pPData->rm.iData;
+			oldrmArray.dy = pPData->dept.iData;
+		}
+	}
 }
-
-
-// CDataMonitorView 诊断
-
-#ifdef _DEBUG
-void CDataMonitorView::AssertValid() const
+//绘制磁三分量曲线
+void CDataMonitorView::DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	CScrollView::AssertValid();
-}
+	int iDrawType = PS_SOLID;
+	COLORREF color1 = RGB(255,0,255);
+	COLORREF color2 = RGB(0,255,255);
 
-void CDataMonitorView::Dump(CDumpContext& dc) const
+	CPen penmag0(iDrawType, 1,color1); //画笔
+	CPen penmag1(iDrawType, 1,color1); //画笔2
+	CPen penmag2(iDrawType, 1,color2); //画笔3
+	
+	long pre_iy=0,cur_iy=0;
+	long pre_ix=0,cur_ix=0;
+	//0
+	if(pPData->mag[0].bAssign)
+	{
+		if(oldmagArray[0].bAssign)
+		{
+			pDC->SelectObject(pPpen);
+			long magRange = magLimitArray[0][1]-magLimitArray[0][0];
+			int i_dx = (int)((oldmagArray[0].dx - (int)oldmagArray[0].dx)*10);
+			int d_dx = (int)(oldmagArray[0].dx);
+			pre_ix = (int)((d_dx-magLimitArray[0][0])*m_plot1Rect.Width()/magRange
+				+i_dx*m_plot1Rect.Width()/(10*magRange));
+			double mid = (pPData->mag[0].iData-magLimitArray[0][0])*m_plot1Rect.Width()/magRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldmagArray[0].dy - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldmagArray[0].bAssign = pPData->mag[0].bAssign;
+			oldmagArray[0].dx = pPData->mag[0].iData;
+			oldmagArray[0].dy = pPData->dept.iData;
+		}
+	}
+	//1
+	if(pPData->mag[1].bAssign)
+	{
+		if(oldmagArray[1].bAssign)
+		{
+			pDC->SelectObject(&penmag1);
+			long magRange = magLimitArray[1][1]-magLimitArray[1][0];
+			int i_dx = (int)((oldmagArray[1].dx - (int)oldmagArray[1].dx)*10);
+			int d_dx = (int)(oldmagArray[1].dx);
+			pre_ix = (int)((d_dx-magLimitArray[1][0])*m_plot1Rect.Width()/magRange
+				+i_dx*m_plot1Rect.Width()/(10*magRange));
+			double mid = (pPData->mag[1].iData-magLimitArray[1][0])*m_plot1Rect.Width()/magRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldmagArray[1].dy - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldmagArray[1].bAssign = pPData->mag[1].bAssign;
+			oldmagArray[1].dx = pPData->mag[1].iData;
+			oldmagArray[1].dy = pPData->dept.iData;
+		}
+	}
+	//2
+	if(pPData->mag[2].bAssign)
+	{
+		if(oldmagArray[2].bAssign)
+		{
+			pDC->SelectObject(&penmag2);
+			long magRange = magLimitArray[2][1]-magLimitArray[2][0];
+			int i_dx = (int)((oldmagArray[2].dx - (int)oldmagArray[2].dx)*10);
+			int d_dx = (int)(oldmagArray[2].dx);
+			pre_ix = (int)((d_dx-magLimitArray[2][0])*m_plot1Rect.Width()/magRange
+				+i_dx*m_plot1Rect.Width()/(10*magRange));
+			double mid = (pPData->mag[2].iData-magLimitArray[2][0])*m_plot1Rect.Width()/magRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldmagArray[2].dy - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldmagArray[2].bAssign = pPData->mag[2].bAssign;
+			oldmagArray[2].dx = pPData->mag[2].iData;
+			oldmagArray[2].dy = pPData->dept.iData;
+		}
+	}
+}
+//绘制Gm曲线
+void CDataMonitorView::DrawGmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	CScrollView::Dump(dc);
+	long pre_iy=0,cur_iy=0;
+	long pre_ix=0,cur_ix=0;
+	if(pPData->gr.bAssign)
+	{
+		if(oldgmArray.bAssign)
+		{
+			pDC->SelectObject(pPpen);
+			long gmRange = gmLimitArray[1]-gmLimitArray[0];
+			int i_dx = (int)((oldgmArray.dx - (int)oldgmArray.dx)*10);
+			int d_dx = (int)(oldgmArray.dx);
+			pre_ix = (int)((d_dx-gmLimitArray[0])*m_plot1Rect.Width()/gmRange
+				+i_dx*m_plot1Rect.Width()/(10*gmRange));
+			double mid = (pPData->gr.iData-gmLimitArray[0])*m_plot1Rect.Width()/gmRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldgmArray.dy - minDepth)*unitPixel;
+			cur_iy = (pPData->gr.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldgmArray.bAssign = pPData->gr.bAssign;
+			oldgmArray.dx = pPData->gr.iData;
+			oldgmArray.dy = pPData->dept.iData;
+		}
+	}
 }
-
-CDataMonitorDoc* CDataMonitorView::GetDocument() const // 非调试版本是内联的
+//绘制Ccl曲线
+void CDataMonitorView::DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDataMonitorDoc)));
-	return (CDataMonitorDoc*)m_pDocument;
+	long pre_iy=0,cur_iy=0;
+	long pre_ix=0,cur_ix=0;
+	if(pPData->ccl.bAssign)
+	{
+		if(oldcclArray.bAssign)
+		{
+			pDC->SelectObject(pPpen);
+			long cclRange = cclLimitArray[1]-cclLimitArray[0];
+			int i_dx = (int)((oldcclArray.dx - (int)oldcclArray.dx)*10);
+			int d_dx = (int)(oldcclArray.dx);
+			pre_ix = (int)((d_dx-cclLimitArray[0])*m_plot1Rect.Width()/cclRange
+				+i_dx*m_plot1Rect.Width()/(10*cclRange));
+			double mid = (pPData->ccl.iData-cclLimitArray[0])*m_plot1Rect.Width()/cclRange;
+			cur_ix = (int)mid;
+			pre_iy = (oldcclArray.dy - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		else
+		{
+			oldcclArray.bAssign = pPData->ccl.bAssign;
+			oldcclArray.dx = pPData->ccl.iData;
+			oldcclArray.dy = pPData->dept.iData;
+		}
+	}
 }
-#endif //_DEBUG
-
-
-// CDataMonitorView 消息处理程序
 
 
 void CDataMonitorView::OnPaint()
@@ -1022,8 +1231,14 @@ void CDataMonitorView::GetMaxMinData()
 		cclLimitArray[0] = GetMinData(pData->ccl,cclLimitArray[0]);
 		cclLimitArray[1] = max(cclLimitArray[1], pData->ccl.iData/10*10+10);
 
-		magLimitArray[0] = GetMinData(pData->mag[0],magLimitArray[0]);
-		magLimitArray[1] = max(magLimitArray[1], pData->mag[0].iData/10*10+10);
+		magLimitArray[0][0] = GetMinData(pData->mag[0],magLimitArray[0][0]);
+		magLimitArray[0][1] = max(magLimitArray[0][1], pData->mag[0].iData/10*10+10);
+
+		magLimitArray[1][0] = GetMinData(pData->mag[1],magLimitArray[1][0]);
+		magLimitArray[1][1] = max(magLimitArray[1][1], pData->mag[1].iData/10*10+10);
+
+		magLimitArray[2][0] = GetMinData(pData->mag[2],magLimitArray[2][0]);
+		magLimitArray[2][1] = max(magLimitArray[2][1], pData->mag[2].iData/10*10+10);
 	}
 }
 
@@ -1044,7 +1259,8 @@ void CDataMonitorView::InitArrayData()
 		gmLimitArray[i] = 0;
 		rmLimitArray[i] = 0;
 		cclLimitArray[i] = 0;
-		magLimitArray[i] = 0;
+		magLimitArray[i][0] = 0;
+		magLimitArray[i][1] = 0;
 	}
 }
 void CDataMonitorView::InitOldArrayData()
@@ -1054,7 +1270,9 @@ void CDataMonitorView::InitOldArrayData()
 	memset((void*)&oldgmArray,0,sizeof(DATA_TEMP));
 	memset((void*)&oldrmArray,0,sizeof(DATA_TEMP));
 	memset((void*)&oldcclArray,0,sizeof(DATA_TEMP));
-	memset((void*)&oldmagArray,0,sizeof(DATA_TEMP));
+	memset((void*)&oldmagArray[0],0,sizeof(DATA_TEMP));
+	memset((void*)&oldmagArray[1],0,sizeof(DATA_TEMP));
+	memset((void*)&oldmagArray[2],0,sizeof(DATA_TEMP));
 }
 
 void CDataMonitorView::OnSize(UINT nType, int cx, int cy)
@@ -1109,4 +1327,23 @@ BOOL CDataMonitorView::OnEraseBkgnd(CDC* pDC)
 	//return CScrollView::OnEraseBkgnd(pDC);
 	return TRUE;   
 #endif
+}
+
+
+void CDataMonitorView::OnClose()
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
+	CScrollView::OnClose();
+}
+
+
+void CDataMonitorView::OnDestroy()
+{
+	CScrollView::OnDestroy();
+
+	// TODO: 在此处添加消息处理程序代码
+	TRACE(_T("CDataMonitorView::OnClose() \r\n"));
+	KillTimer(TIMER_CMD_DRAW);
+	TRACE(_T("KillTimer(TIMER_CMD_DRAW) \r\n"));
 }
