@@ -43,9 +43,25 @@ CDataMonitorView::CDataMonitorView()
 
 	InitOldArrayData();
 
-	unitPixel = 20;//20 pixel = 1 m
-
+	unitPixel = 5;//20 pixel = 1 m
+	unitRatio = 4;
 	m_bDirectDown = true;
+
+	base = 0;
+	bias = 0;
+	
+	minDepth = 0;
+	maxDepth = 0;
+	minDepthLimit = 0;
+	maxDepthLimit = 0;
+	
+	m_drawCount = 0;
+
+	pPData = NULL;
+	pOldPData = NULL;
+
+	pos = NULL;//当前记录位置
+	pCurrentData = NULL;//当前记录指针
 
 	VERIFY(m_font.CreateFont(
 		18,                        // nHeight
@@ -63,10 +79,6 @@ CDataMonitorView::CDataMonitorView()
 		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
 		_T("Arial")));                 // lpszFacename
 
-	base = 0;
-	bias = 0;
-	pPData = NULL;
-	pOldPData = NULL;
 }
 
 CDataMonitorView::~CDataMonitorView()
@@ -110,20 +122,21 @@ void CDataMonitorView::OnDraw(CDC* pDC)
 	MemDC.DeleteDC();  
 }
 
-void CDataMonitorView::DrawBasic(CDC * pDC)
+void CDataMonitorView::SetDirectionDown(bool bDown)
 {
-	if(m_bDirectDown)
-	{
-		minDepth = 0;
-		maxDepth = 0;
-	}
-}
-void CDataMonitorView::DrawGrid(CDC * pDC)
-{
-	DrawXYAxisGrid(pDC);
+	m_bDirectDown = bDown;
 }
 
-void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
+void CDataMonitorView::DrawBasic(CDC * pDC)
+{
+	m_totalRect = m_clientRect;
+	maxDepth = minDepth + m_clientRect.Height()/unitPixel;
+	int depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+	m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
+	
+	SetScrollTotalSizes(m_totalRect);
+}
+void CDataMonitorView::DrawGrid(CDC * pDC)
 {
 	m_plot1Rect = m_clientRect;
 	m_plot1Rect.right = m_plot1Rect.left + 400;
@@ -143,7 +156,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 	//绘制坐标系
 	int iCount=0;
 
-	for (int i=m_plot1Rect.left,iCount= 0;i<=m_plot1Rect.right;i+=unitPixel,iCount++)
+	for (int i=m_plot1Rect.left,iCount= 0;i<=m_plot1Rect.right;i+=unitPixel*unitRatio,iCount++)
 	{
 		if(iCount != 0 && iCount%5 == 0)
 		{
@@ -160,7 +173,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 			pDC->LineTo(i,m_plot1Rect.bottom);
 		}
 	}
-	for (int i=m_plot3Rect.left,iCount = 0;i<=m_plot3Rect.right;i+=unitPixel,iCount++)
+	for (int i=m_plot3Rect.left,iCount = 0;i<=m_plot3Rect.right;i+=unitPixel*unitRatio,iCount++)
 	{
 		
 		if(iCount%5 == 0)
@@ -183,6 +196,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 		
 		if(iCount != 0 && (iCount)%5 == 0)
 		{
+#if 0
 			pDC->SelectObject(&pen);
 			pDC->MoveTo(m_plot1Rect.left,j); // [0,0]
 			pDC->LineTo(m_plot1Rect.right,j);
@@ -191,6 +205,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 		}
 		else
 		{
+#endif
 			pDC->SelectObject(&pen2);
 			pDC->MoveTo(m_plot1Rect.left,j); // [0,0]
 			pDC->LineTo(m_plot1Rect.right,j);
@@ -201,6 +216,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 		
 		if(iCount != 0 && (iCount)%5 == 0)
 		{
+#if 0
 			pDC->SelectObject(&pen);
 			pDC->MoveTo(m_plot3Rect.left,j);
 			pDC->LineTo(m_plot3Rect.right,j);
@@ -209,6 +225,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 		}
 		else
 		{
+#endif
 			pDC->SelectObject(&pen2);
 			pDC->MoveTo(m_plot3Rect.left,j); // [0,0]
 			pDC->LineTo(m_plot3Rect.right,j);
@@ -217,6 +234,7 @@ void CDataMonitorView::DrawXYAxisGrid(CDC * pDC)
 	//画笔刷新
 	pDC->SelectObject(old);
 }
+
 void CDataMonitorView::DrawPlot(CDC* pDC)
 {
 	m_zoomFont.lfHeight			= -13;
@@ -255,6 +273,124 @@ void CDataMonitorView::DrawPlot(CDC* pDC)
 	pDC->SelectObject(oFont);
 }
 
+void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
+{
+	int iDrawType = PS_SOLID;
+	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
+	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
+	COLORREF colorRed = RGB(255,0,0);
+	COLORREF colorBlue = RGB(0,0,255);
+	COLORREF colorGreen = RGB(0,255,0);
+	COLORREF colorBlack = RGB(0,0,0);
+	COLORREF color1 = RGB(2,141,153);
+	CPen pen(iDrawType, 1,colorRed); //画笔
+	CPen pen2(iDrawType, 1,colorBlue); //画笔2
+	CPen pen3(iDrawType, 1,colorGreen); //画笔3
+	CPen pen4(iDrawType, 1,color1); //画笔4
+	CPen pen5(iDrawType, 1,colorBlack); //画笔5
+	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
+	int mCounter = 0;
+	if(m_bDirectDown)
+	{
+		pos = theApp.petroList.GetHeadPosition();
+	}
+	else
+	{
+		pos = theApp.petroList.GetTailPosition();
+	}
+	while(pos)
+	{
+		pPData = theApp.petroList.GetNext(pos);
+		if(pPData->dept.bAssign == true)
+		{
+			if(pPData->dept.iData < minDepth)
+			{
+				continue;
+			}
+			else
+			{
+				if(mCounter < m_drawCount*m_iterator && pPData->dept.iData < maxDepth)
+				{
+					if(pPData->dept.bAssign)
+					{
+						//深度
+						if(olddeptArray.bAssign)
+						{
+							
+						}
+						else
+						{
+						
+						}
+						//draw tepm
+						if(pPData->temp.bAssign)
+						{
+							if(oldtempArray.bAssign)
+							{
+								pDC->SelectObject(&pen);
+								long tempRange = tempLimitArray[1]-tempLimitArray[0];
+								int i_dx = (int)((oldtempArray.dx - (int)oldtempArray.dx)*10);
+								int d_dx = (int)(oldtempArray.dx);
+								pre_ix = (int)((d_dx-tempLimitArray[0])*m_plot1Rect.Width()/tempRange
+									+i_dx*m_plot1Rect.Width()/(10*tempRange));
+								double mid = (pPData->temp.iData-tempLimitArray[0])*m_plot1Rect.Width()/tempRange;
+								cur_ix = (int)mid;
+								pre_iy = (oldtempArray.dy - minDepth)*unitPixel;
+								cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+								pDC->MoveTo(pre_ix,pre_iy);
+								pDC->LineTo(cur_ix,cur_iy);
+							}
+							else
+							{
+								oldtempArray.bAssign = pPData->temp.bAssign;
+								oldtempArray.dx = pPData->temp.iData;
+								oldtempArray.dy = pPData->dept.iData;
+							}
+						}
+					}
+					
+					if(pPData->dept.iData > maxDepth)
+					{
+						minDepth =(int) (minDepth+ unitPixel*5);
+						m_iterator = 1;
+						mCounter = 0;
+						break;
+					}
+					if(mCounter < m_drawCount*m_iterator )
+					{
+						mCounter++;
+					}
+				}
+				else
+				{
+					if(pPData->dept.iData > maxDepth)
+					{
+						minDepth = (int) (minDepth+ unitPixel*5);//minDepth = (int)pPData->dept.iData;
+						m_iterator = 1;
+						mCounter = 0;
+						break;
+					}
+					if(mCounter >= m_drawCount*m_iterator )
+					{
+						m_iterator++;
+						break;
+					}
+					
+				}
+			}
+			
+		}
+		
+	}
+	if(pos == NULL)
+	{
+		KillTimer(TIMER_CMD_DRAW);//
+	}
+	else
+	{
+		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+	}
+}
 // CDataMonitorView 打印
 
 BOOL CDataMonitorView::OnPreparePrinting(CPrintInfo* pInfo)
@@ -308,9 +444,10 @@ void CDataMonitorView::OnPaint()
 }
 void CDataMonitorView::DrawData(CDC* pDC)
 {
-	DrawBasic(pDC);
+	DrawBasic(pDC);//获取内存映射绘制区域大小
 	DrawGrid(pDC);
 	DrawPlot(pDC);
+	DrawCurve(pDC,minDepth,maxDepth);
 }
 
 
@@ -549,6 +686,10 @@ void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
 unsigned long CDataMonitorView::GetMinData(DATA_PART tmp,unsigned long m)
 {
 	unsigned long t = 0;
+	if(tmp.bAssign == false)
+	{
+		return m;
+	}
 	if(tmp.iData > 0)
 	{
 		if(m == 0)
@@ -566,157 +707,13 @@ unsigned long CDataMonitorView::GetMinData(DATA_PART tmp,unsigned long m)
 		return m;
 	}
 }
-void CDataMonitorView::DrawCoordinateSystemFile(CDC* pDC)
-{
-	TRACE(_T("DrawCoordinateSystem"));
-	
-	//获得线的颜色颜色
-	COLORREF color = RGB(127,127,127);
-	CRect textRect;
-	int gap = 20, gap1 = 300, gap2 = 350;
-	int coordinateLimit = 25;
-	CString str;
-	CFont font;
-	VERIFY(font.CreateFont(
-		18,                        // nHeight
-		0,                         // nWidth
-		0,                         // nEscapement
-		0,                         // nOrientation
-		FW_NORMAL,                 // nWeight
-		FALSE,                     // bItalic
-		FALSE,                     // bUnderline
-		0,                         // cStrikeOut
-		ANSI_CHARSET,              // nCharSet
-		OUT_DEFAULT_PRECIS,        // nOutPrecision
-		CLIP_DEFAULT_PRECIS,       // nClipPrecision
-		DEFAULT_QUALITY,           // nQuality
-		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
-		_T("Arial")));                 // lpszFacename
 
-	 LOGBRUSH logBrush;
-	//获得线的风格
-	int iDrawType = PS_SOLID;
-	//iDrawType = _wtoi(_T("1"));
-	
-    //设置线的画笔"风格"和"颜色"还有"粗细"
-	CPen pen(iDrawType, 1,color); //画笔
-	CPen pen2(PS_DOT, 1,color); //画笔
-	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-	
-	CPetroData* pStartPData = theApp.petroList.GetHead();
-	CPetroData* pEndPData = theApp.petroList.GetTail();
-
-	CRect rect;
-	//以下两句讲获得控件在屏幕中的位置
-	//GetDlgItem(IDC_STATIC_PIC)->GetWindowRect(&rect);//获取控件相对于屏幕的位置,这个控件必须隐藏
-	//ScreenToClient(rect);//转化为对话框上的相对位置
-	GetClientRect(rect);
-	rectTotalFile = rect;
-	rectTotalFile.right = rectTotalFile.left + 750;
-	rectTotalFile.bottom = rectTotalFile.top + gap*(pEndPData->dept.iData/10*10+10 - pStartPData->dept.iData/10*10);
-	base = pStartPData->dept.iData/10*10;
-	UpdateData(FALSE);
-	
-	int iCount=0;
-
-	for (int i=0,iCount = 0;i<=gap1;i+=gap,iCount++)
-	{
-		if(iCount != 0 && iCount%5 == 0)
-		{
-			pDC->SelectObject(&pen);
-			pDC->MoveTo(i,0); // [0,0]
-			pDC->LineTo(i,rectTotalFile.Height());
-			pDC->MoveTo(i+1,0); // [0,0]
-			pDC->LineTo(i+1,rectTotalFile.Height());
-		}
-		else
-		{
-			pDC->SelectObject(&pen2);
-			pDC->MoveTo(i,0); // [0,0]
-			pDC->LineTo(i,rectTotalFile.Height());
-		}
-	}
-	for (int i=gap2,iCount = 0;i<=rectTotalFile.Width();i+=gap,iCount++)
-	{
-		
-		if(iCount%5 == 0)
-		{
-			pDC->SelectObject(&pen);
-			pDC->MoveTo(i,0); // [0,0]
-			pDC->LineTo(i,rectTotalFile.Height());
-			pDC->MoveTo(i+1,0); // [0,0]
-			pDC->LineTo(i+1,rectTotalFile.Height());
-		}
-		else
-		{
-			pDC->SelectObject(&pen2);
-			pDC->MoveTo(i,0); // [0,0]
-			pDC->LineTo(i,rectTotalFile.Height());
-		}
-	}
-	for (int j=0,iCount = 0;j<=rectTotalFile.Height();j+=gap,iCount++)
-	{
-		
-		if(iCount != 0 && (iCount)%10 == 0)
-		{
-			pDC->SelectObject(&pen);
-			pDC->MoveTo(0,j); // [0,0]
-			pDC->LineTo(gap1,j);
-			pDC->MoveTo(0,j+1); // [0,0]
-			pDC->LineTo(gap1,j+1);
-		}
-		else
-		{
-			pDC->SelectObject(&pen2);
-			pDC->MoveTo(0,j); // [0,0]
-			pDC->LineTo(gap1,j);
-		}
-	}
-	for (int j=0,iCount = 0;j<=rectTotalFile.Height();j+=gap,iCount++)
-	{
-		
-		if(iCount != 0 && (iCount)%10 == 0)
-		{
-			pDC->SelectObject(&pen);
-			pDC->MoveTo(gap2,j); // [0,0]
-			pDC->LineTo(rectTotalFile.Width(),j);
-			pDC->MoveTo(gap2,j+1); // [0,0]
-			pDC->LineTo(rectTotalFile.Width(),j+1);
-		}
-		else
-		{
-			pDC->SelectObject(&pen2);
-			pDC->MoveTo(gap2,j); // [0,0]
-			pDC->LineTo(rectTotalFile.Width(),j);
-		}
-	}
-	//bias = base + coordinateLimit;//深度到屏幕底部的坐标偏移
-
-	for (int j=0,iCount = 0;j<=rectTotalFile.Height();j+=gap*10,iCount++)
-	{
-		textRect = rectTotalFile;
-		textRect.left = gap1+2;
-		textRect.right = gap2-2;
-		textRect.top = rectTotalFile.top + j-10;
-		textRect.bottom = textRect.top +gap;
-		pDC->SelectObject(&font);
-		pDC->SetTextAlign(TA_LEFT);
-		str.Format(_T("%d"),(j/gap+base));
-		//pDC->TextOut(1,30*i+16,str);   //输出文本值
-		pDC->DrawText(str,textRect,DT_LEFT);
-
-	}
-	
-	//画笔刷新
-	pDC->SelectObject(pOldPen);  //[可以不需要]
-
-	//SetScrollTotalSizes(rectTotalFile);
-}
 
 void CDataMonitorView::SetScrollTotalSizes(CRect rect)
 {
 	sizeTotal.cx = rect.Width();
 	sizeTotal.cy = rect.Height();
+	TRACE(_T("cx = %d ; cy = %d \r\n"),sizeTotal.cx,sizeTotal.cy);
 	SetScrollSizes(MM_TEXT, sizeTotal);
 }
 
@@ -884,13 +881,36 @@ void CDataMonitorView::StartTimer()
 	base = 0;
 	bias = 0;
 	counter = 0;
-	pos = theApp.petroList.GetHeadPosition();
+	m_iterator = 1;
+	if(theApp.petroList.IsEmpty())
+	{
+		return;//没有数据不进行绘制
+	}
+	if(m_bDirectDown)
+	{
+		pos = theApp.petroList.GetHeadPosition();
+		pCurrentData = theApp.petroList.GetAt(pos);
+	}
+	else
+	{
+		pos = theApp.petroList.GetTailPosition();
+		pCurrentData = theApp.petroList.GetAt(pos);
+	}
+
 	if(theApp.processType == REALTIME_PROCESSING)
 	{
+		m_drawCount = TIME_REFRESH_REALTIME/20;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
 	else// if(theApp.processType == FILEDATA_PROCESSING)
 	{
+		minDepth = 0;
+		maxDepth = 0;
+		minDepthLimit = 0;
+		maxDepthLimit = 0;
+		m_drawCount = TIME_REFRESH_FILE/200;
+		GetMaxMinData();//在绘图前进行一次计算的操作
+		minDepth = (int)minDepthLimit;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
@@ -913,8 +933,8 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 #endif
 			if(theApp.processType == FILEDATA_PROCESSING)
 			{
-				KillTimer(nIDEvent);
-				GetMaxMinData();
+				//KillTimer(nIDEvent);//TIMER_CMD_DRAW
+				
 				Invalidate();
 				return;
 			}
@@ -970,8 +990,8 @@ void CDataMonitorView::GetMaxMinData()
 {
 	if(!theApp.petroList.IsEmpty())
 	{
-		minDepth = theApp.petroList.GetHead()->dept.iData;
-		maxDepth = minDepth;
+		minDepthLimit = theApp.petroList.GetHead()->dept.iData;
+		maxDepthLimit = minDepthLimit;
 	}
 	POSITION nPos = theApp.petroList.GetHeadPosition();
 	while(nPos)
@@ -979,31 +999,31 @@ void CDataMonitorView::GetMaxMinData()
 		CPetroData* pData = theApp.petroList.GetNext(nPos);
 
 		//查找当前最小深度值
-		if(minDepth > pData->dept.iData)
+		if(minDepthLimit > pData->dept.iData)
 		{
-			minDepth = pData->dept.iData;
+			minDepthLimit = pData->dept.iData;
 		}
-		if(maxDepth < pData->dept.iData)
+		if(maxDepthLimit < pData->dept.iData)
 		{
-			maxDepth = pData->dept.iData;
+			maxDepthLimit = pData->dept.iData;
 		}
 
 		unsigned long m = 0;
 		
-		tempArray[0] = GetMinData(pData->temp,tempArray[0]);
-		tempArray[1] = max(tempArray[1], pData->temp.iData/10*10+10);
+		tempLimitArray[0] = GetMinData(pData->temp,tempLimitArray[0]);
+		tempLimitArray[1] = max(tempLimitArray[1], pData->temp.iData/10*10+10);
 
-		gmArray[0] = GetMinData(pData->gr,gmArray[0]);
-		gmArray[1] = max(gmArray[1], pData->gr.iData/10*10+10);
+		gmLimitArray[0] = GetMinData(pData->gr,gmLimitArray[0]);
+		gmLimitArray[1] = max(gmLimitArray[1], pData->gr.iData/10*10+10);
 
-		rmArray[0] = GetMinData(pData->rm,rmArray[0]);
-		rmArray[1] = max(rmArray[1], pData->rm.iData/10*10+10);
+		rmLimitArray[0] = GetMinData(pData->rm,rmLimitArray[0]);
+		rmLimitArray[1] = max(rmLimitArray[1], pData->rm.iData/10*10+10);
 
-		cclArray[0] = GetMinData(pData->ccl,cclArray[0]);
-		cclArray[1] = max(cclArray[1], pData->ccl.iData/10*10+10);
+		cclLimitArray[0] = GetMinData(pData->ccl,cclLimitArray[0]);
+		cclLimitArray[1] = max(cclLimitArray[1], pData->ccl.iData/10*10+10);
 
-		magArray[0] = GetMinData(pData->mag[0],magArray[0]);
-		magArray[1] = max(magArray[1], pData->mag[0].iData/10*10+10);
+		magLimitArray[0] = GetMinData(pData->mag[0],magLimitArray[0]);
+		magLimitArray[1] = max(magLimitArray[1], pData->mag[0].iData/10*10+10);
 	}
 }
 
@@ -1018,13 +1038,13 @@ int CDataMonitorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CDataMonitorView::InitArrayData()
 {
-	for(int i = 0;i<3;i++)
+	for(int i = 0;i<2;i++)
 	{
-		tempArray[i] = 0;//0-整数部分;1-小数部分;2-对应的深度坐标
-		gmArray[i] = 0;
-		rmArray[i] = 0;
-		cclArray[i] = 0;
-		magArray[i] = 0;
+		tempLimitArray[i] = 0;//0-min;1-max;
+		gmLimitArray[i] = 0;
+		rmLimitArray[i] = 0;
+		cclLimitArray[i] = 0;
+		magLimitArray[i] = 0;
 	}
 }
 void CDataMonitorView::InitOldArrayData()

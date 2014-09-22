@@ -769,12 +769,20 @@ void CMainFrame::OnMenuJobload()
 void CMainFrame::OnMenuMeasureup()
 {
 	// TODO: 在此添加命令处理程序代码
+	if(pDataMonitorView)
+	{
+		pDataMonitorView->SetDirectionDown(false);
+	}
 }
 
 
 void CMainFrame::OnMenuMeasuredown()
 {
 	// TODO: 在此添加命令处理程序代码
+	if(pDataMonitorView)
+	{
+		pDataMonitorView->SetDirectionDown(true);
+	}
 }
 
 

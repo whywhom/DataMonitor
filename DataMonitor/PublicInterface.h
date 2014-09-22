@@ -44,9 +44,9 @@ typedef struct _DATA_PART
 
 typedef struct _DATA_TEMP
 {
-	unsigned long dy;
-	unsigned long dx_i;
-	unsigned long dx_d;
+	double dy;
+	double dx;
+	//long dx_d;
 	bool bAssign;
 }DATA_TEMP;
 

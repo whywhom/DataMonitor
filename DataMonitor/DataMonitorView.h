@@ -22,6 +22,8 @@ public:
 protected:
 	//why add 绘图变量
 	int			unitPixel;//每米对应像素值
+	int			unitRatio;//每米对应像素值的系数
+	int			m_iterator;//绘图迭代数
 	CRect		m_screenRect;// m_screenRect - view的可见范围相对屏幕左上角坐标
 	CRect		m_clientRect;// m_clientRect - view的可见范围客户区
 	CRect		m_totalRect;// m_totalRect - 整个要绘制区域的范围，包括不可见
@@ -34,9 +36,13 @@ protected:
 
 	double		minDepth;//可见范围最小深度
 	double		maxDepth;//可见范围最大深度
-
+	double		minDepthLimit;//作业中最小深度
+	double		maxDepthLimit;//作业中最大深度
 	bool		m_bAutoScrollY;		// automatic y range scrolling
 	bool		m_bDirectDown;		// automatic x range scrolling
+
+	int			m_drawCount;//每次绘制多少个数据
+
 	//颜色
 	COLORREF	m_gridColor;		// grid line color
 	//字体设置
@@ -45,12 +51,12 @@ protected:
 	//双缓冲
 	CDC   MemDC;          //定义一个显示设备对象  
 	CBitmap   MemBitmap;  //定义一个位图对象  
-
-	unsigned long tempArray[3];
-	unsigned long gmArray[3];
-	unsigned long rmArray[3];
-	unsigned long cclArray[3];
-	unsigned long magArray[3];
+	//保存各个可测变量的最大最小值
+	long tempLimitArray[2];
+	long gmLimitArray[2];
+	long rmLimitArray[2];
+	long cclLimitArray[2];
+	long magLimitArray[2];
 
 	DATA_TEMP olddeptArray;
 	DATA_TEMP oldtempArray;
@@ -65,10 +71,10 @@ protected:
 protected:
 	//why add 绘图函数
 	void DrawBasic(CDC * pDC);
-	void DrawGrid(CDC * pDC);//绘制坐标网格
-	void DrawXYAxisGrid(CDC * pDC);//绘制横纵坐标网格
+	void DrawGrid(CDC * pDC);//绘制横纵坐标网格
 	void DrawPlot(CDC* pDC);//绘制坐标数据
-
+	//void DrawCurve(CDC* pDC);//绘制测绘数据
+	void DrawCurve(CDC* pDC , double upDepth, double DownDepth);//绘制测绘数据
 	void DrawData(CDC* pDC);
 	void DrawDataFile(CDC* pDC);
 	void SetScrollTotalSizes(CRect rect);
@@ -79,11 +85,6 @@ protected:
 #ifdef FEATURE_TEST_DRAW
 	void InitPlot(CRect Rect);
 #endif
-	void DrawCoordinateSystemFile(CDC* pDC);
-#if 0
-	void DrawDataArray(CDC* pDC);
-	void DrawDataArrayFile(CDC* pDC);
-#endif
 	unsigned long GetMinData(DATA_PART tmp, unsigned long m);
 	
 // 重写
@@ -93,7 +94,7 @@ public:
 	void StartTimer();
 	void StopTimer();
 	void KillDrawTimer();
-
+	void SetDirectionDown(bool bDown);//设置测绘方向
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
@@ -103,13 +104,16 @@ private:
 	unsigned long base;//深度起点
 	unsigned long bias;//深度偏移量
 	long counter;//计数器
-	POSITION pos;//当前
-	CRect rect;
-	CRect rectTotal;
-	CRect rectTotalFile;
-	
+
+	POSITION pos;//当前记录位置
+	CPetroData* pCurrentData;//当前记录指针
 	CPetroData* pPData;//得到队列数据
 	CPetroData* pOldPData;//保存前一个数据队列
+
+	CRect rect;
+	CRect rectTotal;
+	
+	
 // 实现
 public:
 	virtual ~CDataMonitorView();
