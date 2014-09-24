@@ -40,10 +40,10 @@ protected:
 	double		minDepthLimit;//作业中最小深度
 	double		maxDepthLimit;//作业中最大深度
 	bool		m_bAutoScrollY;		// automatic y range scrolling
-	bool		m_bDirectDown;		// automatic x range scrolling
-
+	bool		m_bDirectDown;		// 向下绘制
+	bool		bScroll;//绘制到底部开始滚动时设置为true
 	int			m_drawCount;//每次绘制多少个数据
-
+	int			m_step;//每次移动距离，以米为单位
 	//颜色
 	COLORREF	m_gridColor;		// grid line color
 	//字体设置

@@ -494,21 +494,21 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						{
 							TRACE(_T("strTitle == 'TEMP' \r\n"));
 							pPData->temp.iData = num;
-							pPData->dept.strData = str.c_str();
+							pPData->temp.strData = str.c_str();
 							pPData->temp.bAssign = true;
 						}
 						else if(strTitle == "RM")
 						{
 							TRACE(_T("strTitle == 'RM' \r\n"));
 							pPData->rm.iData = num;
-							pPData->dept.strData = str.c_str();
+							pPData->rm.strData = str.c_str();
 							pPData->rm.bAssign = true;
 						}
 						else if(strTitle == "GM")
 						{
 							TRACE(_T("strTitle == 'GM' \r\n"));
 							pPData->gr.iData = num;
-							pPData->dept.strData = str.c_str();
+							pPData->gr.strData = str.c_str();
 							pPData->gr.bAssign = true;
 						}
 						else if(strTitle == "MAGX")
@@ -517,19 +517,19 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							if(pPData->mag[0].iData == 0)
 							{
 								pPData->mag[0].iData = num;
-								pPData->dept.strData = str.c_str();
+								pPData->mag[0].strData = str.c_str();
 								pPData->mag[0].bAssign = true;
 							}
 							else if(pPData->mag[1].iData == 0)
 							{
 								pPData->mag[1].iData = num;
-								pPData->dept.strData = str.c_str();
+								pPData->mag[1].strData = str.c_str();
 								pPData->mag[1].bAssign = true;
 							}
 							else if(pPData->mag[2].iData == 0)
 							{
 								pPData->mag[2].iData = num;
-								pPData->dept.strData = str.c_str();
+								pPData->mag[2].strData = str.c_str();
 								pPData->mag[2].bAssign = true;
 							}
 							else
@@ -539,93 +539,12 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 						else if(strTitle == "CCL")
 						{
 							TRACE(_T("strTitle == 'CCL' \r\n"));
-							pPData->dept.strData = str.c_str();
 							pPData->ccl.iData = num;
-						}
-					}
-				}
-#if 0
-				else if(result == 1)//Ð¡Êý
-				{
-					double num;
-					num=atof(str.c_str());
-					if(pPData != NULL)
-					{
-						if(strTitle == "DEPT")
-						{
-							TRACE(_T("strTitle == 'DEPT' \r\n"));
-							pPData->dept.iData = (int)num;
-							num = num*10 - pPData->dept.iData*10;
-							pPData->dept.decimal = (int)(num + 0.5);
-							pPData->dept.bAssign = true;
-						}
-						else if(strTitle == "TEMP")
-						{
-							TRACE(_T("strTitle == 'TEMP' \r\n"));
-							pPData->temp.iData = (int)num;
-							num = num*10 - pPData->temp.iData*10;
-							pPData->temp.decimal = (int)(num + 0.5);
-							pPData->temp.bAssign = true;
-						}
-						else if(strTitle == "RM")
-						{
-							TRACE(_T("strTitle == 'RM' \r\n"));
-							pPData->rm.iData = (int)num;
-							num = num*10 - pPData->rm.iData*10;
-							pPData->rm.decimal = (int)(num + 0.5);
-							pPData->rm.bAssign = true;
-						}
-						else if(strTitle == "GM")
-						{
-							TRACE(_T("strTitle == 'GM' \r\n"));
-							pPData->gr.iData = (int)num;
-							num = num*10 - pPData->gr.iData*10;
-							pPData->gr.decimal = (int)(num + 0.5);
-							pPData->gr.bAssign = true;
-						}
-						else if(strTitle == "MAGX")
-						{
-							TRACE(_T("strTitle == 'MAGX' \r\n"));
-							if(pPData->mag[0].iData == 0 && pPData->mag[0].decimal == 0)
-							{
-								pPData->mag[0].iData = (int)num;
-								num = num*10 - pPData->mag[0].iData*10;
-								pPData->mag[0].decimal = (int)(num + 0.5);
-								pPData->mag[0].bAssign = true;
-							}
-							else if(pPData->mag[1].iData == 0 && pPData->mag[1].decimal == 0)
-							{
-								pPData->mag[1].iData = (int)num;
-								num = num*10 - pPData->mag[1].iData*10;
-								pPData->mag[1].decimal = (int)(num + 0.5);
-								pPData->mag[1].bAssign = true;
-							}
-							else if(pPData->mag[2].iData == 0 && pPData->mag[2].decimal == 0)
-							{
-								pPData->mag[2].iData = (int)num;
-								num = num*10 - pPData->mag[2].iData*10;
-								pPData->mag[2].decimal = (int)(num + 0.5);
-								pPData->mag[2].bAssign = true;
-							}
-							else
-							{
-							}
-						}
-						else if(strTitle == "CCL")
-						{
-							TRACE(_T("strTitle == 'CCL' \r\n"));
-							pPData->ccl.iData = (int)num;
-							num = num*10 - pPData->ccl.iData*10;
-							pPData->ccl.decimal = (int)(num + 0.5);
+							pPData->ccl.strData = str.c_str();
 							pPData->ccl.bAssign = true;
 						}
 					}
 				}
-				else
-				{
-				
-				}
-#endif
 				str.clear();
 			}
 			if( tmp[i] == '*')

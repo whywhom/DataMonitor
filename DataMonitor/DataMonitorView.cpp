@@ -8,7 +8,7 @@
 #ifndef SHARED_HANDLERS
 #include "DataMonitor.h"
 #endif
-
+#include "MainFrm.h"
 #include "DataMonitorDoc.h"
 #include "DataMonitorView.h"
 
@@ -59,7 +59,8 @@ CDataMonitorView::CDataMonitorView()
 	maxDepthLimit = 0;
 	
 	m_drawCount = 0;
-
+	bScroll = false;
+	m_step = 5;//每次移动步长为5米
 	pPData = NULL;
 	pOldPData = NULL;
 
@@ -351,21 +352,9 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 			}
 			else
 			{
-				if(pPData->dept.iData <= maxPreDepth)
+				if(pPData->dept.iData < maxDepth && (!bScroll))
 				{
-					if(pPData->dept.bAssign)
-					{
-						DrawDeptData(pDC,pPData,&pen);//深度
-						DrawTempData(pDC,pPData,&pen);//draw tepm
-						DrawRmData(pDC,pPData,&pen2);//rm
-						DrawGmData(pDC,pPData,&pen3);//gm
-						DrawCclData(pDC,pPData,&pen4);//ccl
-						DrawMagxData(pDC,pPData,&pen5);//magx
-					}
-					continue;
-				}
-				else{
-					if(mCounter < m_drawCount*m_iterator && pPData->dept.iData < maxDepth)
+					if(mCounter < m_drawCount*m_iterator)
 					{
 						if(pPData->dept.bAssign)
 						{
@@ -376,37 +365,37 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 							DrawCclData(pDC,pPData,&pen4);//ccl
 							DrawMagxData(pDC,pPData,&pen5);//magx
 						}
-					
-						if(pPData->dept.iData > maxDepth)
-						{
-							minDepth =(int) (minDepth+ unitPixel*5);
-							m_iterator = 1;
-							mCounter = 0;
-							break;
-						}
-						if(mCounter < m_drawCount*m_iterator )
-						{
-							mCounter++;
-						}
+						mCounter++;
 					}
 					else
 					{
-						if(pPData->dept.iData > maxDepth)
-						{
-							minDepth = (int) (minDepth+ unitPixel*5);//minDepth = (int)pPData->dept.iData;
-							m_iterator = 1;
-							mCounter = 0;
-							pDC->SelectObject(pOldPen);
-							break;
-						}
-						if(mCounter >= m_drawCount*m_iterator )
-						{
-							m_iterator++;
-							pDC->SelectObject(pOldPen);
-							break;
-						}
-					
+						m_iterator++;
+						pDC->SelectObject(pOldPen);
+						break;
 					}
+				}
+				else if(pPData->dept.iData < maxDepth && bScroll)
+				{
+					if(pPData->dept.bAssign)
+					{
+						DrawDeptData(pDC,pPData,&pen);//深度
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						DrawRmData(pDC,pPData,&pen2);//rm
+						DrawGmData(pDC,pPData,&pen3);//gm
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						DrawMagxData(pDC,pPData,&pen5);//magx
+					}
+				}
+				else
+				{
+					if(!bScroll)
+					{
+						bScroll = true;
+					}
+					minDepth =(int) (minDepth+ m_step);
+					m_iterator = 1;
+					mCounter = 0;
+					break;
 				}
 			}
 			
@@ -419,6 +408,14 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 	}
 	else
 	{
+		if(pPData)
+		{
+			CMainFrame*  pFrame=(CMainFrame*)AfxGetMainWnd();  
+			if(pFrame)
+			{
+				pFrame->pPanelView->Edit01.SetWindowText(pPData->dept.strData);
+			}
+		}
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
@@ -629,7 +626,7 @@ void CDataMonitorView::DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			double mid = (pPData->ccl.iData-cclLimitArray[0])*m_plot1Rect.Width()/cclRange;
 			cur_ix = (int)mid;
 			pre_iy = (oldcclArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
+			cur_iy = (pPData->ccl.iData - minDepth)*unitPixel;
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
@@ -1117,7 +1114,8 @@ void CDataMonitorView::StartTimer()
 		maxDepth = 0;
 		minDepthLimit = 0;
 		maxDepthLimit = 0;
-		m_drawCount = TIME_REFRESH_FILE/200;
+		bScroll = false;
+		m_drawCount = TIME_REFRESH_FILE/20;
 		GetMaxMinData();//在绘图前进行一次计算的操作
 		minDepth = (int)minDepthLimit;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);

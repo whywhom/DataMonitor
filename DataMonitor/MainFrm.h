@@ -22,7 +22,9 @@ protected: // 仅从序列化创建
 
 // 特性
 public:
-
+	CPanelView* pPanelView; 
+	CScaleView* pScaleView; 
+	CDataMonitorView* pDataMonitorView; 
 protected:
     CSplitterWnd m_wndSplitter;
 	CSplitterWnd m_wndSplitterSub;
@@ -31,9 +33,7 @@ protected:
 	CMainFrame*   pFrame;  
 	//get view point ,sample
 	//CPanelView* pPanelView=(CPanelView*) GetActiveView(); 
-	CPanelView* pPanelView; 
-	CScaleView* pScaleView; 
-	CDataMonitorView* pDataMonitorView; 
+	
 	CString fileName;
 	//CString sGetFileName;
 	

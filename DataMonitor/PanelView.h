@@ -13,7 +13,7 @@ protected:
 	CPanelView();           // 动态创建所使用的受保护的构造函数
 	virtual ~CPanelView();
 public:
-CStatic cs01;
+	CStatic cs01;
 	CString value01;
 	CStatic cs02;
 	CString value02;
