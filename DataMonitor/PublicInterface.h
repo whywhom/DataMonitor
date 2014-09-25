@@ -39,6 +39,8 @@ typedef struct _DATA_PART
 {
 	double iData;
 	CString strData;
+	CString strTag;//记录曲线名称
+	CString strUnit;//记录曲线单位
 	bool bAssign;
 }DATA_PART;
 
@@ -46,7 +48,7 @@ typedef struct _DATA_TEMP
 {
 	double dy;
 	double dx;
-	//long dx_d;
+	CString strDx;//横坐标数据的字符串
 	bool bAssign;
 }DATA_TEMP;
 

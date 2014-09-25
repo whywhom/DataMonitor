@@ -408,14 +408,7 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 	}
 	else
 	{
-		if(pPData)
-		{
-			CMainFrame*  pFrame=(CMainFrame*)AfxGetMainWnd();  
-			if(pFrame)
-			{
-				pFrame->pPanelView->Edit01.SetWindowText(pPData->dept.strData);
-			}
-		}
+		UpdatePanelListView(pPData);
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
@@ -452,11 +445,12 @@ void CDataMonitorView::DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldtempArray.bAssign = pPData->temp.bAssign;
 			oldtempArray.dx = pPData->temp.iData;
 			oldtempArray.dy = pPData->dept.iData;
+			oldtempArray.strDx = pPData->temp.strData;
 		}
 	}
 }
@@ -481,11 +475,12 @@ void CDataMonitorView::DrawRmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldrmArray.bAssign = pPData->rm.bAssign;
 			oldrmArray.dx = pPData->rm.iData;
 			oldrmArray.dy = pPData->dept.iData;
+			oldrmArray.strDx = pPData->rm.strData;
 		}
 	}
 }
@@ -520,11 +515,12 @@ void CDataMonitorView::DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldmagArray[0].bAssign = pPData->mag[0].bAssign;
 			oldmagArray[0].dx = pPData->mag[0].iData;
 			oldmagArray[0].dy = pPData->dept.iData;
+			oldmagArray[0].strDx = pPData->mag[0].strData;
 		}
 	}
 	//1
@@ -545,11 +541,12 @@ void CDataMonitorView::DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldmagArray[1].bAssign = pPData->mag[1].bAssign;
 			oldmagArray[1].dx = pPData->mag[1].iData;
 			oldmagArray[1].dy = pPData->dept.iData;
+			oldmagArray[1].strDx = pPData->mag[1].strData;
 		}
 	}
 	//2
@@ -570,11 +567,12 @@ void CDataMonitorView::DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldmagArray[2].bAssign = pPData->mag[2].bAssign;
 			oldmagArray[2].dx = pPData->mag[2].iData;
 			oldmagArray[2].dy = pPData->dept.iData;
+			oldmagArray[2].strDx = pPData->mag[2].strData;
 		}
 	}
 }
@@ -596,15 +594,16 @@ void CDataMonitorView::DrawGmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			double mid = (pPData->gr.iData-gmLimitArray[0])*m_plot1Rect.Width()/gmRange;
 			cur_ix = (int)mid;
 			pre_iy = (oldgmArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->gr.iData - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldgmArray.bAssign = pPData->gr.bAssign;
 			oldgmArray.dx = pPData->gr.iData;
 			oldgmArray.dy = pPData->dept.iData;
+			oldgmArray.strDx = pPData->gr.strData;
 		}
 	}
 }
@@ -626,15 +625,16 @@ void CDataMonitorView::DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			double mid = (pPData->ccl.iData-cclLimitArray[0])*m_plot1Rect.Width()/cclRange;
 			cur_ix = (int)mid;
 			pre_iy = (oldcclArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->ccl.iData - minDepth)*unitPixel;
+			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
 			pDC->MoveTo(pre_ix,pre_iy);
 			pDC->LineTo(cur_ix,cur_iy);
 		}
-		else
+		//else
 		{
 			oldcclArray.bAssign = pPData->ccl.bAssign;
 			oldcclArray.dx = pPData->ccl.iData;
 			oldcclArray.dy = pPData->dept.iData;
+			oldcclArray.strDx = pPData->ccl.strData;
 		}
 	}
 }
@@ -655,239 +655,6 @@ void CDataMonitorView::DrawData(CDC* pDC)
 	DrawPlot(pDC);
 	DrawCurve(pDC,minDepth,maxDepth);
 }
-
-
-#if 0
-void CDataMonitorView::DrawDataArray(CDC* pDC)
-{
-	int dept =0,temp = 0,olddept =0,oldtemp = 0;
-	int oldgr = 0,gr = 0;
-	int old_iy=0,y1=0,dold_iy=0,dy1=0,dgry1=0;
-	int old_dy=0,y2=0,cur_dy=0,dy2=0,dgry2=0;
-	int iDrawType = PS_SOLID;
-	COLORREF color = RGB(255,0,0);
-	COLORREF colorBlue = RGB(0,0,255);
-	CPen pen(iDrawType, 1,color); //画笔
-	CPen pen2(iDrawType, 1,colorBlue); //画笔
-	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-	int gap = 20, gap1 = 300, gap2 = 350;
-	POSITION nPos = theApp.petroList.GetHeadPosition();
-	while(nPos)
-	{
-		pPData = theApp.petroList.GetNext(nPos);
-		dept = pPData->dept.iData;
-		dold_iy=pPData->dept.iData;
-		cur_dy=pPData->dept.decimal;
-		dold_iy-=base;
-
-		if(pOldPData != NULL)
-		{
-			pDC->SelectObject(&pen);
-			old_iy=pOldPData->dept.iData;
-			old_dy=pOldPData->dept.decimal;
-			old_iy-=base;
-
-			y1=pOldPData->temp.iData;
-			y2=pOldPData->temp.decimal;
-
-			int iOldDept_y = (int)(old_dy*gap/10);
-			int iOld_ix = (int)(pOldPData->temp.iData*gap1/(tempArray[1]-tempArray[0])+pOldPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
-
-			int iCurDept_y = (int)(cur_dy*gap/10);
-			int iCur_ix = (int)(pPData->temp.iData*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
-
-			pDC->MoveTo(iOld_ix,old_iy*gap+iOldDept_y); // [0,0]
-			pDC->LineTo(iCur_ix,dold_iy*gap+iCurDept_y);
-			//gr
-
-		}
-		Sleep(1000);
-		pOldPData = pPData;
-	}
-	pDC->SelectObject(pOldPen);  //[可以不需要]
-}
-
-
-void CDataMonitorView::DrawDataArrayFile(CDC* pDC)
-{
-	unsigned long dept =0,temp = 0,olddept =0,oldtemp = 0;
-	unsigned long oldgr = 0,gr = 0;
-	unsigned long old_iy=0,y1=0,cur_iy=0,dy1=0,dgry1=0;
-	unsigned long old_dy=0,y2=0,cur_dy=0,dy2=0,dgry2=0;
-	unsigned long iOldDept_y=0,iOld_ix=0,iCurDept_y=0,iCur_ix=0;
-	int iDrawType = PS_SOLID;
-	COLORREF colorRed = RGB(255,0,0);
-	COLORREF colorBlue = RGB(0,0,255);
-	COLORREF colorGreen = RGB(0,255,0);
-	COLORREF colorBlack = RGB(0,0,0);
-	COLORREF color1 = RGB(2,141,153);
-	CPen pen(iDrawType, 1,colorRed); //画笔
-	CPen pen2(iDrawType, 1,colorBlue); //画笔2
-	CPen pen3(iDrawType, 1,colorGreen); //画笔3
-	CPen pen4(iDrawType, 1,color1); //画笔4
-	CPen pen5(iDrawType, 1,colorBlack); //画笔5
-	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-	int gap = 20, gap1 = 300, gap2 = 400;
-	counter = 0;
-	long length = theApp.petroList.GetCount();
-	POSITION nPos = theApp.petroList.GetHeadPosition();
-	
-	while(nPos)
-	{
-		pPData = theApp.petroList.GetNext(nPos);
-		//if(pOldPData != NULL)
-		{
-			if(pPData->dept.bAssign)
-			{
-				if(olddeptArray.bAssign)
-				{
-					old_iy=olddeptArray.dx_i;
-					old_dy=olddeptArray.dx_d;
-				}
-				
-				cur_iy=pPData->dept.iData;
-				cur_dy=pPData->dept.decimal;
-				cur_iy-=base;
-
-				iOldDept_y = (int)(old_dy*gap/10);
-				iCurDept_y = (int)(cur_dy*gap/10);
-			
-#ifdef FEATURE_TEMP
-				//temp
-				if(pPData->temp.bAssign)
-				{
-					if(oldtempArray.bAssign)
-					{
-						old_iy=oldtempArray.dx_i;
-						old_dy=oldtempArray.dx_d;
-
-						pDC->SelectObject(&pen);
-						iOld_ix = (int)((oldtempArray.dx_i-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+oldtempArray.dx_d*gap1/(10*(tempArray[1]-tempArray[0])));
-						iCur_ix = (int)((pPData->temp.iData-tempArray[0])*gap1/(tempArray[1]-tempArray[0])+pPData->temp.decimal*gap1/(10*(tempArray[1]-tempArray[0])));
-
-						pDC->MoveTo(iOld_ix,oldtempArray.dy); // [0,0]
-						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
-						TRACE(_T("TEMP %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldtempArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
-					}
-					
-					oldtempArray.dx_i = pPData->temp.iData;
-					oldtempArray.dx_d = pPData->temp.decimal;
-					oldtempArray.dy = cur_iy*gap+iCurDept_y;
-					oldtempArray.bAssign = true;
-				}
-#endif
-#ifdef FEATURE_GR
-			//gr
-				if(pPData->gr.bAssign)
-				{
-					if(oldgmArray.bAssign)
-					{
-						old_iy=oldgmArray.dx_i;
-						old_dy=oldgmArray.dx_d;
-
-						pDC->SelectObject(&pen2);
-						iOld_ix = (int)((oldgmArray.dx_i-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+oldgmArray.dx_d*gap1/(10*(gmArray[1]-gmArray[0])));
-						iCur_ix = (int)((pPData->gr.iData-gmArray[0])*gap1/(gmArray[1]-gmArray[0])+pPData->gr.decimal*gap1/(10*(gmArray[1]-gmArray[0])));
-
-						pDC->MoveTo(iOld_ix,oldgmArray.dy); // [0,0]
-						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
-						TRACE(_T("GR %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldgmArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
-					}
-					
-					oldgmArray.dx_i = pPData->gr.iData;
-					oldgmArray.dx_d = pPData->gr.decimal;
-					oldgmArray.dy = cur_iy*gap+iCurDept_y;
-					oldgmArray.bAssign = true;
-				}
-#endif
-#ifdef FEATURE_RM
-			//rm
-				if(pPData->rm.bAssign)
-				{
-					if(oldrmArray.bAssign)
-					{
-						old_iy=oldrmArray.dx_i;
-						old_dy=oldrmArray.dx_d;
-
-						pDC->SelectObject(&pen3);
-						iOld_ix = (int)((oldrmArray.dx_i-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+oldrmArray.dx_d*gap1/(10*(rmArray[1]-rmArray[0])));
-						iCur_ix = (int)((pPData->rm.iData-rmArray[0])*gap1/(rmArray[1]-rmArray[0])+pPData->rm.decimal*gap1/(10*(rmArray[1]-rmArray[0])));
-
-						pDC->MoveTo(iOld_ix,oldrmArray.dy); // [0,0]
-						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
-						TRACE(_T("RM %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldgmArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
-					}
-					
-					oldrmArray.dx_i = pPData->rm.iData;
-					oldrmArray.dx_d = pPData->rm.decimal;
-					oldrmArray.dy = cur_iy*gap+iCurDept_y;
-					oldrmArray.bAssign = true;
-				}
-#endif
-#ifdef FEATURE_CCL
-			//ccl
-				if(pPData->ccl.bAssign)
-				{
-					if(oldcclArray.bAssign)
-					{
-						old_iy=oldcclArray.dx_i;
-						old_dy=oldcclArray.dx_d;
-
-						pDC->SelectObject(&pen4);
-						iOld_ix = (int)((oldcclArray.dx_i-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+oldcclArray.dx_d*gap1/(10*(cclArray[1]-cclArray[0])));
-						iCur_ix = (int)((pPData->ccl.iData-cclArray[0])*gap1/(cclArray[1]-cclArray[0])+pPData->ccl.decimal*gap1/(10*(cclArray[1]-cclArray[0])));
-
-						pDC->MoveTo(iOld_ix,oldcclArray.dy); // [0,0]
-						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
-						TRACE(_T("CCL %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldcclArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
-					}
-					
-					oldcclArray.dx_i = pPData->ccl.iData;
-					oldcclArray.dx_d = pPData->ccl.decimal;
-					oldcclArray.dy = cur_iy*gap+iCurDept_y;
-					oldcclArray.bAssign = true;
-				}
-#endif
-#ifdef FEATURE_MAG
-				//mag
-				if(pPData->mag[0].bAssign)
-				{
-					if(oldmagArray.bAssign)
-					{
-						old_iy=oldmagArray.dx_i;
-						old_dy=oldmagArray.dx_d;
-
-						pDC->SelectObject(&pen5);
-						iOld_ix = (int)((oldmagArray.dx_i-magArray[0])*gap1/(magArray[1]-magArray[0])+oldmagArray.dx_d*gap1/(10*(magArray[1]-magArray[0])));
-						iCur_ix = (int)((pPData->mag[0].iData-magArray[0])*gap1/(magArray[1]-magArray[0])+pPData->mag[0].decimal*gap1/(10*(magArray[1]-magArray[0])));
-
-						pDC->MoveTo(iOld_ix,oldmagArray.dy); // [0,0]
-						pDC->LineTo(iCur_ix,cur_iy*gap+iCurDept_y);
-						TRACE(_T("CCL %d : from (%d , %d ) to (%d , %d) \r\n"),counter,iOld_ix,oldmagArray.dy,iCur_ix,cur_iy*gap+iCurDept_y);
-					}
-					
-					oldmagArray.dx_i = pPData->mag[0].iData;
-					oldmagArray.dx_d = pPData->mag[0].decimal;
-					oldmagArray.dy = cur_iy*gap+iCurDept_y;
-					oldmagArray.bAssign = true;
-				}
-#endif
-			}
-			else
-			{
-			
-			}
-		}
-		//Sleep(1000);
-		pOldPData = pPData;
-		counter++;
-		TRACE(_T("current %d / Total %d \r\n"),counter,length);
-	}
-	InitOldArrayData();
-	pDC->SelectObject(pOldPen);  //[可以不需要]
-	//theApp.processType = NO_PROCESSING;
-}
-#endif
 
 unsigned long CDataMonitorView::GetMinData(DATA_PART tmp,unsigned long m)
 {
@@ -1117,11 +884,66 @@ void CDataMonitorView::StartTimer()
 		bScroll = false;
 		m_drawCount = TIME_REFRESH_FILE/20;
 		GetMaxMinData();//在绘图前进行一次计算的操作
+		AddPanelListView();
 		minDepth = (int)minDepthLimit;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
+void CDataMonitorView::AddPanelListView( )
+{
+	CMainFrame*  pFrame=(CMainFrame*)AfxGetMainWnd();  
+	if(pFrame)
+	{
+		pFrame->pPanelView->listView.SetRedraw(FALSE);
+		pFrame->pPanelView->listView.DeleteAllItems();
+		pFrame->pPanelView->listView.InsertItem(0,_T("DEPT"));
+		pFrame->pPanelView->listView.InsertItem(1,_T("TEMP"));
+		pFrame->pPanelView->listView.InsertItem(2,_T("RM"));
+		pFrame->pPanelView->listView.InsertItem(3,_T("GM"));
+		pFrame->pPanelView->listView.InsertItem(4,_T("MAGX"));
+		pFrame->pPanelView->listView.InsertItem(5,_T("CCL"));
+		pFrame->pPanelView->listView.SetRedraw(TRUE);
+		pFrame->pPanelView->listView.Invalidate();
+		pFrame->pPanelView->listView.UpdateWindow();
+	}
+}
+void CDataMonitorView::UpdatePanelListView(CPetroData* pPData)
+{
+	CMainFrame*  pFrame=(CMainFrame*)AfxGetMainWnd();  
+	if(pFrame)
+	{
+		pFrame->pPanelView->Edit01.SetWindowText(pPData->dept.strData);
 
+		pFrame->pPanelView->listView.SetRedraw(FALSE);
+		pFrame->pPanelView->listView.SetItemText(0,1,pPData->dept.strData);
+		pFrame->pPanelView->listView.SetItemText(0,2,pPData->dept.strUnit);
+
+		pFrame->pPanelView->listView.SetItemText(1,1,oldtempArray.strDx);
+		pFrame->pPanelView->listView.SetItemText(1,2,pPData->temp.strUnit);
+
+		pFrame->pPanelView->listView.SetItemText(2,1,oldrmArray.strDx);
+		pFrame->pPanelView->listView.SetItemText(2,2,pPData->rm.strUnit);
+
+		pFrame->pPanelView->listView.SetItemText(3,1,oldgmArray.strDx);
+		pFrame->pPanelView->listView.SetItemText(3,2,pPData->gr.strUnit);
+
+		CString str;
+		str += oldmagArray[0].strDx;
+		str += _T(",");
+		str += oldmagArray[1].strDx;
+		str += _T(",");
+		str += oldmagArray[2].strDx;
+		pFrame->pPanelView->listView.SetItemText(4,1,str);
+		pFrame->pPanelView->listView.SetItemText(4,2,pPData->mag[0].strUnit);
+
+		pFrame->pPanelView->listView.SetItemText(5,1,oldcclArray.strDx);
+		pFrame->pPanelView->listView.SetItemText(5,2,pPData->ccl.strUnit);
+
+		pFrame->pPanelView->listView.SetRedraw(TRUE);
+		pFrame->pPanelView->listView.Invalidate();
+		pFrame->pPanelView->listView.UpdateWindow();
+	}
+}
 void CDataMonitorView::StopTimer()
 {
 	KillTimer(TIMER_CMD_DRAW);
@@ -1156,38 +978,6 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 			}
 		}
 		break;
-#ifdef FEATURE_TEST_DRAW
-	case TIMER_CMD_TEST:
-		{
-			if(theApp.processType == NO_PROCESSING)
-			{
-				static BOOL pros={FALSE};
-				double y;
-				if(!pros)
-				{
-					pros=TRUE;
-
-					y =(double)(abs(rand())%2000);
-					m_Plot.AddPoint(0,  CTime::GetCurrentTime(), y);
-
-					y =(double)(abs(rand())%2000);
-					m_Plot.AddPoint(1,  CTime::GetCurrentTime(), y);
-
-					y =(double)(abs(rand())%2000);
-					m_Plot.AddPoint(2,  CTime::GetCurrentTime(), y);
-
-					//double y =(double)(abs(rand())%2000);
-					y=500.0;
-					m_Plot.AddPoint(3,  CTime::GetCurrentTime(), y);
-					Invalidate();
-					pros=FALSE;
-				}
-				
-			}
-			
-		}
-		break;
-#endif
 	default:
 		break;
 	}
@@ -1263,14 +1053,45 @@ void CDataMonitorView::InitArrayData()
 }
 void CDataMonitorView::InitOldArrayData()
 {
-	memset((void*)&olddeptArray,0,sizeof(DATA_TEMP));
-	memset((void*)&oldtempArray,0,sizeof(DATA_TEMP));
-	memset((void*)&oldgmArray,0,sizeof(DATA_TEMP));
-	memset((void*)&oldrmArray,0,sizeof(DATA_TEMP));
-	memset((void*)&oldcclArray,0,sizeof(DATA_TEMP));
-	memset((void*)&oldmagArray[0],0,sizeof(DATA_TEMP));
-	memset((void*)&oldmagArray[1],0,sizeof(DATA_TEMP));
-	memset((void*)&oldmagArray[2],0,sizeof(DATA_TEMP));
+	olddeptArray.dx = 0;
+	olddeptArray.dy = 0;
+	olddeptArray.bAssign = false;
+	olddeptArray.strDx = _T("");
+
+	oldtempArray.dx = 0;
+	oldtempArray.dy = 0;
+	oldtempArray.bAssign = false;
+	oldtempArray.strDx = _T("");
+
+	oldgmArray.dx = 0;
+	oldgmArray.dy = 0;
+	oldgmArray.bAssign = false;
+	oldgmArray.strDx = _T("");
+
+	oldrmArray.dx = 0;
+	oldrmArray.dy = 0;
+	oldrmArray.bAssign = false;
+	oldrmArray.strDx = _T("");
+
+	oldcclArray.dx = 0;
+	oldcclArray.dy = 0;
+	oldcclArray.bAssign = false;
+	oldcclArray.strDx = _T("");
+
+	oldmagArray[0].dx = 0;
+	oldmagArray[0].dy = 0;
+	oldmagArray[0].bAssign = false;
+	oldmagArray[0].strDx = _T("");
+
+	oldmagArray[1].dx = 0;
+	oldmagArray[1].dy = 0;
+	oldmagArray[1].bAssign = false;
+	oldmagArray[1].strDx = _T("");
+
+	oldmagArray[2].dx = 0;
+	oldmagArray[2].dy = 0;
+	oldmagArray[2].bAssign = false;
+	oldmagArray[2].strDx = _T("");
 }
 
 void CDataMonitorView::OnSize(UINT nType, int cx, int cy)

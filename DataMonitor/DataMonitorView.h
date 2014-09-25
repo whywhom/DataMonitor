@@ -88,7 +88,8 @@ protected:
 	void InitArrayData();
 	void InitOldArrayData();
 	void GetMaxMinData();
-	
+	void AddPanelListView( );
+	void UpdatePanelListView(CPetroData* pPData);
 #ifdef FEATURE_TEST_DRAW
 	void InitPlot(CRect Rect);
 #endif

@@ -489,6 +489,8 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->dept.iData = num;
 							pPData->dept.strData = str.c_str();
 							pPData->dept.bAssign = true;
+							pPData->dept.strTag = strTitle.c_str();
+							pPData->dept.strUnit = _T("m");
 						}
 						else if(strTitle == "TEMP")
 						{
@@ -496,6 +498,8 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->temp.iData = num;
 							pPData->temp.strData = str.c_str();
 							pPData->temp.bAssign = true;
+							pPData->temp.strTag = strTitle.c_str();
+							pPData->temp.strUnit = _T("¡æ");
 						}
 						else if(strTitle == "RM")
 						{
@@ -503,6 +507,8 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->rm.iData = num;
 							pPData->rm.strData = str.c_str();
 							pPData->rm.bAssign = true;
+							pPData->rm.strTag = strTitle.c_str();
+							pPData->rm.strUnit = _T("£¿");
 						}
 						else if(strTitle == "GM")
 						{
@@ -510,6 +516,8 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->gr.iData = num;
 							pPData->gr.strData = str.c_str();
 							pPData->gr.bAssign = true;
+							pPData->gr.strTag = strTitle.c_str();
+							pPData->gr.strUnit = _T("£¿");
 						}
 						else if(strTitle == "MAGX")
 						{
@@ -519,18 +527,24 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 								pPData->mag[0].iData = num;
 								pPData->mag[0].strData = str.c_str();
 								pPData->mag[0].bAssign = true;
+								pPData->mag[0].strTag = strTitle.c_str();
+								pPData->mag[0].strUnit = _T("£¿");
 							}
 							else if(pPData->mag[1].iData == 0)
 							{
 								pPData->mag[1].iData = num;
 								pPData->mag[1].strData = str.c_str();
 								pPData->mag[1].bAssign = true;
+								pPData->mag[1].strTag = strTitle.c_str();
+								pPData->mag[1].strUnit = _T("£¿");
 							}
 							else if(pPData->mag[2].iData == 0)
 							{
 								pPData->mag[2].iData = num;
 								pPData->mag[2].strData = str.c_str();
 								pPData->mag[2].bAssign = true;
+								pPData->mag[2].strTag = strTitle.c_str();
+								pPData->mag[2].strUnit = _T("£¿");
 							}
 							else
 							{
@@ -542,6 +556,8 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->ccl.iData = num;
 							pPData->ccl.strData = str.c_str();
 							pPData->ccl.bAssign = true;
+							pPData->ccl.strTag = strTitle.c_str();
+							pPData->ccl.strUnit = _T("£¿");
 						}
 					}
 				}
