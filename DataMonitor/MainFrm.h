@@ -114,6 +114,14 @@ public:
 	afx_msg void OnEditPaste();
 	afx_msg void OnMenuTargetdeepth();
 	afx_msg void OnFileOpen();
+	afx_msg void OnUpdateMenuMeasuredown(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateMenuMeasureup(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateToolbarMeasuredown(CCmdUI *pCmdUI);
+	afx_msg void OnToolbarMeasuredown();
+	afx_msg void OnToolbarMeasureup();
+	afx_msg void OnUpdateToolbarMeasureup(CCmdUI *pCmdUI);
+	afx_msg void OnToolbarStop();
+	afx_msg void OnUpdateToolbarStop(CCmdUI *pCmdUI);
 };
 
 

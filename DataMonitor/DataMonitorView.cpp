@@ -181,18 +181,18 @@ void CDataMonitorView::DrawBasic(CDC * pDC)
 {
 	m_totalRect = m_clientRect;
 	maxPreDepth = maxDepth;
-	//int depPixel = 0;
+	int depPixel = 0;
 	if(m_bDirectDown)
 	{
 		maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-		//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+		depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 	}
 	else
 	{
 		minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-		//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+		depPixel = (int)((maxDepthLimit - minDepth)*10/10) * unitPixel;
 	}
-	int depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+	//int depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 	m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
 	
 	SetScrollTotalSizes(m_totalRect);
@@ -349,10 +349,10 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 	int mCounter = 0;
 	if(m_bDirectDown)
 	{
-		pos = theApp.petroList.GetTailPosition();
+		pos = theApp.petroList.GetHeadPosition();
 		while(pos)
 		{
-			pPData = theApp.petroList.GetPrev(pos);
+			pPData = theApp.petroList.GetNext(pos);
 			if(pPData->dept.bAssign == true)
 			{
 				if(pPData->dept.iData < minDepth)
@@ -968,8 +968,14 @@ void CDataMonitorView::StartTimer()
 		m_drawCount = TIME_REFRESH_FILE/20;
 		GetMaxMinData();//在绘图前进行一次计算的操作
 		AddPanelListView();
-		minDepth = (int)minDepthLimit;
-		maxDepth = (int)maxDepthLimit+1;
+		if(m_bDirectDown)
+		{
+			minDepth = (int)minDepthLimit;
+		}
+		else
+		{
+			maxDepth = (int)maxDepthLimit+1;
+		}
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
@@ -1041,9 +1047,6 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 	{
 	case TIMER_CMD_DRAW:
 		{
-#ifdef FEATURE_TEST_DRAW
-			KillTimer(TIMER_CMD_TEST);
-#endif
 			if(theApp.processType == FILEDATA_PROCESSING)
 			{
 				//KillTimer(nIDEvent);//TIMER_CMD_DRAW
