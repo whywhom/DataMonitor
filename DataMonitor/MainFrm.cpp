@@ -46,6 +46,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_PASTE, &CMainFrame::OnEditPaste)
 	ON_COMMAND(ID_MENU_TARGETDEEPTH, &CMainFrame::OnMenuTargetdeepth)
 	ON_COMMAND(ID_FILE_OPEN, &CMainFrame::OnFileOpen)
+	
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -704,9 +705,23 @@ void CMainFrame::OnMenuJobload()
 void CMainFrame::OnMenuMeasureup()
 {
 	// TODO: 在此添加命令处理程序代码
+	pDataMonitorView = GetDataMonitorView();
 	if(pDataMonitorView)
 	{
 		pDataMonitorView->SetDirectionDown(false);
+		CMenu* pSubMenu = NULL;
+		CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
+		{
+			pSubMenu = pMainMenu->GetSubMenu(3);
+			if (pSubMenu && pSubMenu->GetMenuItemID(0) == ID_MENU_MEASUREUP)
+			{
+				pSubMenu->CheckMenuItem(ID_MENU_MEASUREUP,pDataMonitorView->GetDirectionDown()?MF_UNCHECKED:MF_CHECKED); 
+			}
+			if (pSubMenu && pSubMenu->GetMenuItemID(1) == ID_MENU_MEASUREDOWN)
+			{
+				pSubMenu->CheckMenuItem(ID_MENU_MEASUREDOWN,pDataMonitorView->GetDirectionDown()?MF_CHECKED:MF_UNCHECKED); 
+			}
+		}
 	}
 }
 
@@ -714,9 +729,23 @@ void CMainFrame::OnMenuMeasureup()
 void CMainFrame::OnMenuMeasuredown()
 {
 	// TODO: 在此添加命令处理程序代码
+	pDataMonitorView = GetDataMonitorView();
 	if(pDataMonitorView)
 	{
 		pDataMonitorView->SetDirectionDown(true);
+		CMenu* pSubMenu = NULL;
+		CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
+		{
+			pSubMenu = pMainMenu->GetSubMenu(3);
+			if (pSubMenu && pSubMenu->GetMenuItemID(0) == ID_MENU_MEASUREUP)
+			{
+				pSubMenu->CheckMenuItem(ID_MENU_MEASUREUP,pDataMonitorView->GetDirectionDown()?MF_UNCHECKED:MF_CHECKED); 
+			}
+			if (pSubMenu && pSubMenu->GetMenuItemID(1) == ID_MENU_MEASUREDOWN)
+			{
+				pSubMenu->CheckMenuItem(ID_MENU_MEASUREDOWN,pDataMonitorView->GetDirectionDown()?MF_CHECKED:MF_UNCHECKED); 
+			}
+		}
 	}
 }
 
@@ -836,4 +865,7 @@ void CMainFrame::OnFileOpen()
 	}
 }
 #endif
+
+
+
 

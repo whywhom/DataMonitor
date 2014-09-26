@@ -103,6 +103,7 @@ public:
 	void StopTimer();
 	void KillDrawTimer();
 	void SetDirectionDown(bool bDown);//设置测绘方向
+	bool GetDirectionDown( );
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
@@ -114,7 +115,6 @@ private:
 	long counter;//计数器
 
 	POSITION pos;//当前记录位置
-	CPetroData* pCurrentData;//当前记录指针
 	CPetroData* pPData;//得到队列数据
 	CPetroData* pOldPData;//保存前一个数据队列
 
