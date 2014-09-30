@@ -113,6 +113,7 @@
   <ItemGroup>
     <ClInclude Include="clPlot.h" />
     <ClInclude Include="CommLayer.h" />
+    <ClInclude Include="CurveInfo.h" />
     <ClInclude Include="DataMonitor.h" />
     <ClInclude Include="DataMonitorDoc.h" />
     <ClInclude Include="DataMonitorView.h" />
@@ -153,6 +154,7 @@
   <ItemGroup>
     <ClCompile Include="clPlot.cpp" />
     <ClCompile Include="CommLayer.cpp" />
+    <ClCompile Include="CurveInfo.cpp" />
     <ClCompile Include="DataMonitor.cpp" />
     <ClCompile Include="DataMonitorDoc.cpp" />
     <ClCompile Include="DataMonitorView.cpp" />

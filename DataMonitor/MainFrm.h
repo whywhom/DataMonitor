@@ -12,6 +12,7 @@
 #include "tinyxml.h"
 #include "TargetDepth.h"
 #include "PetroData.h"
+#include "CurveInfo.h"
 #include <string>
 class CMainFrame : public CFrameWnd
 {
@@ -66,6 +67,8 @@ protected:  // 控件条嵌入成员
 	BYTE* pData;//存储文件数据
 	unsigned long totalReceiveByte;
 	unsigned long fileLimit;//文件大小限制，超过的话则自动生成下一个文件
+
+	CCurveInfo curveInfo;
 protected:
 	static UINT MainThread(LPVOID pParam);
 	

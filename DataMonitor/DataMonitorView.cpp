@@ -208,6 +208,7 @@ void CDataMonitorView::DrawGrid(CDC * pDC)
 
 	m_plot3Rect = m_clientRect;
 	m_plot3Rect.left = m_plot2Rect.right;
+	m_plot3Rect.right = m_plot3Rect.left + 400;
 
 	m_gridColor = RGB(127,127,127);
 
@@ -735,10 +736,20 @@ void CDataMonitorView::OnPaint()
 }
 void CDataMonitorView::DrawData(CDC* pDC)
 {
-	DrawBasic(pDC);//获取内存映射绘制区域大小
-	DrawGrid(pDC);
-	DrawPlot(pDC);
-	DrawCurve(pDC,minDepth,maxDepth);
+	if(theApp.processType == REALTIME_PROCESSING)
+	{
+		DrawBasic(pDC);//获取内存映射绘制区域大小
+		DrawGrid(pDC);
+		DrawPlot(pDC);
+		DrawCurve(pDC,minDepth,maxDepth);
+	}
+	else
+	{
+		DrawBasic(pDC);//获取内存映射绘制区域大小
+		DrawGrid(pDC);
+		DrawPlot(pDC);
+		DrawCurve(pDC,minDepth,maxDepth);
+	}
 }
 
 unsigned long CDataMonitorView::GetMinData(DATA_PART tmp,unsigned long m)
@@ -940,6 +951,12 @@ void CDataMonitorView::StartTimer()
 	bias = 0;
 	counter = 0;
 	m_iterator = 1;
+	m_drawCount = 0;
+	bScroll = false;
+	m_step = 5;//每次移动步长为5米
+	pPData = NULL;
+	pOldPData = NULL;
+	pos = NULL;//当前记录位置
 	if(theApp.petroList.IsEmpty())
 	{
 		return;//没有数据不进行绘制
@@ -955,7 +972,14 @@ void CDataMonitorView::StartTimer()
 
 	if(theApp.processType == REALTIME_PROCESSING)
 	{
-		m_drawCount = TIME_REFRESH_REALTIME/20;
+		minDepth = 0;
+		maxDepth = 0;
+		minDepthLimit = 0;
+		maxDepthLimit = 0;
+		bScroll = false;
+		//GetMaxMinData();//在绘图前进行一次计算的操作
+		AddPanelListView();
+		//m_drawCount = TIME_REFRESH_REALTIME/20;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
 	else// if(theApp.processType == FILEDATA_PROCESSING)
