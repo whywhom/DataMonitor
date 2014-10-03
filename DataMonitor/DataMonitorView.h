@@ -90,6 +90,7 @@ protected:
 	void GetMaxMinData();
 	void AddPanelListView( );
 	void UpdatePanelListView(CPetroData* pPData);
+	void CalculateParam();
 #ifdef FEATURE_TEST_DRAW
 	void InitPlot(CRect Rect);
 #endif

@@ -182,15 +182,70 @@ void CDataMonitorView::DrawBasic(CDC * pDC)
 	m_totalRect = m_clientRect;
 	maxPreDepth = maxDepth;
 	int depPixel = 0;
-	if(m_bDirectDown)
+	if(theApp.processType == REALTIME_PROCESSING)
 	{
-		maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-		depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+		CPetroData * pHeadData = theApp.petroList.GetHead();
+		CPetroData * pTailData = theApp.petroList.GetTail();
+		
+		if(m_bDirectDown)
+		{
+			minDepthLimit = pHeadData->dept.iData;
+			maxDepthLimit = pTailData->dept.iData;
+			if(bScroll)
+			{
+				maxDepth = maxDepthLimit;
+				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
+				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+			}
+			else
+			{
+				minDepth = minDepthLimit;
+				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
+				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+				if(maxDepthLimit >= maxDepth)
+				{
+					bScroll = true;
+				}
+			}
+		}
+		else
+		{
+			maxDepthLimit = pHeadData->dept.iData;
+			minDepthLimit = pTailData->dept.iData;
+			if(bScroll)
+			{
+				minDepth = minDepthLimit;
+				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
+				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+			}
+			else
+			{
+				maxDepth = maxDepthLimit;
+				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
+				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+				if(minDepthLimit <= minDepth)
+				{
+					bScroll = true;
+				}
+			}
+		}
+	}
+	else if(theApp.processType == FILEDATA_PROCESSING)
+	{
+		if(m_bDirectDown)
+		{
+			maxDepth = minDepth + m_clientRect.Height()/unitPixel;
+			depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+		}
+		else
+		{
+			minDepth = maxDepth - m_clientRect.Height()/unitPixel;
+			depPixel = (int)((maxDepthLimit - minDepth)*10/10) * unitPixel;
+		}
 	}
 	else
 	{
-		minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-		depPixel = (int)((maxDepthLimit - minDepth)*10/10) * unitPixel;
+	
 	}
 	//int depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 	m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
@@ -348,23 +403,125 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 	CPen pen5(iDrawType, 1,colorBlack); //画笔5
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 	int mCounter = 0;
-	if(m_bDirectDown)
+	if(theApp.processType == REALTIME_PROCESSING)
 	{
-		pos = theApp.petroList.GetHeadPosition();
-		while(pos)
+		if(m_bDirectDown)
 		{
-			pPData = theApp.petroList.GetNext(pos);
-			if(pPData->dept.bAssign == true)
+			pos = theApp.petroList.GetTailPosition();
+			while(pos)
 			{
-				if(pPData->dept.iData < minDepth)
+				pPData = theApp.petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
 				{
-					continue;
-				}
-				else
-				{
-					if(pPData->dept.iData < maxDepth && (!bScroll))
+					if(bScroll)
 					{
-						if(mCounter < m_drawCount*m_iterator)
+						if(pPData->dept.iData > minDepth)
+						{
+							DrawDeptData(pDC,pPData,&pen);//深度
+							DrawTempData(pDC,pPData,&pen);//draw tepm
+							DrawRmData(pDC,pPData,&pen2);//rm
+							DrawGmData(pDC,pPData,&pen3);//gm
+							DrawCclData(pDC,pPData,&pen4);//ccl
+							DrawMagxData(pDC,pPData,&pen5);//magx
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						DrawDeptData(pDC,pPData,&pen);//深度
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						DrawRmData(pDC,pPData,&pen2);//rm
+						DrawGmData(pDC,pPData,&pen3);//gm
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						DrawMagxData(pDC,pPData,&pen5);//magx
+					}
+				}
+		
+			}
+			pPData = theApp.petroList.GetTail();
+			UpdatePanelListView(pPData);
+		}
+		else
+		{
+			pos = theApp.petroList.GetTailPosition();
+			while(pos)
+			{
+				pPData = theApp.petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(bScroll)
+					{
+						if(pPData->dept.iData < maxDepth)
+						{
+							DrawDeptData(pDC,pPData,&pen);//深度
+							DrawTempData(pDC,pPData,&pen);//draw tepm
+							DrawRmData(pDC,pPData,&pen2);//rm
+							DrawGmData(pDC,pPData,&pen3);//gm
+							DrawCclData(pDC,pPData,&pen4);//ccl
+							DrawMagxData(pDC,pPData,&pen5);//magx
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						DrawDeptData(pDC,pPData,&pen);//深度
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						DrawRmData(pDC,pPData,&pen2);//rm
+						DrawGmData(pDC,pPData,&pen3);//gm
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						DrawMagxData(pDC,pPData,&pen5);//magx
+					}
+				}
+		
+			}
+			UpdatePanelListView(pPData);
+		}	
+	}
+	else if(theApp.processType == FILEDATA_PROCESSING)
+	{
+		if(m_bDirectDown)
+		{
+			pos = theApp.petroList.GetHeadPosition();
+			while(pos)
+			{
+				pPData = theApp.petroList.GetNext(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(pPData->dept.iData < minDepth)
+					{
+						continue;
+					}
+					else
+					{
+						if(pPData->dept.iData < maxDepth && (!bScroll))
+						{
+							if(mCounter < m_drawCount*m_iterator)
+							{
+								if(pPData->dept.bAssign)
+								{
+									DrawDeptData(pDC,pPData,&pen);//深度
+									DrawTempData(pDC,pPData,&pen);//draw tepm
+									DrawRmData(pDC,pPData,&pen2);//rm
+									DrawGmData(pDC,pPData,&pen3);//gm
+									DrawCclData(pDC,pPData,&pen4);//ccl
+									DrawMagxData(pDC,pPData,&pen5);//magx
+								}
+								mCounter++;
+							}
+							else
+							{
+								m_iterator++;
+								pDC->SelectObject(pOldPen);
+								break;
+							}
+						}
+						else if(pPData->dept.iData < maxDepth && bScroll)
 						{
 							if(pPData->dept.bAssign)
 							{
@@ -375,128 +532,112 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 								DrawCclData(pDC,pPData,&pen4);//ccl
 								DrawMagxData(pDC,pPData,&pen5);//magx
 							}
-							mCounter++;
 						}
 						else
 						{
-							m_iterator++;
-							pDC->SelectObject(pOldPen);
+							if(!bScroll)
+							{
+								bScroll = true;
+							}
+							minDepth =(int) (minDepth+ m_step);
+							m_iterator = 1;
+							mCounter = 0;
 							break;
 						}
 					}
-					else if(pPData->dept.iData < maxDepth && bScroll)
-					{
-						if(pPData->dept.bAssign)
-						{
-							DrawDeptData(pDC,pPData,&pen);//深度
-							DrawTempData(pDC,pPData,&pen);//draw tepm
-							DrawRmData(pDC,pPData,&pen2);//rm
-							DrawGmData(pDC,pPData,&pen3);//gm
-							DrawCclData(pDC,pPData,&pen4);//ccl
-							DrawMagxData(pDC,pPData,&pen5);//magx
-						}
-					}
-					else
-					{
-						if(!bScroll)
-						{
-							bScroll = true;
-						}
-						minDepth =(int) (minDepth+ m_step);
-						m_iterator = 1;
-						mCounter = 0;
-						break;
-					}
-				}
 			
-			}
+				}
 		
-		}
-		if(pos == NULL)
-		{
-			KillTimer(TIMER_CMD_DRAW);//
+			}
+			if(pos == NULL)
+			{
+				KillTimer(TIMER_CMD_DRAW);//
+			}
+			else
+			{
+				UpdatePanelListView(pPData);
+				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+			}
 		}
 		else
 		{
-			UpdatePanelListView(pPData);
-			SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
-		}
+			pos = theApp.petroList.GetTailPosition();
+			while(pos)
+			{
+				pPData = theApp.petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(pPData->dept.iData > maxDepth)
+					{
+						continue;
+					}
+					else
+					{
+						if(pPData->dept.iData > minDepth && (!bScroll))
+						{
+							if(mCounter < m_drawCount*m_iterator)
+							{
+								if(pPData->dept.bAssign)
+								{
+									DrawDeptData(pDC,pPData,&pen);//深度
+									DrawTempData(pDC,pPData,&pen);//draw tepm
+									DrawRmData(pDC,pPData,&pen2);//rm
+									DrawGmData(pDC,pPData,&pen3);//gm
+									DrawCclData(pDC,pPData,&pen4);//ccl
+									DrawMagxData(pDC,pPData,&pen5);//magx
+								}
+								mCounter++;
+							}
+							else
+							{
+								m_iterator++;
+								pDC->SelectObject(pOldPen);
+								break;
+							}
+						}
+						else if(pPData->dept.iData > minDepth && bScroll)
+						{
+							if(pPData->dept.bAssign)
+							{
+								DrawDeptData(pDC,pPData,&pen);//深度
+								DrawTempData(pDC,pPData,&pen);//draw tepm
+								DrawRmData(pDC,pPData,&pen2);//rm
+								DrawGmData(pDC,pPData,&pen3);//gm
+								DrawCclData(pDC,pPData,&pen4);//ccl
+								DrawMagxData(pDC,pPData,&pen5);//magx
+							}
+						}
+						else
+						{
+							if(!bScroll)
+							{
+								bScroll = true;
+							}
+							maxDepth =(int) (maxDepth - m_step);
+							m_iterator = 1;
+							mCounter = 0;
+							break;
+						}
+					}
+			
+				}
+		
+			}
+			if(pos == NULL)
+			{
+				KillTimer(TIMER_CMD_DRAW);//
+			}
+			else
+			{
+				UpdatePanelListView(pPData);
+				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+			}
+		}	
 	}
 	else
 	{
-		pos = theApp.petroList.GetTailPosition();
-		while(pos)
-		{
-			pPData = theApp.petroList.GetPrev(pos);
-			if(pPData->dept.bAssign == true)
-			{
-				if(pPData->dept.iData > maxDepth)
-				{
-					continue;
-				}
-				else
-				{
-					if(pPData->dept.iData > minDepth && (!bScroll))
-					{
-						if(mCounter < m_drawCount*m_iterator)
-						{
-							if(pPData->dept.bAssign)
-							{
-								DrawDeptData(pDC,pPData,&pen);//深度
-								DrawTempData(pDC,pPData,&pen);//draw tepm
-								DrawRmData(pDC,pPData,&pen2);//rm
-								DrawGmData(pDC,pPData,&pen3);//gm
-								DrawCclData(pDC,pPData,&pen4);//ccl
-								DrawMagxData(pDC,pPData,&pen5);//magx
-							}
-							mCounter++;
-						}
-						else
-						{
-							m_iterator++;
-							pDC->SelectObject(pOldPen);
-							break;
-						}
-					}
-					else if(pPData->dept.iData > minDepth && bScroll)
-					{
-						if(pPData->dept.bAssign)
-						{
-							DrawDeptData(pDC,pPData,&pen);//深度
-							DrawTempData(pDC,pPData,&pen);//draw tepm
-							DrawRmData(pDC,pPData,&pen2);//rm
-							DrawGmData(pDC,pPData,&pen3);//gm
-							DrawCclData(pDC,pPData,&pen4);//ccl
-							DrawMagxData(pDC,pPData,&pen5);//magx
-						}
-					}
-					else
-					{
-						if(!bScroll)
-						{
-							bScroll = true;
-						}
-						maxDepth =(int) (maxDepth - m_step);
-						m_iterator = 1;
-						mCounter = 0;
-						break;
-					}
-				}
-			
-			}
-		
-		}
-		if(pos == NULL)
-		{
-			KillTimer(TIMER_CMD_DRAW);//
-		}
-		else
-		{
-			UpdatePanelListView(pPData);
-			SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
-		}
+
 	}
-	
 }
 
 void CDataMonitorView::DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
@@ -977,9 +1118,7 @@ void CDataMonitorView::StartTimer()
 		minDepthLimit = 0;
 		maxDepthLimit = 0;
 		bScroll = false;
-		//GetMaxMinData();//在绘图前进行一次计算的操作
 		AddPanelListView();
-		//m_drawCount = TIME_REFRESH_REALTIME/20;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
 	else// if(theApp.processType == FILEDATA_PROCESSING)
@@ -1072,15 +1211,17 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 	case TIMER_CMD_DRAW:
 		{
 			if(theApp.processType == FILEDATA_PROCESSING)
-			{
-				//KillTimer(nIDEvent);//TIMER_CMD_DRAW
-				
+			{				
 				Invalidate();
 				return;
 			}
 			else if(theApp.processType == REALTIME_PROCESSING)
 			{
-				Invalidate();
+				if(!theApp.petroList.IsEmpty())
+				{
+					CalculateParam();
+					Invalidate();
+				}
 				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 			}
 			else if(theApp.processType == NO_PROCESSING)
@@ -1093,6 +1234,20 @@ void CDataMonitorView::OnTimer(UINT_PTR nIDEvent)
 		break;
 	}
 	CScrollView::OnTimer(nIDEvent);
+}
+void CDataMonitorView::CalculateParam()
+{
+	CPetroData * pHeadData = theApp.petroList.GetHead();
+	CPetroData * pTailData = theApp.petroList.GetTail();
+	if(pHeadData->dept.iData < pTailData->dept.iData)
+	{
+		m_bDirectDown = true;
+	}
+	else
+	{
+		m_bDirectDown = false;
+	}
+	
 }
 void CDataMonitorView::GetMaxMinData()
 {
