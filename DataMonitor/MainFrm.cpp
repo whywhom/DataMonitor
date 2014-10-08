@@ -882,12 +882,14 @@ void CMainFrame::OnFileOpen()
 		memset(pData,0,dwFileLength);
 		fAddressImport.SeekToBegin ();
 		fAddressImport.Read (pData,dwFileLength);
+		theApp.petroList.RemoveAll();
 		ParseData(pData,dwFileLength);
 		pDataMonitorView = GetDataMonitorView();
 		pPanelView = GetPanelView();
 		pScaleView = GetScaleView();
 		if(pDataMonitorView)
 		{
+			pDataMonitorView->StopTimer();
 			pDataMonitorView->StartTimer();
 		}
 	}

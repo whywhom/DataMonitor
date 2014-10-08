@@ -44,6 +44,7 @@ protected:
 	bool		bScroll;//绘制到底部开始滚动时设置为true
 	int			m_drawCount;//每次绘制多少个数据
 	int			m_step;//每次移动距离，以米为单位
+	bool		bTimer;
 	//颜色
 	COLORREF	m_gridColor;		// grid line color
 	//字体设置

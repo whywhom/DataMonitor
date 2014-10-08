@@ -64,6 +64,7 @@ CDataMonitorView::CDataMonitorView()
 	pPData = NULL;
 	pOldPData = NULL;
 
+	bTimer = false;//计时器是否开启
 	pos = NULL;//当前记录位置
 
 	VERIFY(m_font.CreateFont(
@@ -251,6 +252,7 @@ void CDataMonitorView::DrawBasic(CDC * pDC)
 	m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
 	
 	SetScrollTotalSizes(m_totalRect);
+	//this->SetScrollPos(SB_VERT,m_totalRect.bottom,TRUE);
 }
 void CDataMonitorView::DrawGrid(CDC * pDC)
 {
@@ -556,7 +558,10 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 			else
 			{
 				UpdatePanelListView(pPData);
-				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+				if(bTimer)
+				{
+					SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+				}
 			}
 		}
 		else
@@ -630,7 +635,10 @@ void CDataMonitorView::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 			else
 			{
 				UpdatePanelListView(pPData);
-				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+				if(bTimer)
+				{
+					SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+				}
 			}
 		}	
 	}
@@ -935,10 +943,6 @@ void CDataMonitorView::OnInitialUpdate()
 	CRect Rect;
 	GetClientRect(Rect);
 	SetScrollTotalSizes(Rect);
-#ifdef FEATURE_TEST_DRAW
-	InitPlot(Rect);
-#endif
-	SetScrollTotalSizes(Rect);
 	//SetTimer(TIMER_CMD_TEST,TIME_REFRESH_FILE,NULL);
 }
 
@@ -1098,6 +1102,8 @@ void CDataMonitorView::StartTimer()
 	pPData = NULL;
 	pOldPData = NULL;
 	pos = NULL;//当前记录位置
+	bTimer = true;
+	InitOldArrayData();
 	if(theApp.petroList.IsEmpty())
 	{
 		return;//没有数据不进行绘制
@@ -1199,6 +1205,7 @@ void CDataMonitorView::UpdatePanelListView(CPetroData* pPData)
 }
 void CDataMonitorView::StopTimer()
 {
+	bTimer = false;
 	KillTimer(TIMER_CMD_DRAW);
 }
 

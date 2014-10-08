@@ -30,6 +30,10 @@ public:
 public:
 	HINSTANCE exe_hInstance;
 	HANDLE hSem;//判断软件市立是否已存在
+
+	// MFC临界区类对象
+	CCriticalSection g_cs;
+
 	CString strSemaphore;
     CString strSemaphoreExist;
     CString strSemaphoreCreatFail;
