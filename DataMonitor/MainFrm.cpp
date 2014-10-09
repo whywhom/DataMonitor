@@ -486,6 +486,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 			{
 				int result = CheckString(str);
 				//if(result == 0)//ÕûÊý
+				if(str != "LQRD" )
 				{
 					double num;
 					num=atof(str.c_str());
@@ -570,6 +571,7 @@ void CMainFrame::ParseData(BYTE* tmp, WPARAM wParam)
 					}
 				}
 				str.clear();
+				strTitle.empty();
 			}
 			if( tmp[i] == '*')
 			{

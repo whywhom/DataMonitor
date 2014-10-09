@@ -1104,6 +1104,7 @@ void CDataMonitorView::StartTimer()
 	pos = NULL;//当前记录位置
 	bTimer = true;
 	InitOldArrayData();
+	InitArrayData();
 	if(theApp.petroList.IsEmpty())
 	{
 		return;//没有数据不进行绘制
@@ -1320,8 +1321,9 @@ void CDataMonitorView::InitArrayData()
 		gmLimitArray[i] = 0;
 		rmLimitArray[i] = 0;
 		cclLimitArray[i] = 0;
-		magLimitArray[i][0] = 0;
-		magLimitArray[i][1] = 0;
+		magLimitArray[0][i] = 0;
+		magLimitArray[1][i] = 0;
+		magLimitArray[2][i] = 0;
 	}
 }
 void CDataMonitorView::InitOldArrayData()
