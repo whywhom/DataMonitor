@@ -22,6 +22,12 @@
     <None Include="res\DMonitor.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="res\Toolbar.bmp">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\toolbar1.bmp">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -48,6 +54,12 @@
     <ClInclude Include="DMonitorView.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CommLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialPort.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -63,6 +75,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DMonitorView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CommLayer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialPort.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -63,7 +63,7 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 
 	ClearPetroData();
 	pData = NULL;
-
+	bConnect = false;
 	unitPixel = 5;//20 pixel = 1 m
 	unitRatio = 4;
 	m_bDirectDown = true;
@@ -80,12 +80,16 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 	m_drawCount = 0;
 	bScroll = false;
 	m_step = 5;//每次移动步长为5米
+	fp = NULL;
 	pPData = NULL;
 	pOldPData = NULL;
 
 	bTimer = false;//计时器是否开启
 	pos = NULL;//当前记录位置
 
+	pData = NULL;
+	fileLimit = 1024*1024*4;
+	processType == NO_PROCESSING;
 	VERIFY(m_font.CreateFont(
 		18,                        // nHeight
 		0,                         // nWidth
@@ -108,6 +112,23 @@ void CDMoniterDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SCROLLBAR_V, mScrollV);
+	DDX_Control(pDX, IDC_STATIC_01, cs01);
+	DDX_Text(pDX, IDC_STATIC_01, value01);
+	DDX_Control(pDX, IDC_STATIC_02, cs02);
+	DDX_Text(pDX, IDC_STATIC_02, value02);
+	DDX_Control(pDX, IDC_STATIC_03, cs03);
+	DDX_Text(pDX, IDC_STATIC_03, value03);
+	DDX_Control(pDX, IDC_STATIC_04, cs04);
+	DDX_Text(pDX, IDC_STATIC_04, value04);
+	DDX_Control(pDX, IDC_EDIT_01, Edit01);
+	DDX_Text(pDX, IDC_EDIT_01, strEdit01);
+	DDX_Control(pDX, IDC_EDIT_02, Edit02);
+	DDX_Text(pDX, IDC_EDIT_02, strEdit02);
+	DDX_Control(pDX, IDC_EDIT_03, Edit03);
+	DDX_Text(pDX, IDC_EDIT_03, strEdit03);
+	DDX_Control(pDX, IDC_EDIT_04, Edit04);
+	DDX_Text(pDX, IDC_EDIT_04, strEdit04);
+	DDX_Control(pDX, IDC_LIST_DETAIL, listView);
 }
 
 BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
@@ -116,6 +137,7 @@ BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, &CDMoniterDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CDMoniterDlg::OnBnClickedCancel)
+	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
 	ON_WM_DESTROY()
@@ -123,6 +145,11 @@ BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_FILE_OPEN, &CDMoniterDlg::OnUpdateFileOpen)
 	ON_WM_TIMER()
 	ON_WM_VSCROLL()
+	ON_WM_CLOSE()
+	ON_COMMAND(ID_MENU_CONN, &CDMoniterDlg::OnMenuConn)
+	ON_UPDATE_COMMAND_UI(ID_MENU_CONN, &CDMoniterDlg::OnUpdateMenuConn)
+	ON_COMMAND(ID_MENU_DISCONN, &CDMoniterDlg::OnMenuDisconn)
+	ON_UPDATE_COMMAND_UI(ID_MENU_DISCONN, &CDMoniterDlg::OnUpdateMenuDisconn)
 END_MESSAGE_MAP()
 
 
@@ -158,12 +185,28 @@ BOOL CDMoniterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	m_hMenu = LoadMenu(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_MAINFRAME));//导入资源,创建菜单
 	::SetMenu(this->GetSafeHwnd(),m_hMenu);//添加到对话框
-
+	OnInitWidget();
+    RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST, 0);
 	// TODO: 在此添加额外的初始化代码
 	ShowWindow(SW_SHOWMAXIMIZED);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
+void CDMoniterDlg::OnInitWidget()
+{
+	value01.LoadString(IDS_DEEPTH);
+	cs01.SetWindowText(value01);
+	value02.LoadString(IDS_SPEED);
+	cs02.SetWindowText(value02);
+	value03.LoadString(IDS_TENSION);
+	cs03.SetWindowText(value03);
+	value04.LoadString(IDS_STATE);
+	cs04.SetWindowText(value04);
 
+	//btSetup.SetWindowText(theApp.GetResString(IDS_SETUP));	listView.InsertColumn( 0, theApp.GetResString(IDS_WHY_CURVE), LVCFMT_LEFT, 60 ); 
+    listView.InsertColumn( 1, theApp.GetResString(IDS_WHY_VALUE), LVCFMT_LEFT, 60 ); 
+	listView.InsertColumn( 2, theApp.GetResString(IDS_WHY_UNIT), LVCFMT_LEFT, 60 ); 
+	listView.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP ); 
+}
 void CDMoniterDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
@@ -176,7 +219,17 @@ void CDMoniterDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
-
+void CDMoniterDlg::OnClose()
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	if (MessageBox(theApp.GetResString(IDS_EXIT_APP_QUESTION),_T("提示"),MB_ICONQUESTION|MB_OKCANCEL)==IDOK)
+	{
+		theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
+		Sleep(500);
+		//initCmdList();
+	}
+	CDialogEx::OnClose();
+}
 // 如果向对话框添加最小化按钮，则需要下面的代码
 //  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
@@ -255,6 +308,8 @@ void CDMoniterDlg::OnPaint()
 		m_clientRect = rectView;
 		m_clientRect.right -= m_clientRect.left; 
 		m_clientRect.left = 0;
+		m_clientRect.bottom -= m_clientRect.top; 
+		m_clientRect.top = 0;
 
 		DrawData(&MemDC);
 		//将内存中的图拷贝到屏幕上进行显示  
@@ -304,6 +359,50 @@ void CDMoniterDlg::OnSize(UINT nType, int cx, int cy)
 	CDialogEx::OnSize(nType, cx, cy);
 	GetClientRect(rectMain);
 	GetRectParam(rectMain);
+	int mWidth1 = 40;
+	int mWidth2 = rectPanel.Width()-20-mWidth1;
+	int temp = (rectPanel.Height())/15;
+	int mHight = temp*3/4;
+	int gap = temp - mHight;
+	if(cs01.m_hWnd != NULL)
+	{
+		cs01.SetWindowPos(NULL,rectPanel.left,rectPanel.top,mWidth1,mHight,0);
+	}
+	if(Edit01.m_hWnd != NULL)
+	{
+		Edit01.SetWindowPos(NULL,rectPanel.left+50,rectPanel.top,mWidth2,mHight,0);
+	}
+
+	if(cs02.m_hWnd != NULL)
+	{
+		cs02.SetWindowPos(NULL,rectPanel.left,rectPanel.top + (mHight + gap)*1,mWidth1,mHight,0);
+	}
+	if(Edit02.m_hWnd != NULL)
+	{
+		Edit02.SetWindowPos(NULL,rectPanel.left+50,rectPanel.top + (mHight + gap)*1,mWidth2,mHight,0);
+	}
+
+	if(cs03.m_hWnd != NULL)
+	{
+		cs03.SetWindowPos(NULL,rectPanel.left,rectPanel.top + (mHight + gap)*2,mWidth1,mHight,0);
+	}
+	if(Edit03.m_hWnd != NULL)
+	{
+		Edit03.SetWindowPos(NULL,rectPanel.left+50,rectPanel.top + (mHight + gap)*2,mWidth2,mHight,0);
+	}
+
+	if(cs04.m_hWnd != NULL)
+	{
+		cs04.SetWindowPos(NULL,rectPanel.left,rectPanel.top + (mHight + gap)*3,mWidth1,mHight,0);
+	}
+	if(Edit04.m_hWnd != NULL)
+	{
+		Edit04.SetWindowPos(NULL,rectPanel.left+50,rectPanel.top + (mHight + gap)*3,mWidth2,mHight,0);
+	}
+	if(listView.m_hWnd != NULL)
+	{
+		listView.SetWindowPos(NULL,rectPanel.left,rectPanel.top + (mHight + gap)*4,rectPanel.Width()-10,rectPanel.bottom - (mHight + gap)*5 ,0);
+	}
 	if(mScrollV)
 	{
 		mScrollV.SetWindowPos(0,rectScrollV.left,rectScrollV.top,rectScrollV.Width(),rectScrollV.Height(),SWP_NOZORDER);
@@ -315,7 +414,7 @@ void CDMoniterDlg::OnSize(UINT nType, int cx, int cy)
 void CDMoniterDlg::GetRectParam(CRect rectMain)
 {
 	rectMain.left += 2;
-	rectMain.top += 2;
+	rectMain.top += 25;
 	rectMain.right -= 2;
 	rectMain.bottom -= 2;
 
@@ -332,6 +431,7 @@ void CDMoniterDlg::GetRectParam(CRect rectMain)
 	rectScrollV.bottom = rectView.bottom;
 
 	rectScale = rectMain;
+	rectScale.left = rectPanel.right + 1;
 	rectScale.top = rectView.bottom+1;
 }
 
@@ -732,16 +832,16 @@ void CDMoniterDlg::DrawData(CDC* pDC)
 {
 	if(processType == REALTIME_PROCESSING)
 	{
-		DrawBasic(pDC);//获取内存映射绘制区域大小
-		DrawGrid(pDC);
-		DrawPlot(pDC);
-		//DrawCurve(pDC,minDepth,maxDepth);
+		DrawRealtimeBasic(pDC);//获取内存映射绘制区域大小
+		DrawRealtimeGrid(pDC);
+		DrawRealtimePlot(pDC);
+		DrawRealtimeCurve(pDC,minDepth,maxDepth);
 	}
 	else if(processType == FILEDATA_PROCESSING)
 	{
-		DrawBasic(pDC);//获取内存映射绘制区域大小
-		DrawGrid(pDC);
-		DrawPlot(pDC);
+		DrawFileDataBasic(pDC);//获取内存映射绘制区域大小
+		DrawFileDataGrid(pDC);
+		DrawFileDataPlot(pDC);
 		DrawCurve(pDC,minDepth,maxDepth);
 	}
 	else
@@ -976,7 +1076,370 @@ void CDMoniterDlg::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 
 	}
 }
+void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth)
+{
+	int iDrawType = PS_SOLID;
+	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
+	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
+	COLORREF colorRed = RGB(255,0,0);
+	COLORREF colorBlue = RGB(0,0,255);
+	COLORREF colorGreen = RGB(0,255,0);
+	COLORREF colorBlack = RGB(0,0,0);
+	COLORREF color1 = RGB(2,141,153);
+	CPen pen(iDrawType, 1,colorRed); //画笔
+	CPen pen2(iDrawType, 1,colorBlue); //画笔2
+	CPen pen3(iDrawType, 1,colorGreen); //画笔3
+	CPen pen4(iDrawType, 1,color1); //画笔4
+	CPen pen5(iDrawType, 1,colorBlack); //画笔5
+	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
+	int mCounter = 0;
+	if(processType == REALTIME_PROCESSING)
+	{
+		if(m_bDirectDown)
+		{
+			pos = petroList.GetTailPosition();
+			while(pos)
+			{
+				pPData = petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(bScroll)
+					{
+						if(pPData->dept.iData > minDepth)
+						{
+							DrawDeptData(pDC,pPData,&pen);//深度
+							DrawTempData(pDC,pPData,&pen);//draw tepm
+							DrawRmData(pDC,pPData,&pen2);//rm
+							DrawGmData(pDC,pPData,&pen3);//gm
+							DrawCclData(pDC,pPData,&pen4);//ccl
+							DrawMagxData(pDC,pPData,&pen5);//magx
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						DrawDeptData(pDC,pPData,&pen);//深度
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						DrawRmData(pDC,pPData,&pen2);//rm
+						DrawGmData(pDC,pPData,&pen3);//gm
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						DrawMagxData(pDC,pPData,&pen5);//magx
+					}
+				}
+		
+			}
+			pPData = petroList.GetTail();
+			//UpdatePanelListView(pPData);
+		}
+		else
+		{
+			pos = petroList.GetTailPosition();
+			while(pos)
+			{
+				pPData = petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(bScroll)
+					{
+						if(pPData->dept.iData < maxDepth)
+						{
+							DrawDeptData(pDC,pPData,&pen);//深度
+							DrawTempData(pDC,pPData,&pen);//draw tepm
+							DrawRmData(pDC,pPData,&pen2);//rm
+							DrawGmData(pDC,pPData,&pen3);//gm
+							DrawCclData(pDC,pPData,&pen4);//ccl
+							DrawMagxData(pDC,pPData,&pen5);//magx
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						DrawDeptData(pDC,pPData,&pen);//深度
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						DrawRmData(pDC,pPData,&pen2);//rm
+						DrawGmData(pDC,pPData,&pen3);//gm
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						DrawMagxData(pDC,pPData,&pen5);//magx
+					}
+				}
+		
+			}
+			//UpdatePanelListView(pPData);
+		}	
+	}
+	else if(processType == FILEDATA_PROCESSING)
+	{
+		if(m_bDirectDown)
+		{
+			int TempPos = mScrollV.GetScrollPos();
+			int pageMeter = m_clientRect.Height()/unitPixel;
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
 
+			pos = petroList.GetHeadPosition();
+			while(pos)
+			{
+				pPData = petroList.GetNext(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(pPData->dept.iData < minDepth)
+					{
+						continue;
+					}
+					else
+					{
+						if(pPData->dept.iData < maxDepth)
+						{
+							if(pPData->dept.bAssign)
+							{
+								DrawDeptData(pDC,pPData,&pen);//深度
+								DrawTempData(pDC,pPData,&pen);//draw tepm
+								DrawRmData(pDC,pPData,&pen2);//rm
+								DrawGmData(pDC,pPData,&pen3);//gm
+								DrawCclData(pDC,pPData,&pen4);//ccl
+								DrawMagxData(pDC,pPData,&pen5);//magx
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+			
+				}
+		
+			}
+			pDC->SelectObject(pOldPen);
+		}
+		else
+		{
+			pos = petroList.GetTailPosition();
+			while(pos)
+			{
+				pPData = petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(pPData->dept.iData > maxDepth)
+					{
+						continue;
+					}
+					else
+					{
+						if(pPData->dept.iData > minDepth && (!bScroll))
+						{
+							if(mCounter < m_drawCount*m_iterator)
+							{
+								if(pPData->dept.bAssign)
+								{
+									DrawDeptData(pDC,pPData,&pen);//深度
+									DrawTempData(pDC,pPData,&pen);//draw tepm
+									DrawRmData(pDC,pPData,&pen2);//rm
+									DrawGmData(pDC,pPData,&pen3);//gm
+									DrawCclData(pDC,pPData,&pen4);//ccl
+									DrawMagxData(pDC,pPData,&pen5);//magx
+								}
+								mCounter++;
+							}
+							else
+							{
+								m_iterator++;
+								pDC->SelectObject(pOldPen);
+								break;
+							}
+						}
+						else if(pPData->dept.iData > minDepth && bScroll)
+						{
+							if(pPData->dept.bAssign)
+							{
+								DrawDeptData(pDC,pPData,&pen);//深度
+								DrawTempData(pDC,pPData,&pen);//draw tepm
+								DrawRmData(pDC,pPData,&pen2);//rm
+								DrawGmData(pDC,pPData,&pen3);//gm
+								DrawCclData(pDC,pPData,&pen4);//ccl
+								DrawMagxData(pDC,pPData,&pen5);//magx
+							}
+						}
+						else
+						{
+							if(!bScroll)
+							{
+								bScroll = true;
+							}
+							maxDepth =(int) (maxDepth - m_step);
+							m_iterator = 1;
+							mCounter = 0;
+							break;
+						}
+					}
+			
+				}
+		
+			}
+			if(pos == NULL)
+			{
+				KillTimer(TIMER_CMD_DRAW);//
+			}
+			else
+			{
+				//UpdatePanelListView(pPData);
+				if(bTimer)
+				{
+					SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+				}
+			}
+		}	
+	}
+	else
+	{
+
+	}
+}
+void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth)
+{
+	int iDrawType = PS_SOLID;
+	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
+	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
+	COLORREF colorRed = RGB(255,0,0);
+	COLORREF colorBlue = RGB(0,0,255);
+	COLORREF colorGreen = RGB(0,255,0);
+	COLORREF colorBlack = RGB(0,0,0);
+	COLORREF color1 = RGB(2,141,153);
+	CPen pen(iDrawType, 1,colorRed); //画笔
+	CPen pen2(iDrawType, 1,colorBlue); //画笔2
+	CPen pen3(iDrawType, 1,colorGreen); //画笔3
+	CPen pen4(iDrawType, 1,color1); //画笔4
+	CPen pen5(iDrawType, 1,colorBlack); //画笔5
+	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
+	int mCounter = 0;
+	if(processType == FILEDATA_PROCESSING)
+	{
+		if(m_bDirectDown)
+		{
+			int TempPos = mScrollV.GetScrollPos();
+			int pageMeter = m_clientRect.Height()/unitPixel;
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
+
+			pos = petroList.GetHeadPosition();
+			while(pos)
+			{
+				pPData = petroList.GetNext(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(pPData->dept.iData < minDepth)
+					{
+						continue;
+					}
+					else
+					{
+						if(pPData->dept.iData < maxDepth)
+						{
+							if(pPData->dept.bAssign)
+							{
+								DrawDeptData(pDC,pPData,&pen);//深度
+								DrawTempData(pDC,pPData,&pen);//draw tepm
+								DrawRmData(pDC,pPData,&pen2);//rm
+								DrawGmData(pDC,pPData,&pen3);//gm
+								DrawCclData(pDC,pPData,&pen4);//ccl
+								DrawMagxData(pDC,pPData,&pen5);//magx
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+			
+				}
+		
+			}
+			pDC->SelectObject(pOldPen);
+		}
+		else
+		{
+			pos = petroList.GetTailPosition();
+			while(pos)
+			{
+				pPData = petroList.GetPrev(pos);
+				if(pPData->dept.bAssign == true)
+				{
+					if(pPData->dept.iData > maxDepth)
+					{
+						continue;
+					}
+					else
+					{
+						if(pPData->dept.iData > minDepth && (!bScroll))
+						{
+							if(mCounter < m_drawCount*m_iterator)
+							{
+								if(pPData->dept.bAssign)
+								{
+									DrawDeptData(pDC,pPData,&pen);//深度
+									DrawTempData(pDC,pPData,&pen);//draw tepm
+									DrawRmData(pDC,pPData,&pen2);//rm
+									DrawGmData(pDC,pPData,&pen3);//gm
+									DrawCclData(pDC,pPData,&pen4);//ccl
+									DrawMagxData(pDC,pPData,&pen5);//magx
+								}
+								mCounter++;
+							}
+							else
+							{
+								m_iterator++;
+								pDC->SelectObject(pOldPen);
+								break;
+							}
+						}
+						else if(pPData->dept.iData > minDepth && bScroll)
+						{
+							if(pPData->dept.bAssign)
+							{
+								DrawDeptData(pDC,pPData,&pen);//深度
+								DrawTempData(pDC,pPData,&pen);//draw tepm
+								DrawRmData(pDC,pPData,&pen2);//rm
+								DrawGmData(pDC,pPData,&pen3);//gm
+								DrawCclData(pDC,pPData,&pen4);//ccl
+								DrawMagxData(pDC,pPData,&pen5);//magx
+							}
+						}
+						else
+						{
+							if(!bScroll)
+							{
+								bScroll = true;
+							}
+							maxDepth =(int) (maxDepth - m_step);
+							m_iterator = 1;
+							mCounter = 0;
+							break;
+						}
+					}
+			
+				}
+		
+			}
+			if(pos == NULL)
+			{
+				KillTimer(TIMER_CMD_DRAW);//
+			}
+			else
+			{
+				//UpdatePanelListView(pPData);
+				if(bTimer)
+				{
+					SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
+				}
+			}
+		}	
+	}
+}
 void CDMoniterDlg::DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
 	if(olddeptArray.bAssign)
@@ -1232,6 +1695,20 @@ void CDMoniterDlg::DrawBasic(CDC * pDC)
 	m_totalRect = rectView;
 	maxPreDepth = maxDepth;
 	int depPixel = 0;
+
+	if(processType == NO_PROCESSING)
+	{
+		m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
+		mScrollV.SetScrollRange(0,m_totalRect.bottom-m_totalRect.top);
+		mScrollV.SetScrollPos(0);
+	
+	}
+}
+void CDMoniterDlg::DrawRealtimeBasic(CDC * pDC)
+{
+	m_totalRect = rectView;
+	maxPreDepth = maxDepth;
+	int depPixel = 0;
 	if(processType == REALTIME_PROCESSING)
 	{
 		CPetroData * pHeadData = petroList.GetHead();
@@ -1284,62 +1761,22 @@ void CDMoniterDlg::DrawBasic(CDC * pDC)
 		mScrollV.SetScrollRange(0,m_totalRect.bottom);
 		mScrollV.SetScrollPos(m_totalRect.bottom);
 	}
-	else if(processType == FILEDATA_PROCESSING)
-	{
-#if 0
-		CPetroData * pHeadData = petroList.GetHead();
-		CPetroData * pTailData = petroList.GetTail();
-		
-		if(m_bDirectDown)
-		{
-			minDepthLimit = pHeadData->dept.iData;
-			maxDepthLimit = pTailData->dept.iData;
-			if(bScroll)
-			{
-				maxDepth = maxDepthLimit;
-				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-			}
-			else
-			{
-				minDepth = minDepthLimit;
-				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-				if(maxDepthLimit >= maxDepth)
-				{
-					bScroll = true;
-				}
-			}
-		}
-		else
-		{
-			maxDepthLimit = pHeadData->dept.iData;
-			minDepthLimit = pTailData->dept.iData;
-			if(bScroll)
-			{
-				minDepth = minDepthLimit;
-				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-			}
-			else
-			{
-				maxDepth = maxDepthLimit;
-				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-				if(minDepthLimit <= minDepth)
-				{
-					bScroll = true;
-				}
-			}
-		}
-#endif
-	}
 	else
 	{
 		m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
 		mScrollV.SetScrollRange(0,m_totalRect.bottom);
 		mScrollV.SetScrollPos(m_totalRect.bottom);
 	
+	}
+}
+void CDMoniterDlg::DrawFileDataBasic(CDC * pDC)
+{
+	m_totalRect = rectView;
+	maxPreDepth = maxDepth;
+	int depPixel = 0;
+	if(processType == FILEDATA_PROCESSING)
+	{
+
 	}
 }
 void CDMoniterDlg::DrawGrid(CDC * pDC)
@@ -1429,7 +1866,180 @@ void CDMoniterDlg::DrawGrid(CDC * pDC)
 	//画笔刷新
 	pDC->SelectObject(old);
 }
+void CDMoniterDlg::DrawRealtimeGrid(CDC * pDC)
+{
+	m_plot1Rect = m_clientRect;
+	m_plot1Rect.right = m_plot1Rect.left + 400;
 
+	m_plot2Rect = m_clientRect;
+	m_plot2Rect.left = m_plot1Rect.right;
+	m_plot2Rect.right = m_plot2Rect.left + 150;
+
+	m_plot3Rect = m_clientRect;
+	m_plot3Rect.left = m_plot2Rect.right;
+	m_plot3Rect.right = m_plot3Rect.left + 400;
+
+	m_gridColor = RGB(127,127,127);
+
+	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
+	CPen stick(PS_SOLID,0,RGB(0,0,0));
+	CPen mline(PS_SOLID,0,RGB(192,192,192));
+	old = pDC->SelectObject(&pen);
+	//绘制坐标系
+	int iCount=0;
+
+	for (int i=m_plot1Rect.left,iCount= 0;i<=m_plot1Rect.right;i+=unitPixel*unitRatio,iCount++)
+	{
+		if(iCount != 0 && iCount%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,m_plot1Rect.top); //
+			pDC->LineTo(i,m_plot1Rect.bottom);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,m_plot1Rect.top); // [0,0]
+			pDC->LineTo(i,m_plot1Rect.bottom);
+		}
+	}
+	for (int i=m_plot3Rect.left,iCount = 0;i<=m_plot3Rect.right;i+=unitPixel*unitRatio,iCount++)
+	{
+		
+		if(iCount%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,m_plot3Rect.top);
+			pDC->LineTo(i,m_plot3Rect.bottom);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,m_plot3Rect.top);
+			pDC->LineTo(i,m_plot3Rect.bottom);
+		}
+	}
+	for (int j=m_plot1Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
+	{
+		
+		if(iCount != 0 && (iCount)%10 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(m_plot1Rect.left,j); 
+			pDC->LineTo(m_plot1Rect.right,j);
+		}
+		else if(iCount != 0 && (iCount)%5 == 0)
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(m_plot1Rect.left,j); 
+			pDC->LineTo(m_plot1Rect.right,j);
+		}
+	}
+	for (int j=m_plot3Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
+	{
+		if(iCount != 0 && (iCount)%10 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(m_plot3Rect.left,j);
+			pDC->LineTo(m_plot3Rect.right,j);
+		}
+		else if(iCount != 0 && (iCount)%5 == 0)
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(m_plot3Rect.left,j); 
+			pDC->LineTo(m_plot3Rect.right,j);
+		}
+	}
+	//画笔刷新
+	pDC->SelectObject(old);
+}
+void CDMoniterDlg::DrawFileDataGrid(CDC * pDC)
+{
+	m_plot1Rect = m_clientRect;
+	m_plot1Rect.right = m_plot1Rect.left + 400;
+
+	m_plot2Rect = m_clientRect;
+	m_plot2Rect.left = m_plot1Rect.right;
+	m_plot2Rect.right = m_plot2Rect.left + 150;
+
+	m_plot3Rect = m_clientRect;
+	m_plot3Rect.left = m_plot2Rect.right;
+	m_plot3Rect.right = m_plot3Rect.left + 400;
+
+	m_gridColor = RGB(127,127,127);
+
+	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
+	CPen stick(PS_SOLID,0,RGB(0,0,0));
+	CPen mline(PS_SOLID,0,RGB(192,192,192));
+	old = pDC->SelectObject(&pen);
+	//绘制坐标系
+	int iCount=0;
+
+	for (int i=m_plot1Rect.left,iCount= 0;i<=m_plot1Rect.right;i+=unitPixel*unitRatio,iCount++)
+	{
+		if(iCount != 0 && iCount%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,m_plot1Rect.top); //
+			pDC->LineTo(i,m_plot1Rect.bottom);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,m_plot1Rect.top); // [0,0]
+			pDC->LineTo(i,m_plot1Rect.bottom);
+		}
+	}
+	for (int i=m_plot3Rect.left,iCount = 0;i<=m_plot3Rect.right;i+=unitPixel*unitRatio,iCount++)
+	{
+		
+		if(iCount%5 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(i,m_plot3Rect.top);
+			pDC->LineTo(i,m_plot3Rect.bottom);
+		}
+		else
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(i,m_plot3Rect.top);
+			pDC->LineTo(i,m_plot3Rect.bottom);
+		}
+	}
+	for (int j=m_plot1Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
+	{
+		
+		if(iCount != 0 && (iCount)%10 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(m_plot1Rect.left,j); 
+			pDC->LineTo(m_plot1Rect.right,j);
+		}
+		else if(iCount != 0 && (iCount)%5 == 0)
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(m_plot1Rect.left,j); 
+			pDC->LineTo(m_plot1Rect.right,j);
+		}
+	}
+	for (int j=m_plot3Rect.top,iCount = 0;j<=m_plot3Rect.bottom;j+=unitPixel,iCount++)
+	{
+		if(iCount != 0 && (iCount)%10 == 0)
+		{
+			pDC->SelectObject(&pen);
+			pDC->MoveTo(m_plot3Rect.left,j);
+			pDC->LineTo(m_plot3Rect.right,j);
+		}
+		else if(iCount != 0 && (iCount)%5 == 0)
+		{
+			pDC->SelectObject(&pen2);
+			pDC->MoveTo(m_plot3Rect.left,j); 
+			pDC->LineTo(m_plot3Rect.right,j);
+		}
+	}
+	//画笔刷新
+	pDC->SelectObject(old);
+}
 void CDMoniterDlg::DrawPlot(CDC* pDC)
 {
 	m_zoomFont.lfHeight			= -13;
@@ -1471,7 +2081,88 @@ void CDMoniterDlg::DrawPlot(CDC* pDC)
 	}
 	pDC->SelectObject(oFont);
 }
+void CDMoniterDlg::DrawRealtimePlot(CDC* pDC)
+{
+	m_zoomFont.lfHeight			= -13;
+	m_zoomFont.lfWidth			= 0;
+	m_zoomFont.lfEscapement		= 0;
+	m_zoomFont.lfOrientation		= 0;
+	m_zoomFont.lfWeight			= 400;
+	m_zoomFont.lfItalic			= FALSE;
+	m_zoomFont.lfUnderline		= FALSE;
+	m_zoomFont.lfStrikeOut		= FALSE;
+	m_zoomFont.lfCharSet			= ANSI_CHARSET;
+	m_zoomFont.lfOutPrecision	= OUT_DEFAULT_PRECIS;
+	m_zoomFont.lfClipPrecision	= CLIP_DEFAULT_PRECIS;
+	m_zoomFont.lfQuality			= PROOF_QUALITY;
+	m_zoomFont.lfPitchAndFamily	= DEFAULT_PITCH;
+	wcscpy(m_zoomFont.lfFaceName,_T("Ariel"));
+	
+	m_font.Detach();
+	m_font.CreateFontIndirect(&m_zoomFont);
+	CFont *oFont = pDC->SelectObject(&m_font);
+	CRect textRect;
+	CSize z=pDC->GetTextExtent(CString("A"));
+	textRect = m_plot2Rect;
+	textRect.left += 2;
+	textRect.right -= 2;
+	CString str;
+	int TempPos = mScrollV.GetScrollPos();
+	int pageMeter = m_clientRect.Height()/unitPixel;
+	minDepth = (int)TempPos+minDepthLimit;
+	maxDepth = (int)minDepth+pageMeter;
+	for (int i=m_plot2Rect.top,iCount = 0;i<=m_plot2Rect.bottom;i+=unitPixel*10,iCount++)
+	{
+		textRect.top = m_plot2Rect.top + i-z.cy/2;
+		textRect.bottom = textRect.top + z.cy;
+		double tmp = i/unitPixel+minDepth;
+		str.Format(_T("%.1f"),tmp);
+		pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
 
+	}
+	pDC->SelectObject(oFont);
+}
+void CDMoniterDlg::DrawFileDataPlot(CDC* pDC)
+{
+	m_zoomFont.lfHeight			= -13;
+	m_zoomFont.lfWidth			= 0;
+	m_zoomFont.lfEscapement		= 0;
+	m_zoomFont.lfOrientation		= 0;
+	m_zoomFont.lfWeight			= 400;
+	m_zoomFont.lfItalic			= FALSE;
+	m_zoomFont.lfUnderline		= FALSE;
+	m_zoomFont.lfStrikeOut		= FALSE;
+	m_zoomFont.lfCharSet			= ANSI_CHARSET;
+	m_zoomFont.lfOutPrecision	= OUT_DEFAULT_PRECIS;
+	m_zoomFont.lfClipPrecision	= CLIP_DEFAULT_PRECIS;
+	m_zoomFont.lfQuality			= PROOF_QUALITY;
+	m_zoomFont.lfPitchAndFamily	= DEFAULT_PITCH;
+	wcscpy(m_zoomFont.lfFaceName,_T("Ariel"));
+	
+	m_font.Detach();
+	m_font.CreateFontIndirect(&m_zoomFont);
+	CFont *oFont = pDC->SelectObject(&m_font);
+	CRect textRect;
+	CSize z=pDC->GetTextExtent(CString("A"));
+	textRect = m_plot2Rect;
+	textRect.left += 2;
+	textRect.right -= 2;
+	CString str;
+	int TempPos = mScrollV.GetScrollPos();
+	int pageMeter = m_clientRect.Height()/unitPixel;
+	minDepth = (int)TempPos+minDepthLimit;
+	maxDepth = (int)minDepth+pageMeter;
+	for (int i=m_plot2Rect.top,iCount = 0;i<=m_plot2Rect.bottom;i+=unitPixel*10,iCount++)
+	{
+		textRect.top = m_plot2Rect.top + i-z.cy/2;
+		textRect.bottom = textRect.top + z.cy;
+		double tmp = i/unitPixel+minDepth;
+		str.Format(_T("%.1f"),tmp);
+		pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
+
+	}
+	pDC->SelectObject(oFont);
+}
 void CDMoniterDlg::CalculateParam()
 {
 	CPetroData * pHeadData = petroList.GetHead();
@@ -1538,15 +2229,11 @@ void CDMoniterDlg::StartTimer()
 		int pageMeter = m_clientRect.Height()/unitPixel;
 		if(m_bDirectDown)
 		{
-			//minDepth = (int)minDepthLimit;
-			//maxDepth = (int)maxDepthLimit+1;
 			mScrollV.SetScrollRange(0,(maxDepthLimit - minDepthLimit - pageMeter));
 			mScrollV.SetScrollPos(maxDepthLimit - minDepthLimit - pageMeter);
 		}
 		else
 		{
-			//minDepth = (int)minDepthLimit;
-			//maxDepth = (int)maxDepthLimit+1;
 			mScrollV.SetScrollRange(0,(maxDepthLimit - minDepthLimit - pageMeter));
 			mScrollV.SetScrollPos(0);
 		}
@@ -1603,79 +2290,257 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	{
 	case SB_THUMBPOSITION://拖动滑块
 		pScrollBar->SetScrollPos(nPos);
-		TempPos = pScrollBar->GetScrollPos();
-		if(TempPos<pageMeter)
-		{
-			TempPos = 0;
-		}
-		else if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
-		{
-			TempPos = maxDepthLimit - minDepthLimit - pageMeter;
-		}
-		else
+		if(processType == FILEDATA_PROCESSING)
 		{
 			TempPos = pScrollBar->GetScrollPos();
+			if(TempPos<pageMeter)
+			{
+				TempPos = 0;
+			}
+			else if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+			{
+				TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+			}
+			else
+			{
+				TempPos = pScrollBar->GetScrollPos();
+			}
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
 		}
-		minDepth = (int)TempPos+minDepthLimit;
-		maxDepth = (int)minDepth+pageMeter;
 		InvalidateRect(rectView);
 		break;
 	case SB_LINEUP://点击上边的箭头
-		if(TempPos<pageMeter)
+		if(processType == FILEDATA_PROCESSING)
 		{
-			TempPos = 0;
+			if(TempPos<pageMeter)
+			{
+				TempPos = 0;
+			}
+			else
+			{
+				TempPos -= pageMeter;
+			}
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
+			pScrollBar->SetScrollPos(TempPos);
 		}
-		else
-		{
-			TempPos -= pageMeter;
-		}
-		minDepth = (int)TempPos+minDepthLimit;
-		maxDepth = (int)minDepth+pageMeter;
-		pScrollBar->SetScrollPos(TempPos);
 		InvalidateRect(rectView);
 		break;
 	case SB_LINEDOWN://点击下边的箭头
-		if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+		if(processType == FILEDATA_PROCESSING)
 		{
-			TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+			if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+			{
+				TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+			}
+			else
+			{
+				TempPos += pageMeter;
+			}
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
+			pScrollBar->SetScrollPos(TempPos);
 		}
-		else
-		{
-			TempPos += pageMeter;
-		}
-		minDepth = (int)TempPos+minDepthLimit;
-		maxDepth = (int)minDepth+pageMeter;
-		pScrollBar->SetScrollPos(TempPos);
 		InvalidateRect(rectView);
 		break;
 	case SB_PAGEUP://向上翻页
-		if(TempPos<pageMeter)
+		if(processType == FILEDATA_PROCESSING)
 		{
-			TempPos = 0;
+			if(TempPos<pageMeter)
+			{
+				TempPos = 0;
+			}
+			else
+			{
+				TempPos -= pageMeter;
+			}
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
+			pScrollBar->SetScrollPos(TempPos);
 		}
-		else
-		{
-			TempPos -= pageMeter;
-		}
-		minDepth = (int)TempPos+minDepthLimit;
-		maxDepth = (int)minDepth+pageMeter;
-		pScrollBar->SetScrollPos(TempPos);
 		InvalidateRect(rectView);
 		break;
 	case SB_PAGEDOWN://向下翻页
-		if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+		if(processType == FILEDATA_PROCESSING)
 		{
-			TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+			if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+			{
+				TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+			}
+			else
+			{
+				TempPos += pageMeter;
+			}
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
+			pScrollBar->SetScrollPos(TempPos);
 		}
-		else
-		{
-			TempPos += pageMeter;
-		}
-		minDepth = (int)TempPos+minDepthLimit;
-		maxDepth = (int)minDepth+pageMeter;
-		pScrollBar->SetScrollPos(TempPos);
 		InvalidateRect(rectView);
 		break;
 	} 
 	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
 }
+
+
+
+
+
+void CDMoniterDlg::OnMenuConn()
+{
+	// TODO: 在此添加命令处理程序代码
+	CMenu* pSubMenu = NULL;
+	CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
+	{
+		pSubMenu = pMainMenu->GetSubMenu(1);
+		if (pSubMenu && pSubMenu->GetMenuItemID(0) == ID_MENU_CONN)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_CONN,MF_CHECKED); 
+		}
+		if (pSubMenu && pSubMenu->GetMenuItemID(1) == ID_MENU_DISCONN)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_DISCONN,MF_UNCHECKED); 
+		}
+	}
+	if(bConnect == true)
+	{
+		return;
+	}
+	bConnect = true;
+	theApp.commLayer.SetConnectType(TYPE_NONE);
+	theApp.commLayer.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
+	
+	CString strTime;
+	//获取系统时间
+	CTime tm;
+	tm=CTime::GetCurrentTime();
+	strTime=tm.Format(_T("(%Y-%m-%d-%H-%M-%S)"));
+	fileName = theApp.DataPath + _T("export ")+strTime;
+	CFileDialog dlg (FALSE, _T("dmor"), fileName, OFN_HIDEREADONLY | OFN_EXPLORER | OFN_OVERWRITEPROMPT, NULL);
+	if (dlg.DoModal () == IDOK)
+	{
+		sGetFileName = dlg.GetPathName ();
+		openDataFile(sGetFileName);
+	}
+	totalReceiveByte = 0;
+	fileNum = 0;
+	theApp.m_CommResault=theApp.commLayer.CreatConnect();
+	if(theApp.m_CommResault==COMM_SUCCESS)
+	{
+	}
+	if(theApp.m_CommResault==COMM_ERROE_HARDWARE_CONNECT_FAIL)
+	{
+		TRACE(_T("Communication Fail!\n"));
+	}
+}
+
+
+void CDMoniterDlg::OnUpdateMenuConn(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+}
+
+
+void CDMoniterDlg::OnMenuDisconn()
+{
+	// TODO: 在此添加命令处理程序代码
+	CMenu* pSubMenu = NULL;
+	CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
+	{
+		pSubMenu = pMainMenu->GetSubMenu(1);
+		if (pSubMenu && pSubMenu->GetMenuItemID(0) == ID_MENU_CONN)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_CONN,MF_UNCHECKED); 
+		}
+		if (pSubMenu && pSubMenu->GetMenuItemID(1) == ID_MENU_DISCONN)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_DISCONN,MF_CHECKED); 
+		}
+	}
+	if(bConnect == false)
+	{
+		return;
+	}
+	bConnect = false;
+	theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
+	//bRunning = false;
+	Sleep(500);
+	closeDataFile(sGetFileName);
+}
+
+
+void CDMoniterDlg::OnUpdateMenuDisconn(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+}
+
+void CDMoniterDlg::closeDataFile(CString strFile)  
+{    
+	if(fp != NULL)
+	{
+		fclose(fp);   
+	}
+} 
+void CDMoniterDlg::openDataFile(CString strFile)  
+{   
+	if(fp != NULL)
+	{
+		fclose(fp);  
+	}
+	fp = _wfopen(strFile, _T("w")); 
+} 
+LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
+{
+    TRACE(_T("Communication Receive!\n"));
+	TRACE0("CMainFrame RX = ");
+	TRACE(_T(" %02X\n"),wParam);
+#ifdef _DEBUG
+    for(WORD cont = 0; cont < wParam ; cont++)
+    {
+        TRACE(_T(" %02X"),theApp.commLayer.m_ReceiveBuff[cont]);
+    }
+	TRACE0("\n");
+#endif
+	CString str;
+	totalReceiveByte += wParam;
+	if(totalReceiveByte>fileLimit)
+	{
+		fileNum++;
+		closeDataFile(sGetFileName);
+		sGetFilePreName = sGetFileName;
+		int pos = sGetFilePreName.ReverseFind(_T('.'));
+		int length = sGetFilePreName.GetLength();
+		CString strPre = sGetFilePreName.Left(pos);
+		CString strSub = sGetFilePreName.Right(length - pos);
+		CString strAdd;
+		strAdd.Format(_T("_%d"),fileNum);
+		sGetFileName = strPre + strAdd + strSub;
+		openDataFile(sGetFileName);
+	}
+	if(totalReceiveByte < 1024)
+	{
+		str.Format(_T("已接收数据: %d B"),totalReceiveByte);
+	}
+	else if(totalReceiveByte < 1024*1024)
+	{
+		str.Format(_T("已接收数据:%2f KB"),(float)totalReceiveByte/1024);
+	}
+	else
+	{
+		str.Format(_T("已接收数据:%2f MB"),(float)totalReceiveByte/(1024*1024));
+	}
+
+	writeDataFile(&theApp.commLayer.m_ReceiveBuff[0],wParam);
+	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
+    return 0;
+}
+void CDMoniterDlg::writeDataFile(BYTE* tmp, WPARAM wParam)  
+{     
+    if(fp != NULL)
+	{ 
+		fseek(fp,0L,2);
+		{
+			unsigned int nSize = fwrite( &tmp[0], wParam, 1, fp);  
+		}
+    }   
+}  

@@ -19,7 +19,7 @@ END_MESSAGE_MAP()
 
 
 // CDMoniterApp 构造
-
+static HINSTANCE _hLangDLL = NULL;
 CDMoniterApp::CDMoniterApp()
 {
 	// 支持重新启动管理器
@@ -65,8 +65,35 @@ BOOL CDMoniterApp::InitInstance()
 	// 更改用于存储设置的注册表项
 	// TODO: 应适当修改该字符串，
 	// 例如修改为公司或组织名
-	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
-
+	SetRegistryKey(_T("DMonitor"));
+	/*wuhaoyong add CMutex*/
+    //Creat CMutex
+    hSem=NULL;
+	strSemaphore.LoadString( IDS_SEMAPHORE );
+    hSem=CreateSemaphore(NULL,1,1,strSemaphore);
+    if(hSem)  //Creat CMutex success
+    {
+        //the CMutex exist
+        if(ERROR_ALREADY_EXISTS==GetLastError())
+        {
+			strSemaphoreExist.LoadString( IDS_SEMAPHORE_ALREADY_EXISTS );
+            AfxMessageBox(strSemaphoreExist);
+            CloseHandle(hSem);      //Close CMutex
+            return FALSE;           //Exit App
+        }
+    }
+    else
+    {
+		strSemaphoreCreatFail.LoadString(IDS_SEMAPHORE_CREATE_FAIL);
+        AfxMessageBox(strSemaphoreCreatFail);
+        return FALSE;
+    }
+	exe_hInstance = GetModuleHandle(NULL);//获取hInstance wuhaoyong add
+	if(0 == exe_hInstance)
+	{
+		return FALSE;
+	}
+	GetModulePath();//必要文件夹初始化
 	CDMoniterDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
@@ -92,3 +119,336 @@ BOOL CDMoniterApp::InitInstance()
 	return FALSE;
 }
 
+//根据_hLangDLL是否加载语言dll来判断使用语言库资源还是默认资源，默认为中文简体
+CString CDMoniterApp::GetResString(UINT uStringID)
+{
+	CString resString;
+	if (_hLangDLL)
+		resString.LoadString(_hLangDLL, uStringID);
+	if (resString.IsEmpty())
+		resString.LoadString(theApp.exe_hInstance, uStringID);
+	return resString;
+}
+
+void CDMoniterApp::GetModulePath()
+{
+	DWORD dwAttr = 0;
+	/******
+	TCHAR szPath[MAX_PATH];
+	if(SUCCEEDED(SHGetFolderPath(NULL, 
+									CSIDL_APPDATA, 
+									NULL, 
+									0, 
+									szPath))) 
+	{
+		//临时文件夹路径
+		TempPath = szPath;
+		CString backupDir = _T("\\Temp\\");
+		TempPath += backupDir;
+		dwAttr=GetFileAttributes(TempPath);
+		//若文件夹不存在，创建文件夹
+		if(dwAttr==0xFFFFFFFF)
+		{
+			CreateDirectory(TempPath,NULL);
+		}
+	}
+	******/
+	TCHAR szModPath[_MAX_PATH];
+	GetModuleFileName(m_hInstance, szModPath, _MAX_PATH);
+    szExePath = szModPath;
+    ModuleFilePath = szExePath.Left(szExePath.ReverseFind('\\'));
+	LogPath = ModuleFilePath + _T("\\Log\\");
+	dwAttr=GetFileAttributes(LogPath);
+	//若文件夹不存在，创建文件夹
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(LogPath,NULL);
+	}
+
+	TempPath = ModuleFilePath + _T("\\Temp\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(TempPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(TempPath,NULL);
+	}
+
+	DataPath = ModuleFilePath + _T("\\Data\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(DataPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(DataPath,NULL);
+	}
+
+	JobPath = ModuleFilePath + _T("\\Jobs\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(JobPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(JobPath,NULL);
+	}
+
+	ToolPath = ModuleFilePath + _T("\\Tools\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(ToolPath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(ToolPath,NULL);
+	}
+
+	IniFilePath = ModuleFilePath + _T("\\Config\\");
+	//若文件夹不存在，创建文件夹
+	dwAttr=GetFileAttributes(IniFilePath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(IniFilePath,NULL);
+	}
+#if 0
+	strUnitsFile = IniFilePath + _T("Units.xml");
+	dwAttr=GetFileAttributes(strUnitsFile);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDmFile(strUnitsFile);
+	}
+#endif
+	strIniFilePath = IniFilePath + _T("config.ini");
+	dwAttr=GetFileAttributes(strIniFilePath);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateIniFile(strIniFilePath);
+	}
+#ifdef FEATURE_LOG
+	LogFileName = LogPath + _T("log.txt");
+#endif
+	//绘图模板
+	strCurveFile = IniFilePath + _T("Curve.xml");
+	dwAttr=GetFileAttributes(strCurveFile);
+	if(dwAttr==0xFFFFFFFF)
+	{
+		bCurveFileExist = false;
+	}
+	else
+	{
+		bCurveFileExist = true;
+	}
+	return;
+}
+
+int CDMoniterApp::CreateIniFile(CString strFile)
+{
+	::WritePrivateProfileString(_T("TargetDepth"),_T("Depth1"),_T("100"),strFile); 
+	::WritePrivateProfileString(_T("TargetDepth"),_T("Depth2"),_T("100"),strFile);
+	return 0;
+}
+#if 0
+int CDataMonitorApp::CreateDmFile(CString strFile)
+{
+	/*
+	CFile downloadFile;
+	CFileException eFileException;
+
+	if(downloadFile != INVALID_HANDLE_VALUE)
+	{
+		downloadFile.Close();
+	}
+	if (!downloadFile.Open (strFile, CFile::modeCreate | CFile::modeWrite , &eFileException))
+	{
+		return 0;
+	}
+	*/
+	TiXmlDocument doc;
+	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "UTF-8", "yes" );
+	doc.LinkEndChild( decl ); 
+	TiXmlElement * element = new TiXmlElement( "Units" );
+	////
+	LinkElementeFuns(element,_T("mV"));
+	LinkElementeFuns(element,_T("GAPI"));
+	LinkElementeFuns(element,_T("CPS"));
+	LinkElementeFuns(element,_T("us/m"));
+	LinkElementeFuns(element,_T("m"));
+	LinkElementeFuns(element,_T("cm"));
+	LinkElementeFuns(element,_T("mm"));
+	LinkElementeFuns(element,_T("uS"));
+	LinkElementeFuns(element,_T("mS"));
+	LinkElementeFuns(element,_T("S"));
+	LinkElementeFuns(element,_T("MΩ"));
+	LinkElementeFuns(element,_T("kΩ"));
+	LinkElementeFuns(element,_T("Ω"));
+	LinkElementeFuns(element,_T("Ω.m"));
+    LinkElementeFuns(element,_T("s"));
+    LinkElementeFuns(element,_T("S/m"));
+    LinkElementeFuns(element,_T("mS/m"));
+    LinkElementeFuns(element,_T("m/h"));
+    LinkElementeFuns(element,_T("Kg"));
+    LinkElementeFuns(element,_T("Kn"));
+    LinkElementeFuns(element,_T("N"));
+    LinkElementeFuns(element,_T("℃"));
+    LinkElementeFuns(element,_T("℃/m"));
+    LinkElementeFuns(element,_T("kg/m^3"));
+    LinkElementeFuns(element,_T("g/cm^3"));
+    LinkElementeFuns(element,_T("km"));
+    LinkElementeFuns(element,_T("km^3"));
+    LinkElementeFuns(element,_T("m^3"));
+    LinkElementeFuns(element,_T("dm^3"));
+    LinkElementeFuns(element,_T("m/s^2"));
+    LinkElementeFuns(element,_T("mm/s^2"));
+    LinkElementeFuns(element,_T("rad"));
+    LinkElementeFuns(element,_T("mrad"));
+    LinkElementeFuns(element,_T("urad"));
+    LinkElementeFuns(element,_T("°"));
+    LinkElementeFuns(element,_T("km^2"));
+    LinkElementeFuns(element,_T("ha"));
+    LinkElementeFuns(element,_T("dm^2"));
+    LinkElementeFuns(element,_T("cm^2"));
+    LinkElementeFuns(element,_T("mm^2"));
+    LinkElementeFuns(element,_T("kg/s"));
+    LinkElementeFuns(element,_T("m^3/s"));
+    LinkElementeFuns(element,_T("m^3/min"));
+    LinkElementeFuns(element,_T("m^3/d"));
+    LinkElementeFuns(element,_T("L/s"));
+    LinkElementeFuns(element,_T("Std.m3/m3"));
+    LinkElementeFuns(element,_T("t"));
+    LinkElementeFuns(element,_T("Mg/m^3"));
+    LinkElementeFuns(element,_T("pu"));
+    LinkElementeFuns(element,_T("J"));
+    LinkElementeFuns(element,_T("Mev"));
+    LinkElementeFuns(element,_T("MW"));
+    LinkElementeFuns(element,_T("KW"));
+    LinkElementeFuns(element,_T("W"));
+    LinkElementeFuns(element,_T("Pa"));
+    LinkElementeFuns(element,_T("kPa"));
+    LinkElementeFuns(element,_T("MPa"));
+    LinkElementeFuns(element,_T("ATM"));
+    LinkElementeFuns(element,_T("PSI"));
+    LinkElementeFuns(element,_T("Bq"));
+    LinkElementeFuns(element,_T("r/s"));
+    LinkElementeFuns(element,_T("min"));
+    LinkElementeFuns(element,_T("h"));
+    LinkElementeFuns(element,_T("d"));
+    LinkElementeFuns(element,_T("a"));
+    LinkElementeFuns(element,_T("m/s"));
+    LinkElementeFuns(element,_T("Pa.s"));
+    LinkElementeFuns(element,_T("mPa.s"));
+    LinkElementeFuns(element,_T("N.s/m^2"));
+    LinkElementeFuns(element,_T("%"));
+    LinkElementeFuns(element,_T("NAPI"));
+    LinkElementeFuns(element,_T("inch"));
+    LinkElementeFuns(element,_T("API"));
+    LinkElementeFuns(element,_T("V"));
+    LinkElementeFuns(element,_T("度"));
+    LinkElementeFuns(element,_T("uS/m"));
+    LinkElementeFuns(element,_T("ppm"));
+    LinkElementeFuns(element,_T("I"));
+
+	doc.LinkEndChild( element );
+	////
+	char * pFileName = FromUNICODEToANSI(strFile);
+	doc.SaveFile(pFileName);
+
+	delete []pFileName;
+	pFileName = NULL;
+	return 0;
+}
+void CDataMonitorApp::LinkElementeFuns(TiXmlElement * element,CString str)
+{
+	TiXmlElement* msgs = new TiXmlElement( "Unit" ); 
+	element->LinkEndChild( msgs );
+	TiXmlElement* msg = new TiXmlElement( "Label" ); 
+	////********/////transfer//////********//////
+	const int maxBufferSize = 64;
+	unsigned short UnicodeStr[maxBufferSize];
+	unsigned short utf8StrLen;
+	DWORD dwLength;//转换后的UTF－8编码的长度in BYTEs
+	char utf8Str[64];
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	short UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+}
+#endif
+/**************************************************************************/
+/***  specifications;              ***/
+/***  NAME   = FromUNICODEToANSI;       ***/
+/***  FUNCTION  = UNICODE转换为ASCII码   ***/
+/***  DATE   = 2008/11/18;           ***/
+/***  AUTHOR  = wuhaoyong;              ***/
+/***  INPUT   = *pData-UNICODE字符串,*nwDataLen-UNICODE字符串有效长度,*pDataLen-转换为ASCII的长度;               ***/
+/***  OUTPUT  = *pBuffer-ASCII字符串;               ***/
+/***  END OF SPECIFICATIONS;            ***/
+/**************************************************************************/
+char *CDMoniterApp::FromUNICODEToANSI(CString str)
+{
+    UINT nCodePage = CP_ACP; //ASCII
+	int strLen = str.GetLength();
+    int len = WideCharToMultiByte(nCodePage,0,str,strLen,NULL,0,NULL,NULL);
+    char * pFileName = new char[len+1];   //以字节为单位
+	memset(pFileName,0,len+1);
+	//宽字节编码转换成多字节编码
+    WideCharToMultiByte(CP_ACP,0,str,str.GetLength(),pFileName,len,NULL,NULL);
+    return pFileName;
+}
+
+/*===========================================================================
+   Function :Utf8 to Unicode
+   Param    :   utf8Str        --UTF8 dest code
+                    utf8strlen     --max utf8 length
+                    unStr          -- Unicode Str Source
+                    unMaxlen     --Unicode 最大个数 
+   return   :  --实际转化的长度
+ 
+   Author   : 
+   Data     : 2002-10-24
+===========================================================================*/
+short CDMoniterApp::FromUnicodeToUTF8 (LPSTR utf8Str, short utf8StrLen, WORD * unStr, unsigned short unMaxLen)
+{
+    //short len_dest=0;
+    short unlen = 0;            //转化的unicode 长度
+    short utflen = 0;           //转化的utf8 长度
+
+    WORD *src;
+    src = unStr;
+    for (; (unlen <= unMaxLen - 1) && (*src != 0x00) && (utflen <= utf8StrLen);)
+    {                           //按照长度、0x00结束
+        if (((*src) & 0xff80) == 0) //1byte
+        {
+            *utf8Str = (char) (*src);
+            utflen += 1;
+        }
+        else if (((*src) & 0xf800) == 0) //2bytes
+        {
+            *utf8Str = (char) ((((*src) >> 6) & 0x1f) | 0xc0);
+            utf8Str++;
+            *utf8Str = (char) (((*src) & 0x003f) | 0x80);
+            utflen += 2;
+        }
+        else                    //3bytes
+        {
+            *utf8Str = (char) ((((*src) >> 12) & 0x000f) | 0xe0);
+            utf8Str++;
+            *utf8Str = (char) ((((*src) >> 6) & 0x3f) | 0x80);
+            utf8Str++;
+            *utf8Str = (char) (((*src) & 0x003f) | 0x80);
+            utflen += 3;
+        }
+        unlen++;                
+        src++;
+        utf8Str++;
+    }
+    *utf8Str = 0x00;
+    return utflen;
+
+}
+int CDMoniterApp::ExitInstance()
+{
+	//TODO: 处理可能已添加的附加资源
+	AfxOleTerm(FALSE);
+
+	return CWinApp::ExitInstance();
+}

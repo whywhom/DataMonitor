@@ -98,22 +98,28 @@
     <None Include="ReadMe.txt" />
     <None Include="res\DMonitor.ico" />
     <None Include="res\DMonitor.rc2" />
+    <None Include="res\Toolbar.bmp" />
+    <None Include="res\toolbar1.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommLayer.h" />
     <ClInclude Include="DMonitor.h" />
     <ClInclude Include="DMonitorDlg.h" />
     <ClInclude Include="DMonitorView.h" />
     <ClInclude Include="PetroData.h" />
     <ClInclude Include="PublicInterface.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommLayer.cpp" />
     <ClCompile Include="DMonitor.cpp" />
     <ClCompile Include="DMonitorDlg.cpp" />
     <ClCompile Include="DMonitorView.cpp" />
     <ClCompile Include="PetroData.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

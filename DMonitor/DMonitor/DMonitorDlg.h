@@ -5,6 +5,7 @@
 #pragma once
 #include "afxwin.h"
 #include "PublicInterface.h"
+#include "CommLayer.h"
 #include "PetroData.h"
 #include <string>
 // CDMoniterDlg 对话框
@@ -22,6 +23,7 @@ public:
 
 public:
 	HMENU m_hMenu;//菜单
+	CToolBar m_ToolBar;//工具栏
 	
 	CRect rectMain;//主界面区域
 	CRect rectView;//绘图界面区域
@@ -34,8 +36,14 @@ public:
 	int processType;//处理数据类型：0 - 从串口获得的数据，1 - 从文件获取的数据
 	BYTE* pData;//存储文件数据
 	CTypedPtrList < CPtrList, CPetroData * >petroList;//数据存储链表
-
-	
+	bool bConnect;//标志连接
+	CString sGetFileName;//保存打开的文件路径
+	CString sGetFilePreName;//保存打开的文件名
+	FILE* fp;//指向打开的文件
+	CString fileName;//记录串口数据的文件
+	unsigned long totalReceiveByte;
+	unsigned long fileLimit;//文件大小限制，超过的话则自动生成下一个文件
+	int fileNum;
 	CDC   MemDC;          //双缓冲 定义一个显示设备对象  
 	CBitmap   MemBitmap;  //双缓冲 定义一个位图对象  
 
@@ -95,16 +103,29 @@ public:
 
 public:
 	void GetRectParam(CRect rectMain);
+	void OnInitWidget();
 	void ClearPetroData();
 	void InitArrayData();
 	void InitOldArrayData();
-	void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam);//解析串口数据
+	void ParseData(BYTE* tmp, WPARAM wParam);//解析串口数据
+	void writeDataFile(BYTE* tmp, WPARAM wParam);
 	int CheckString( std::string str );
+	void closeDataFile(CString strFile);
+	void openDataFile(CString strFile);
 	void DrawData(CDC* pDC);
 	
 	void DrawBasic(CDC * pDC);//绘图函数初始
+	void DrawRealtimeBasic(CDC * pDC);//绘图函数初始
+	void DrawFileDataBasic(CDC * pDC);
 	void DrawGrid(CDC * pDC);//绘制横纵坐标网格
+	void DrawRealtimeGrid(CDC * pDC);//绘制横纵坐标网格
+	void DrawFileDataGrid(CDC * pDC);
 	void DrawPlot(CDC* pDC);//绘制坐标数据
+	void DrawRealtimePlot(CDC* pDC);//绘制坐标数据
+	void DrawFileDataPlot(CDC * pDC);
+	void DrawCurve(CDC* pDC , double upDepth, double DownDepth);//绘制测绘数据
+	void DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth);//绘制测绘数据
+	void DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth);//绘制测绘数据
 
 	void PrepareDraw();
 	void GetMaxMinData();
@@ -114,7 +135,6 @@ public:
 	void StopTimer();
 	void CalculateParam();
 
-	void DrawCurve(CDC* pDC , double upDepth, double DownDepth);//绘制测绘数据
 	void DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制高度曲线
 	void DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制温度曲线
 	void DrawRmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Rm曲线
@@ -124,7 +144,23 @@ public:
 // 实现
 protected:
 	HICON m_hIcon;
-
+	CStatic cs01;
+	CString value01;
+	CStatic cs02;
+	CString value02;
+	CStatic cs03;
+	CString value03;
+	CStatic cs04;
+	CString value04;
+	CEdit Edit01;
+	CString strEdit01;
+	CEdit Edit02;
+	CString strEdit02;
+	CEdit Edit03;
+	CString strEdit03;
+	CEdit Edit04;
+	CString strEdit04;
+	CListCtrl listView;
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
@@ -144,4 +180,10 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnClose();
+	afx_msg void OnMenuConn();
+	afx_msg void OnUpdateMenuConn(CCmdUI *pCmdUI);
+	afx_msg void OnMenuDisconn();
+	afx_msg void OnUpdateMenuDisconn(CCmdUI *pCmdUI);
+	afx_msg LRESULT OnCommReceive(WPARAM wParam, LPARAM lParam);//接收端口消息
 };
