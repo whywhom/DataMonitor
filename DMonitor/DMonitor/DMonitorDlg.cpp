@@ -67,7 +67,7 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 	unitPixel = 5;//20 pixel = 1 m
 	unitRatio = 4;
 	m_bDirectDown = true;
-
+	bPainting = false;
 	base = 0;
 	bias = 0;
 	
@@ -299,24 +299,29 @@ void CDMoniterDlg::OnPaint()
 		dc.Rectangle(rectView.left-1,rectView.top-1,rectView.right+1,rectView.bottom+1);
 		dc.SelectObject(oPen);
 		///////////////////////
-		//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
-		MemDC.CreateCompatibleDC(NULL);  
-		//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
-		MemBitmap.CreateCompatibleBitmap(&dc,rectView.Width(),rectView.Height());  
-		CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
-		MemDC.FillSolidRect(0,0,rectView.Width(),rectView.Height(),RGB(255,255,255));
-		m_clientRect = rectView;
-		m_clientRect.right -= m_clientRect.left; 
-		m_clientRect.left = 0;
-		m_clientRect.bottom -= m_clientRect.top; 
-		m_clientRect.top = 0;
+		if(!bPainting)
+		{
+			bPainting = true;
+			//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
+			MemDC.CreateCompatibleDC(NULL);  
+			//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
+			MemBitmap.CreateCompatibleBitmap(&dc,rectView.Width(),rectView.Height());  
+			CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
+			MemDC.FillSolidRect(0,0,rectView.Width(),rectView.Height(),RGB(255,255,255));
+			m_clientRect = rectView;
+			m_clientRect.right -= m_clientRect.left; 
+			m_clientRect.left = 0;
+			m_clientRect.bottom -= m_clientRect.top; 
+			m_clientRect.top = 0;
 
-		DrawData(&MemDC);
-		//将内存中的图拷贝到屏幕上进行显示  
-		dc.BitBlt(rectView.left,rectView.top,rectView.Width(),rectView.Height(),&MemDC,0,0,SRCCOPY);  
-		//绘图完成后的清理  
-		MemBitmap.DeleteObject();  
-		MemDC.DeleteDC();  
+			DrawData(&MemDC);
+			//将内存中的图拷贝到屏幕上进行显示  
+			dc.BitBlt(rectView.left,rectView.top,rectView.Width(),rectView.Height(),&MemDC,0,0,SRCCOPY);  
+			//绘图完成后的清理  
+			MemBitmap.DeleteObject();  
+			MemDC.DeleteDC();  
+			bPainting = false;
+		}
 		//////////////////////		
 		CDialogEx::OnPaint();
 	}
@@ -842,7 +847,7 @@ void CDMoniterDlg::DrawData(CDC* pDC)
 		DrawFileDataBasic(pDC);//获取内存映射绘制区域大小
 		DrawFileDataGrid(pDC);
 		DrawFileDataPlot(pDC);
-		DrawCurve(pDC,minDepth,maxDepth);
+		DrawFileDataCurve(pDC,minDepth,maxDepth);
 	}
 	else
 	{
@@ -1101,38 +1106,33 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 			while(pos)
 			{
 				pPData = petroList.GetPrev(pos);
+				TRACE(_T("while(pos)"));
 				if(pPData->dept.bAssign == true)
 				{
-					if(bScroll)
+					if(pPData->dept.iData > minDepth)
 					{
-						if(pPData->dept.iData > minDepth)
-						{
-							DrawDeptData(pDC,pPData,&pen);//深度
-							DrawTempData(pDC,pPData,&pen);//draw tepm
-							DrawRmData(pDC,pPData,&pen2);//rm
-							DrawGmData(pDC,pPData,&pen3);//gm
-							DrawCclData(pDC,pPData,&pen4);//ccl
-							DrawMagxData(pDC,pPData,&pen5);//magx
-						}
-						else
-						{
-							break;
-						}
+						DrawDeptData(pDC,pPData,&pen);//深度
+						TRACE(_T("绘制完深度"));
+						DrawTempData(pDC,pPData,&pen);//draw tepm
+						TRACE(_T("绘制完tepm"));
+						DrawRmData(pDC,pPData,&pen2);//rm
+						TRACE(_T("绘制完rm"));
+						DrawGmData(pDC,pPData,&pen3);//gm
+						TRACE(_T("绘制完gm"));
+						DrawCclData(pDC,pPData,&pen4);//ccl
+						TRACE(_T("绘制完ccl"));
+						DrawMagxData(pDC,pPData,&pen5);//magx
+						TRACE(_T("绘制完magx"));
 					}
 					else
 					{
-						DrawDeptData(pDC,pPData,&pen);//深度
-						DrawTempData(pDC,pPData,&pen);//draw tepm
-						DrawRmData(pDC,pPData,&pen2);//rm
-						DrawGmData(pDC,pPData,&pen3);//gm
-						DrawCclData(pDC,pPData,&pen4);//ccl
-						DrawMagxData(pDC,pPData,&pen5);//magx
+						break;
 					}
 				}
 		
 			}
 			pPData = petroList.GetTail();
-			//UpdatePanelListView(pPData);
+			UpdatePanelListView(pPData);
 		}
 		else
 		{
@@ -1142,23 +1142,7 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 				pPData = petroList.GetPrev(pos);
 				if(pPData->dept.bAssign == true)
 				{
-					if(bScroll)
-					{
-						if(pPData->dept.iData < maxDepth)
-						{
-							DrawDeptData(pDC,pPData,&pen);//深度
-							DrawTempData(pDC,pPData,&pen);//draw tepm
-							DrawRmData(pDC,pPData,&pen2);//rm
-							DrawGmData(pDC,pPData,&pen3);//gm
-							DrawCclData(pDC,pPData,&pen4);//ccl
-							DrawMagxData(pDC,pPData,&pen5);//magx
-						}
-						else
-						{
-							break;
-						}
-					}
-					else
+					if(pPData->dept.iData < maxDepth)
 					{
 						DrawDeptData(pDC,pPData,&pen);//深度
 						DrawTempData(pDC,pPData,&pen);//draw tepm
@@ -1167,10 +1151,14 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 						DrawCclData(pDC,pPData,&pen4);//ccl
 						DrawMagxData(pDC,pPData,&pen5);//magx
 					}
+					else
+					{
+						break;
+					}
 				}
 		
 			}
-			//UpdatePanelListView(pPData);
+			UpdatePanelListView(pPData);
 		}	
 	}
 	else if(processType == FILEDATA_PROCESSING)
@@ -1357,8 +1345,8 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 					}
 			
 				}
-		
 			}
+			UpdatePanelListView(pPData);
 			pDC->SelectObject(pOldPen);
 		}
 		else
@@ -1722,17 +1710,14 @@ void CDMoniterDlg::DrawRealtimeBasic(CDC * pDC)
 			{
 				maxDepth = maxDepthLimit;
 				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 			}
 			else
 			{
-				minDepth = minDepthLimit;
-				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-				if(maxDepthLimit >= maxDepth)
-				{
-					bScroll = true;
-				}
+				//minDepth = minDepthLimit;
+				maxDepth = maxDepthLimit;//minDepth + m_clientRect.Height()/unitPixel;
+				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
+				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 			}
 		}
 		else
@@ -1743,30 +1728,22 @@ void CDMoniterDlg::DrawRealtimeBasic(CDC * pDC)
 			{
 				minDepth = minDepthLimit;
 				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 			}
 			else
 			{
-				maxDepth = maxDepthLimit;
-				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-				depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-				if(minDepthLimit <= minDepth)
-				{
-					bScroll = true;
-				}
+				//maxDepth = maxDepthLimit;
+				//minDepth = maxDepth - m_clientRect.Height()/unitPixel;
+				minDepth = minDepthLimit;
+				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
+				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
+				
 			}
 		}
-		m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
+		//m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
 	
-		mScrollV.SetScrollRange(0,m_totalRect.bottom);
-		mScrollV.SetScrollPos(m_totalRect.bottom);
-	}
-	else
-	{
-		m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
-		mScrollV.SetScrollRange(0,m_totalRect.bottom);
-		mScrollV.SetScrollPos(m_totalRect.bottom);
-	
+		mScrollV.SetScrollRange(0,0);
+		mScrollV.SetScrollPos(0);
 	}
 }
 void CDMoniterDlg::DrawFileDataBasic(CDC * pDC)
@@ -2109,8 +2086,8 @@ void CDMoniterDlg::DrawRealtimePlot(CDC* pDC)
 	CString str;
 	int TempPos = mScrollV.GetScrollPos();
 	int pageMeter = m_clientRect.Height()/unitPixel;
-	minDepth = (int)TempPos+minDepthLimit;
-	maxDepth = (int)minDepth+pageMeter;
+	//minDepth = (int)TempPos+minDepthLimit;
+	//maxDepth = (int)minDepth+pageMeter;
 	for (int i=m_plot2Rect.top,iCount = 0;i<=m_plot2Rect.bottom;i+=unitPixel*10,iCount++)
 	{
 		textRect.top = m_plot2Rect.top + i-z.cy/2;
@@ -2193,18 +2170,6 @@ void CDMoniterDlg::StartTimer()
 	bTimer = true;
 	InitOldArrayData();
 	InitArrayData();
-	if(petroList.IsEmpty())
-	{
-		return;//没有数据不进行绘制
-	}
-	if(m_bDirectDown)
-	{
-		pos = petroList.GetHeadPosition();
-	}
-	else
-	{
-		pos = petroList.GetTailPosition();
-	}
 
 	if(processType == REALTIME_PROCESSING)
 	{
@@ -2218,6 +2183,18 @@ void CDMoniterDlg::StartTimer()
 	}
 	else if(processType == FILEDATA_PROCESSING)
 	{
+		if(petroList.IsEmpty())
+		{
+			return;//没有数据不进行绘制
+		}
+		if(m_bDirectDown)
+		{
+			pos = petroList.GetHeadPosition();
+		}
+		else
+		{
+			pos = petroList.GetTailPosition();
+		}
 		minDepth = 0;
 		maxDepth = 0;
 		minDepthLimit = 0;
@@ -2225,7 +2202,7 @@ void CDMoniterDlg::StartTimer()
 		bScroll = false;
 		m_drawCount = TIME_REFRESH_FILE/20;
 		GetMaxMinData();//在绘图前进行一次计算的操作
-		//AddPanelListView();
+		AddPanelListView();
 		int pageMeter = m_clientRect.Height()/unitPixel;
 		if(m_bDirectDown)
 		{
@@ -2427,6 +2404,8 @@ void CDMoniterDlg::OnMenuConn()
 	theApp.m_CommResault=theApp.commLayer.CreatConnect();
 	if(theApp.m_CommResault==COMM_SUCCESS)
 	{
+		processType = REALTIME_PROCESSING;
+		StartTimer();
 	}
 	if(theApp.m_CommResault==COMM_ERROE_HARDWARE_CONNECT_FAIL)
 	{
@@ -2492,7 +2471,7 @@ void CDMoniterDlg::openDataFile(CString strFile)
 LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
     TRACE(_T("Communication Receive!\n"));
-	TRACE0("CMainFrame RX = ");
+	TRACE0("RX = ");
 	TRACE(_T(" %02X\n"),wParam);
 #ifdef _DEBUG
     for(WORD cont = 0; cont < wParam ; cont++)
@@ -2517,6 +2496,7 @@ LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 		sGetFileName = strPre + strAdd + strSub;
 		openDataFile(sGetFileName);
 	}
+#if 0
 	if(totalReceiveByte < 1024)
 	{
 		str.Format(_T("已接收数据: %d B"),totalReceiveByte);
@@ -2529,9 +2509,12 @@ LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 	{
 		str.Format(_T("已接收数据:%2f MB"),(float)totalReceiveByte/(1024*1024));
 	}
-
+#endif
 	writeDataFile(&theApp.commLayer.m_ReceiveBuff[0],wParam);
-	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
+	if(!bPainting)
+	{
+		ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
+	}
     return 0;
 }
 void CDMoniterDlg::writeDataFile(BYTE* tmp, WPARAM wParam)  
@@ -2544,3 +2527,51 @@ void CDMoniterDlg::writeDataFile(BYTE* tmp, WPARAM wParam)
 		}
     }   
 }  
+
+void CDMoniterDlg::AddPanelListView( )
+{
+	listView.SetRedraw(FALSE);
+	listView.DeleteAllItems();
+	listView.InsertItem(0,_T("DEPT"));
+	listView.InsertItem(1,_T("TEMP"));
+	listView.InsertItem(2,_T("RM"));
+	listView.InsertItem(3,_T("GM"));
+	listView.InsertItem(4,_T("MAGX"));
+	listView.InsertItem(5,_T("CCL"));
+	listView.SetRedraw(TRUE);
+	listView.Invalidate();
+	listView.UpdateWindow();
+}
+void CDMoniterDlg::UpdatePanelListView(CPetroData* pPData)
+{
+	Edit01.SetWindowText(pPData->dept.strData);
+
+	listView.SetRedraw(FALSE);
+	listView.SetItemText(0,1,pPData->dept.strData);
+	listView.SetItemText(0,2,pPData->dept.strUnit);
+
+	listView.SetItemText(1,1,oldtempArray.strDx);
+	listView.SetItemText(1,2,pPData->temp.strUnit);
+
+	listView.SetItemText(2,1,oldrmArray.strDx);
+	listView.SetItemText(2,2,pPData->rm.strUnit);
+
+	listView.SetItemText(3,1,oldgmArray.strDx);
+	listView.SetItemText(3,2,pPData->gr.strUnit);
+
+	CString str;
+	str += oldmagArray[0].strDx;
+	str += _T(",");
+	str += oldmagArray[1].strDx;
+	str += _T(",");
+	str += oldmagArray[2].strDx;
+	listView.SetItemText(4,1,str);
+	listView.SetItemText(4,2,pPData->mag[0].strUnit);
+
+	listView.SetItemText(5,1,oldcclArray.strDx);
+	listView.SetItemText(5,2,pPData->ccl.strUnit);
+
+	listView.SetRedraw(TRUE);
+	listView.Invalidate();
+	listView.UpdateWindow();
+}

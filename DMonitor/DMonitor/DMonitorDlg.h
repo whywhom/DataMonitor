@@ -24,7 +24,7 @@ public:
 public:
 	HMENU m_hMenu;//菜单
 	CToolBar m_ToolBar;//工具栏
-	
+	bool bPainting;
 	CRect rectMain;//主界面区域
 	CRect rectView;//绘图界面区域
 	CRect rectPanel;//数据参数区域
@@ -141,6 +141,9 @@ public:
 	void DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制磁三分量曲线
 	void DrawGmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Gm曲线
 	void DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Ccl曲线
+
+	void AddPanelListView( );
+	void UpdatePanelListView(CPetroData* pPData);
 // 实现
 protected:
 	HICON m_hIcon;
