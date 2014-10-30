@@ -3,11 +3,17 @@
 //
 
 #pragma once
+
+using namespace std;
+
 #include "afxwin.h"
 #include "PublicInterface.h"
 #include "CommLayer.h"
 #include "PetroData.h"
 #include <string>
+#include <queue>
+#include <algorithm>
+#include <numeric>
 // CDMoniterDlg 对话框
 class CDMoniterDlg : public CDialogEx
 {
@@ -24,7 +30,7 @@ public:
 public:
 	HMENU m_hMenu;//菜单
 	CToolBar m_ToolBar;//工具栏
-	bool bPainting;
+	//bool bOperating;
 	CRect rectMain;//主界面区域
 	CRect rectView;//绘图界面区域
 	CRect rectPanel;//数据参数区域
@@ -101,6 +107,8 @@ public:
 	DATA_TEMP oldcclArray;
 	DATA_TEMP oldmagArray[3];
 
+	//queue<CPetroData> queueData;
+
 public:
 	void GetRectParam(CRect rectMain);
 	void OnInitWidget();
@@ -144,6 +152,8 @@ public:
 
 	void AddPanelListView( );
 	void UpdatePanelListView(CPetroData* pPData);
+	void pushToQueue(CPetroData* pPData);
+	void SetRealtimeDataLimit();
 // 实现
 protected:
 	HICON m_hIcon;

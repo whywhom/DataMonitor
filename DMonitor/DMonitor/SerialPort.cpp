@@ -30,7 +30,7 @@ CSerialPort::~CSerialPort(void)
             SetEvent(m_hShutdownEvent);
         }
         while (m_bThreadAlive);
-        TRACE(_T("~CSerialPort Thread ended\n"));
+        //TRACE(_T("~CSerialPort Thread ended\n"));
     }
 
     // if the port is still opened: close it
@@ -68,7 +68,7 @@ BOOL CSerialPort::InitPort(LPCTSTR  pCommPort,  // portnumber (COM1..COM4)
             SetEvent(m_hShutdownEvent);
         }
         while (m_bThreadAlive);
-        TRACE(_T("InitPort Thread ended\n"));
+        //TRACE(_T("InitPort Thread ended\n"));
     }
 
     // create events
@@ -194,7 +194,7 @@ BOOL CSerialPort::InitPort(LPCTSTR  pCommPort,  // portnumber (COM1..COM4)
     // release critical section
     LeaveCriticalSection(&m_csCommunicationSync);
 
-    TRACE(_T("Initialisation for communicationport completed.\nUse Startmonitor to communicate.\n"));
+    //TRACE(_T("Initialisation for communicationport completed.\nUse Startmonitor to communicate.\n"));
 
     return TRUE;
 }
@@ -319,7 +319,7 @@ UINT CSerialPort::CommThread(LPVOID pParam)
                 port->m_hComm=NULL;
                 port->m_bThreadAlive = FALSE;
                 // Kill this thread.  break is not needed, but makes me feel better.
-				TRACE(_T("Exit CommThread \n"));
+				//TRACE(_T("Exit CommThread \n"));
                 AfxEndThread(100);
                 break;
             }
@@ -330,7 +330,7 @@ UINT CSerialPort::CommThread(LPVOID pParam)
                 {
                     // Receive character event from port.
                     Sleep(10);
-					TRACE(_T("*** Receive data ***\n"));
+					//TRACE(_T("*** Receive data ***\n"));
                     ReceivePort(port, comstat);
                 }
                 break;
@@ -359,7 +359,7 @@ BOOL CSerialPort::StartMonitoring()
     	m_Thread=NULL;
         return FALSE;
     }
-	TRACE(_T("Thread started\n"));
+	//TRACE(_T("Thread started\n"));
     return TRUE;
 }
 
@@ -368,7 +368,7 @@ BOOL CSerialPort::StartMonitoring()
 //
 BOOL CSerialPort::RestartMonitoring()
 {
-    TRACE(_T("Thread resumed\n"));
+    //TRACE(_T("Thread resumed\n"));
     m_Thread->ResumeThread();
     return TRUE;
 }
@@ -379,7 +379,7 @@ BOOL CSerialPort::RestartMonitoring()
 //
 BOOL CSerialPort::StopMonitoring()
 {
-    TRACE(_T("Thread suspended\n"));
+    //TRACE(_T("Thread suspended\n"));
     m_Thread->SuspendThread();
     return TRUE;
 }
@@ -449,7 +449,7 @@ void CSerialPort::WriteData(CSerialPort* port)
         TRACE0("TX = ");
         for(WORD cont = 0; cont < port->m_nWriteSize ; cont++)
         {
-            TRACE(_T(" %02X"),port->m_szWriteBuffer[cont]);
+            //TRACE(_T(" %02X"),port->m_szWriteBuffer[cont]);
         }
         TRACE0("\n");
 
@@ -495,7 +495,7 @@ void CSerialPort::WriteData(CSerialPort* port)
     //Verify that the data size send equals what we tried to send
     if (BytesSent != port->m_nWriteSize) // Length of message to send)
     {
-        TRACE(_T("WARNING: WriteFile() error.. Bytes Sent: %d; Message Length: %d\n"));
+        //TRACE(_T("WARNING: WriteFile() error.. Bytes Sent: %d; Message Length: %d\n"));
     }
 }
 
@@ -554,10 +554,10 @@ void CSerialPort::ReceivePort(CSerialPort* port, COMSTAT comstat)
                                &port->m_ov);  // pointer to the m_ov structure
 #if 0
             TRACE0("SerialPort RX = ");
-            TRACE(_T(" %02X\n"),BytesRead);
+            //TRACE(_T(" %02X\n"),BytesRead);
             for(DWORD cont=0; cont < BytesRead; cont++)
             {
-                TRACE(_T(" %02X"),inbuff[cont]);
+                //TRACE(_T(" %02X"),inbuff[cont]);
             }
             TRACE0("\n");
 #endif

@@ -22,7 +22,7 @@ CPetroData::~CPetroData()
 // CPetroData 成员函数
 void CPetroData::InitData()
 {
-dept.iData = 0;//深度
+	dept.iData = 0;//深度
 	dept.strData.Empty();
 	dept.bAssign = false;
 

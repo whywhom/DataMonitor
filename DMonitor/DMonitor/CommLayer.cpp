@@ -104,7 +104,7 @@ DWORD CCommLayer::CreatConnect( )
         for(DWORD i=0;i<comnumber;i++)
         {
             m_FuncReturnValue = SelectComPort();
-			TRACE(_T("m_FuncReturnValue = %d\n"),m_FuncReturnValue);
+			////TRACE(_T("m_FuncReturnValue = %d\n"),m_FuncReturnValue);
             if(m_FuncReturnValue==2)
             {
                 return COMM_ERROE_HARDWARE_CONNECT_FAIL;//main program call waiting result
@@ -249,7 +249,7 @@ int CCommLayer::GetRegisterdComPort(SubKeyInfo_type* SubKey, DWORD* number)
 /**************************************************************************/
 int CCommLayer::SelectComPort(void)
 {
-	TRACE(_T("SelectComPort\n"));
+	////TRACE(_T("SelectComPort\n"));
     BOOL m_bReturnvalue;
     CString comportname;
     num--;
@@ -259,7 +259,7 @@ int CCommLayer::SelectComPort(void)
     }
     //try initial,连接当前端口成功，发送验证码
     m_bReturnvalue=m_SerialPort.InitPort(SubKey[num].SubKeyValue);
-    TRACE(_T("Initial %s\n"),SubKey[num].SubKeyValue);
+    ////TRACE(_T("Initial %s\n"),SubKey[num].SubKeyValue);
 
     if(TRUE == m_bReturnvalue)
     {
@@ -373,7 +373,7 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
     //解包并做校验
     //while(bEndPacket == TRUE)
     {
-		TRACE(_T("CCommLayer::RecvData () dwSize = %02X \n"),dwSize);
+		////TRACE(_T("CCommLayer::RecvData () dwSize = %02X \n"),dwSize);
 		bEndPacket = CrcCheck(localReceiveBuff,dwSize);
         if(bEndPacket == TRUE)
         {
@@ -384,10 +384,10 @@ WORD CCommLayer::RecvData(BYTE* inbuff, WORD dwSize)
 				g_event.SetEvent();
 #if 0
 				TRACE0("CCommLayer RX = ");
-				TRACE(_T(" %02X\n"),dwSize);
+				////TRACE(_T(" %02X\n"),dwSize);
 				for(DWORD cont=0; cont < dwSize; cont++)
 				{
-					TRACE(_T(" %02X"),inbuff[cont]);
+					////TRACE(_T(" %02X"),inbuff[cont]);
 				}
 				TRACE0("\n");
 #endif

@@ -12,8 +12,8 @@
 #endif
 
 
-COLORREF crDlgbackground = RGB(255,255,255);
-
+COLORREF crDlgbackground = RGB(0,0,0);//RGB(255,255,255);
+const int maxqueue=1000;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -67,7 +67,7 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 	unitPixel = 5;//20 pixel = 1 m
 	unitRatio = 4;
 	m_bDirectDown = true;
-	bPainting = false;
+	//bOperating = false;
 	base = 0;
 	bias = 0;
 	
@@ -90,6 +90,7 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 	pData = NULL;
 	fileLimit = 1024*1024*4;
 	processType == NO_PROCESSING;
+
 	VERIFY(m_font.CreateFont(
 		18,                        // nHeight
 		0,                         // nWidth
@@ -299,29 +300,24 @@ void CDMoniterDlg::OnPaint()
 		dc.Rectangle(rectView.left-1,rectView.top-1,rectView.right+1,rectView.bottom+1);
 		dc.SelectObject(oPen);
 		///////////////////////
-		if(!bPainting)
-		{
-			bPainting = true;
-			//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
-			MemDC.CreateCompatibleDC(NULL);  
-			//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
-			MemBitmap.CreateCompatibleBitmap(&dc,rectView.Width(),rectView.Height());  
-			CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
-			MemDC.FillSolidRect(0,0,rectView.Width(),rectView.Height(),RGB(255,255,255));
-			m_clientRect = rectView;
-			m_clientRect.right -= m_clientRect.left; 
-			m_clientRect.left = 0;
-			m_clientRect.bottom -= m_clientRect.top; 
-			m_clientRect.top = 0;
+		//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
+		MemDC.CreateCompatibleDC(NULL);  
+		//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
+		MemBitmap.CreateCompatibleBitmap(&dc,rectView.Width(),rectView.Height());  
+		CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
+		MemDC.FillSolidRect(0,0,rectView.Width(),rectView.Height(),crDlgbackground);
+		m_clientRect = rectView;
+		m_clientRect.right -= m_clientRect.left; 
+		m_clientRect.left = 0;
+		m_clientRect.bottom -= m_clientRect.top; 
+		m_clientRect.top = 0;
 
-			DrawData(&MemDC);
-			//将内存中的图拷贝到屏幕上进行显示  
-			dc.BitBlt(rectView.left,rectView.top,rectView.Width(),rectView.Height(),&MemDC,0,0,SRCCOPY);  
-			//绘图完成后的清理  
-			MemBitmap.DeleteObject();  
-			MemDC.DeleteDC();  
-			bPainting = false;
-		}
+		DrawData(&MemDC);
+		//将内存中的图拷贝到屏幕上进行显示  
+		dc.BitBlt(rectView.left,rectView.top,rectView.Width(),rectView.Height(),&MemDC,0,0,SRCCOPY);  
+		//绘图完成后的清理  
+		MemBitmap.DeleteObject();  
+		MemDC.DeleteDC(); 
 		//////////////////////		
 		CDialogEx::OnPaint();
 	}
@@ -495,13 +491,14 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 		{
 			if(pPData != NULL)
 			{
-				petroList.AddTail(pPData);
+				pushToQueue(pPData);
+				//petroList.AddTail(pPData);
 			}
 		}
 		if(tmp[i] == '$')//起始标示
 		{
 			str.clear();
-			TRACE(_T("Find Char '$' \r\n"));
+			//TRACE(_T("Find Char '$' \r\n"));
 		}
 		else if(tmp[i] == ',' || tmp[i] == '*')//数据结束
 		{
@@ -511,7 +508,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 				strTitle = str;
 				if(str == "DEPT")
 				{
-					TRACE(_T("Find Char 'DEPT' \r\n"));
+					//TRACE(_T("Find Char 'DEPT' \r\n"));
 					if(pPData != NULL)
 					{
 						petroList.AddTail(pPData);
@@ -532,7 +529,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 					{
 						if(strTitle == "DEPT")
 						{
-							TRACE(_T("strTitle == 'DEPT' \r\n"));
+							//TRACE(_T("strTitle == 'DEPT' \r\n"));
 							pPData->dept.iData = num;
 							pPData->dept.strData = str.c_str();
 							pPData->dept.bAssign = true;
@@ -541,7 +538,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 						}
 						else if(strTitle == "TEMP")
 						{
-							TRACE(_T("strTitle == 'TEMP' \r\n"));
+							//TRACE(_T("strTitle == 'TEMP' \r\n"));
 							pPData->temp.iData = num;
 							pPData->temp.strData = str.c_str();
 							pPData->temp.bAssign = true;
@@ -550,7 +547,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 						}
 						else if(strTitle == "RM")
 						{
-							TRACE(_T("strTitle == 'RM' \r\n"));
+							//TRACE(_T("strTitle == 'RM' \r\n"));
 							pPData->rm.iData = num;
 							pPData->rm.strData = str.c_str();
 							pPData->rm.bAssign = true;
@@ -559,7 +556,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 						}
 						else if(strTitle == "GM")
 						{
-							TRACE(_T("strTitle == 'GM' \r\n"));
+							//TRACE(_T("strTitle == 'GM' \r\n"));
 							pPData->gr.iData = num;
 							pPData->gr.strData = str.c_str();
 							pPData->gr.bAssign = true;
@@ -568,7 +565,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 						}
 						else if(strTitle == "MAGX")
 						{
-							TRACE(_T("strTitle == 'MAGX' \r\n"));
+							//TRACE(_T("strTitle == 'MAGX' \r\n"));
 							if(pPData->mag[0].iData == 0)
 							{
 								pPData->mag[0].iData = num;
@@ -599,7 +596,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 						}
 						else if(strTitle == "CCL")
 						{
-							TRACE(_T("strTitle == 'CCL' \r\n"));
+							//TRACE(_T("strTitle == 'CCL' \r\n"));
 							pPData->ccl.iData = num;
 							pPData->ccl.strData = str.c_str();
 							pPData->ccl.bAssign = true;
@@ -627,6 +624,18 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 	}
 }
 
+void CDMoniterDlg::pushToQueue(CPetroData* pPData)
+{
+	int nSize = petroList.GetSize();
+	CPetroData* pCurrent = NULL;
+	if(nSize >= maxqueue)
+	{
+		pCurrent = petroList.RemoveHead();
+		delete pCurrent;
+		pCurrent=NULL;
+	}
+	petroList.AddTail(pPData);
+}
 int CDMoniterDlg::CheckString( std::string str )
 {
 	bool bIsDigit = true;
@@ -785,7 +794,29 @@ void CDMoniterDlg::PrepareDraw()
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
+void CDMoniterDlg::SetRealtimeDataLimit()
+{
+	tempLimitArray[0] = 0;
+	tempLimitArray[1] = 60000;
 
+	gmLimitArray[0] = 0;
+	gmLimitArray[1] = 60000;
+
+	rmLimitArray[0] = 0;
+	rmLimitArray[1] = 60000;
+
+	cclLimitArray[0] = 0;
+	cclLimitArray[1] = 60000;
+
+	magLimitArray[0][0] = 0;
+	magLimitArray[0][1] = 60000;
+
+	magLimitArray[1][0] = 0;
+	magLimitArray[1][1] = 60000;
+
+	magLimitArray[2][0] = 0;
+	magLimitArray[2][1] = 60000;
+}
 void CDMoniterDlg::GetMaxMinData()
 {
 	if(!petroList.IsEmpty())
@@ -1106,23 +1137,16 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 			while(pos)
 			{
 				pPData = petroList.GetPrev(pos);
-				TRACE(_T("while(pos)"));
 				if(pPData->dept.bAssign == true)
 				{
 					if(pPData->dept.iData > minDepth)
 					{
 						DrawDeptData(pDC,pPData,&pen);//深度
-						TRACE(_T("绘制完深度"));
 						DrawTempData(pDC,pPData,&pen);//draw tepm
-						TRACE(_T("绘制完tepm"));
 						DrawRmData(pDC,pPData,&pen2);//rm
-						TRACE(_T("绘制完rm"));
 						DrawGmData(pDC,pPData,&pen3);//gm
-						TRACE(_T("绘制完gm"));
 						DrawCclData(pDC,pPData,&pen4);//ccl
-						TRACE(_T("绘制完ccl"));
 						DrawMagxData(pDC,pPData,&pen5);//magx
-						TRACE(_T("绘制完magx"));
 					}
 					else
 					{
@@ -1856,7 +1880,7 @@ void CDMoniterDlg::DrawRealtimeGrid(CDC * pDC)
 	m_plot3Rect.left = m_plot2Rect.right;
 	m_plot3Rect.right = m_plot3Rect.left + 400;
 
-	m_gridColor = RGB(127,127,127);
+	m_gridColor = RGB(2,126,6);//RGB(127,127,127);
 
 	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
 	CPen stick(PS_SOLID,0,RGB(0,0,0));
@@ -2178,6 +2202,7 @@ void CDMoniterDlg::StartTimer()
 		minDepthLimit = 0;
 		maxDepthLimit = 0;
 		bScroll = false;
+		SetRealtimeDataLimit();
 		//AddPanelListView();
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
@@ -2240,7 +2265,7 @@ void CDMoniterDlg::OnTimer(UINT_PTR nIDEvent)
 			{
 				if(!petroList.IsEmpty())
 				{
-					CalculateParam();
+					//CalculateParam();
 					InvalidateRect(rectView);
 				}
 				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
@@ -2409,7 +2434,7 @@ void CDMoniterDlg::OnMenuConn()
 	}
 	if(theApp.m_CommResault==COMM_ERROE_HARDWARE_CONNECT_FAIL)
 	{
-		TRACE(_T("Communication Fail!\n"));
+		//TRACE(_T("Communication Fail!\n"));
 	}
 }
 
@@ -2470,15 +2495,18 @@ void CDMoniterDlg::openDataFile(CString strFile)
 } 
 LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
-    TRACE(_T("Communication Receive!\n"));
-	TRACE0("RX = ");
-	TRACE(_T(" %02X\n"),wParam);
 #ifdef _DEBUG
+#if 0
+    //TRACE(_T("Communication Receive!\n"));
+	TRACE0("RX = ");
+	//TRACE(_T(" %02X\n"),wParam);
+
     for(WORD cont = 0; cont < wParam ; cont++)
     {
-        TRACE(_T(" %02X"),theApp.commLayer.m_ReceiveBuff[cont]);
+        //TRACE(_T(" %02X"),theApp.commLayer.m_ReceiveBuff[cont]);
     }
 	TRACE0("\n");
+#endif
 #endif
 	CString str;
 	totalReceiveByte += wParam;
@@ -2511,10 +2539,7 @@ LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 	}
 #endif
 	writeDataFile(&theApp.commLayer.m_ReceiveBuff[0],wParam);
-	if(!bPainting)
-	{
-		ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
-	}
+	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
     return 0;
 }
 void CDMoniterDlg::writeDataFile(BYTE* tmp, WPARAM wParam)  
