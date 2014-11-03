@@ -106,6 +106,7 @@
     <ClInclude Include="DMonitor.h" />
     <ClInclude Include="DMonitorDlg.h" />
     <ClInclude Include="DMonitorView.h" />
+    <ClInclude Include="JobDlg.h" />
     <ClInclude Include="PetroData.h" />
     <ClInclude Include="PublicInterface.h" />
     <ClInclude Include="Resource.h" />
@@ -118,6 +119,7 @@
     <ClCompile Include="DMonitor.cpp" />
     <ClCompile Include="DMonitorDlg.cpp" />
     <ClCompile Include="DMonitorView.cpp" />
+    <ClCompile Include="JobDlg.cpp" />
     <ClCompile Include="PetroData.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="stdafx.cpp">

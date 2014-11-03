@@ -87,8 +87,21 @@ public:
 	int			m_drawCount;//每次绘制多少个数据
 	int			m_step;//每次移动距离，以米为单位
 	bool		bTimer;
+
 	//颜色
-	COLORREF	m_gridColor;		// grid line color
+	COLORREF crViewBackground;//背景
+	COLORREF crViewCoordinate;
+	COLORREF crViewPlot;//坐标线
+	COLORREF crViewGraduation;//刻度
+	COLORREF crViewGridColor;// grid line color
+
+	COLORREF colorRed;
+	COLORREF colorBlue;
+	COLORREF colorGreen;
+	COLORREF colorBlack;
+	COLORREF colorCyan;//青色，蓝绿色
+	COLORREF* colorArray;
+
 	//字体设置
 	CFont		m_font;
 	LOGFONT		m_zoomFont;
@@ -154,6 +167,7 @@ public:
 	void UpdatePanelListView(CPetroData* pPData);
 	void pushToQueue(CPetroData* pPData);
 	void SetRealtimeDataLimit();
+	void InitColorVariable();
 // 实现
 protected:
 	HICON m_hIcon;
@@ -199,4 +213,10 @@ public:
 	afx_msg void OnMenuDisconn();
 	afx_msg void OnUpdateMenuDisconn(CCmdUI *pCmdUI);
 	afx_msg LRESULT OnCommReceive(WPARAM wParam, LPARAM lParam);//接收端口消息
+	afx_msg void OnMenuMeasuredown();
+	afx_msg void OnUpdateMenuMeasuredown(CCmdUI *pCmdUI);
+	afx_msg void OnMenuMeasureup();
+	afx_msg void OnUpdateMenuMeasureup(CCmdUI *pCmdUI);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnMenuInstrument();
 };

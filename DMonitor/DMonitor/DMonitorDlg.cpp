@@ -6,13 +6,11 @@
 #include "DMonitor.h"
 #include "DMonitorDlg.h"
 #include "afxdialogex.h"
-
+#include "JobDlg.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-
-COLORREF crDlgbackground = RGB(0,0,0);//RGB(255,255,255);
 const int maxqueue=1000;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -62,6 +60,7 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 	processType = NO_PROCESSING;
 
 	ClearPetroData();
+	InitColorVariable();
 	pData = NULL;
 	bConnect = false;
 	unitPixel = 5;//20 pixel = 1 m
@@ -151,6 +150,12 @@ BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_MENU_CONN, &CDMoniterDlg::OnUpdateMenuConn)
 	ON_COMMAND(ID_MENU_DISCONN, &CDMoniterDlg::OnMenuDisconn)
 	ON_UPDATE_COMMAND_UI(ID_MENU_DISCONN, &CDMoniterDlg::OnUpdateMenuDisconn)
+	ON_COMMAND(ID_MENU_MEASUREDOWN, &CDMoniterDlg::OnMenuMeasuredown)
+	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREDOWN, &CDMoniterDlg::OnUpdateMenuMeasuredown)
+	ON_COMMAND(ID_MENU_MEASUREUP, &CDMoniterDlg::OnMenuMeasureup)
+	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREUP, &CDMoniterDlg::OnUpdateMenuMeasureup)
+	ON_WM_ERASEBKGND()
+	ON_COMMAND(ID_MENU_INSTRUMENT, &CDMoniterDlg::OnMenuInstrument)
 END_MESSAGE_MAP()
 
 
@@ -228,8 +233,9 @@ void CDMoniterDlg::OnClose()
 		theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
 		Sleep(500);
 		//initCmdList();
+	
+		CDialogEx::OnClose();
 	}
-	CDialogEx::OnClose();
 }
 // 如果向对话框添加最小化按钮，则需要下面的代码
 //  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
@@ -289,10 +295,10 @@ void CDMoniterDlg::OnPaint()
 		{
 			mScrollV.SetWindowPos(0,rectScrollV.left,rectScrollV.top,rectScrollV.Width(),rectScrollV.Height(),SWP_NOZORDER);
 		}
-		CBrush brush(crDlgbackground);
-		CBrush *oBrush = dc.SelectObject(&brush);
-		dc.FillSolidRect(rectView,crDlgbackground); 
-		dc.SelectObject(oBrush);
+		//CBrush brush(crViewBackground);
+		//CBrush *oBrush = dc.SelectObject(&brush);
+		dc.FillSolidRect(rectView,crViewBackground); 
+		//dc.SelectObject(oBrush);
 
 		CPen pen(PS_SOLID, 1, RGB(0,0,0));
 		CPen *oPen = dc.SelectObject(&pen);
@@ -305,7 +311,7 @@ void CDMoniterDlg::OnPaint()
 		//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
 		MemBitmap.CreateCompatibleBitmap(&dc,rectView.Width(),rectView.Height());  
 		CBitmap *pOldBit=MemDC.SelectObject(&MemBitmap);
-		MemDC.FillSolidRect(0,0,rectView.Width(),rectView.Height(),crDlgbackground);
+		MemDC.FillSolidRect(0,0,rectView.Width(),rectView.Height(),crViewBackground);
 		m_clientRect = rectView;
 		m_clientRect.right -= m_clientRect.left; 
 		m_clientRect.left = 0;
@@ -331,7 +337,21 @@ HCURSOR CDMoniterDlg::OnQueryDragIcon()
 }
 
 
+void CDMoniterDlg::InitColorVariable()
+{
+	crViewBackground = RGB(255,255,255);//背景
+	crViewCoordinate = RGB(0,0,0);
+	crViewPlot = RGB(127,127,127);//坐标线
+	crViewGraduation  = RGB(0,0,0);//刻度
+	crViewGridColor = RGB(0,0,0);//RGB(127,127,127);
 
+	colorRed = RGB(255,0,0);
+	colorBlue = RGB(0,0,255);
+	colorGreen = RGB(0,255,0);
+	colorBlack = RGB(0,0,0);
+	colorCyan = RGB(2,141,153);
+	colorArray = NULL;
+}
 void CDMoniterDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -893,15 +913,11 @@ void CDMoniterDlg::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 	int iDrawType = PS_SOLID;
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
-	COLORREF colorRed = RGB(255,0,0);
-	COLORREF colorBlue = RGB(0,0,255);
-	COLORREF colorGreen = RGB(0,255,0);
-	COLORREF colorBlack = RGB(0,0,0);
-	COLORREF color1 = RGB(2,141,153);
+	
 	CPen pen(iDrawType, 1,colorRed); //画笔
 	CPen pen2(iDrawType, 1,colorBlue); //画笔2
 	CPen pen3(iDrawType, 1,colorGreen); //画笔3
-	CPen pen4(iDrawType, 1,color1); //画笔4
+	CPen pen4(iDrawType, 1,colorCyan); //画笔4
 	CPen pen5(iDrawType, 1,colorBlack); //画笔5
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 	int mCounter = 0;
@@ -1117,15 +1133,11 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 	int iDrawType = PS_SOLID;
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
-	COLORREF colorRed = RGB(255,0,0);
-	COLORREF colorBlue = RGB(0,0,255);
-	COLORREF colorGreen = RGB(0,255,0);
-	COLORREF colorBlack = RGB(0,0,0);
-	COLORREF color1 = RGB(2,141,153);
+
 	CPen pen(iDrawType, 1,colorRed); //画笔
 	CPen pen2(iDrawType, 1,colorBlue); //画笔2
 	CPen pen3(iDrawType, 1,colorGreen); //画笔3
-	CPen pen4(iDrawType, 1,color1); //画笔4
+	CPen pen4(iDrawType, 1,colorCyan); //画笔4
 	CPen pen5(iDrawType, 1,colorBlack); //画笔5
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 	int mCounter = 0;
@@ -1317,15 +1329,11 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 	int iDrawType = PS_SOLID;
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
-	COLORREF colorRed = RGB(255,0,0);
-	COLORREF colorBlue = RGB(0,0,255);
-	COLORREF colorGreen = RGB(0,255,0);
-	COLORREF colorBlack = RGB(0,0,0);
-	COLORREF color1 = RGB(2,141,153);
+	
 	CPen pen(iDrawType, 1,colorRed); //画笔
 	CPen pen2(iDrawType, 1,colorBlue); //画笔2
 	CPen pen3(iDrawType, 1,colorGreen); //画笔3
-	CPen pen4(iDrawType, 1,color1); //画笔4
+	CPen pen4(iDrawType, 1,colorCyan); //画笔4
 	CPen pen5(iDrawType, 1,colorBlack); //画笔5
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 	int mCounter = 0;
@@ -1375,6 +1383,10 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 		}
 		else
 		{
+			int TempPos = mScrollV.GetScrollPos();
+			int pageMeter = m_clientRect.Height()/unitPixel;
+			minDepth = (int)TempPos+minDepthLimit;
+			maxDepth = (int)minDepth+pageMeter;
 			pos = petroList.GetTailPosition();
 			while(pos)
 			{
@@ -1387,10 +1399,9 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 					}
 					else
 					{
-						if(pPData->dept.iData > minDepth && (!bScroll))
+						if(pPData->dept.iData > minDepth)
 						{
-							if(mCounter < m_drawCount*m_iterator)
-							{
+
 								if(pPData->dept.bAssign)
 								{
 									DrawDeptData(pDC,pPData,&pen);//深度
@@ -1400,36 +1411,9 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 									DrawCclData(pDC,pPData,&pen4);//ccl
 									DrawMagxData(pDC,pPData,&pen5);//magx
 								}
-								mCounter++;
-							}
-							else
-							{
-								m_iterator++;
-								pDC->SelectObject(pOldPen);
-								break;
-							}
-						}
-						else if(pPData->dept.iData > minDepth && bScroll)
-						{
-							if(pPData->dept.bAssign)
-							{
-								DrawDeptData(pDC,pPData,&pen);//深度
-								DrawTempData(pDC,pPData,&pen);//draw tepm
-								DrawRmData(pDC,pPData,&pen2);//rm
-								DrawGmData(pDC,pPData,&pen3);//gm
-								DrawCclData(pDC,pPData,&pen4);//ccl
-								DrawMagxData(pDC,pPData,&pen5);//magx
-							}
 						}
 						else
 						{
-							if(!bScroll)
-							{
-								bScroll = true;
-							}
-							maxDepth =(int) (maxDepth - m_step);
-							m_iterator = 1;
-							mCounter = 0;
 							break;
 						}
 					}
@@ -1437,18 +1421,8 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 				}
 		
 			}
-			if(pos == NULL)
-			{
-				KillTimer(TIMER_CMD_DRAW);//
-			}
-			else
-			{
-				//UpdatePanelListView(pPData);
-				if(bTimer)
-				{
-					SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
-				}
-			}
+			UpdatePanelListView(pPData);
+			pDC->SelectObject(pOldPen);
 		}	
 	}
 }
@@ -1793,9 +1767,8 @@ void CDMoniterDlg::DrawGrid(CDC * pDC)
 	m_plot3Rect.left = m_plot2Rect.right;
 	m_plot3Rect.right = m_plot3Rect.left + 400;
 
-	m_gridColor = RGB(127,127,127);
 
-	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
+	CPen *old, pen(PS_SOLID, 1, crViewGridColor), pen2(PS_DOT, 1,crViewGridColor); //画笔;
 	CPen stick(PS_SOLID,0,RGB(0,0,0));
 	CPen mline(PS_SOLID,0,RGB(192,192,192));
 	old = pDC->SelectObject(&pen);
@@ -1880,9 +1853,7 @@ void CDMoniterDlg::DrawRealtimeGrid(CDC * pDC)
 	m_plot3Rect.left = m_plot2Rect.right;
 	m_plot3Rect.right = m_plot3Rect.left + 400;
 
-	m_gridColor = RGB(2,126,6);//RGB(127,127,127);
-
-	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
+	CPen *old, pen(PS_SOLID, 1, crViewGridColor), pen2(PS_DOT, 1,crViewGridColor); //画笔;
 	CPen stick(PS_SOLID,0,RGB(0,0,0));
 	CPen mline(PS_SOLID,0,RGB(192,192,192));
 	old = pDC->SelectObject(&pen);
@@ -1967,9 +1938,7 @@ void CDMoniterDlg::DrawFileDataGrid(CDC * pDC)
 	m_plot3Rect.left = m_plot2Rect.right;
 	m_plot3Rect.right = m_plot3Rect.left + 400;
 
-	m_gridColor = RGB(127,127,127);
-
-	CPen *old, pen(PS_SOLID, 1, m_gridColor), pen2(PS_DOT, 1,m_gridColor); //画笔;
+	CPen *old, pen(PS_SOLID, 1, crViewGridColor), pen2(PS_DOT, 1,crViewGridColor); //画笔;
 	CPen stick(PS_SOLID,0,RGB(0,0,0));
 	CPen mline(PS_SOLID,0,RGB(192,192,192));
 	old = pDC->SelectObject(&pen);
@@ -2266,7 +2235,7 @@ void CDMoniterDlg::OnTimer(UINT_PTR nIDEvent)
 				if(!petroList.IsEmpty())
 				{
 					//CalculateParam();
-					InvalidateRect(rectView);
+					InvalidateRect(rectView,false);
 				}
 				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 			}
@@ -2310,7 +2279,7 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			minDepth = (int)TempPos+minDepthLimit;
 			maxDepth = (int)minDepth+pageMeter;
 		}
-		InvalidateRect(rectView);
+		InvalidateRect(rectView,false);
 		break;
 	case SB_LINEUP://点击上边的箭头
 		if(processType == FILEDATA_PROCESSING)
@@ -2327,7 +2296,7 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			maxDepth = (int)minDepth+pageMeter;
 			pScrollBar->SetScrollPos(TempPos);
 		}
-		InvalidateRect(rectView);
+		InvalidateRect(rectView,false);
 		break;
 	case SB_LINEDOWN://点击下边的箭头
 		if(processType == FILEDATA_PROCESSING)
@@ -2344,7 +2313,7 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			maxDepth = (int)minDepth+pageMeter;
 			pScrollBar->SetScrollPos(TempPos);
 		}
-		InvalidateRect(rectView);
+		InvalidateRect(rectView,false);
 		break;
 	case SB_PAGEUP://向上翻页
 		if(processType == FILEDATA_PROCESSING)
@@ -2361,7 +2330,7 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			maxDepth = (int)minDepth+pageMeter;
 			pScrollBar->SetScrollPos(TempPos);
 		}
-		InvalidateRect(rectView);
+		InvalidateRect(rectView,false);
 		break;
 	case SB_PAGEDOWN://向下翻页
 		if(processType == FILEDATA_PROCESSING)
@@ -2378,7 +2347,7 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			maxDepth = (int)minDepth+pageMeter;
 			pScrollBar->SetScrollPos(TempPos);
 		}
-		InvalidateRect(rectView);
+		InvalidateRect(rectView,false);
 		break;
 	} 
 	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
@@ -2599,4 +2568,73 @@ void CDMoniterDlg::UpdatePanelListView(CPetroData* pPData)
 	listView.SetRedraw(TRUE);
 	listView.Invalidate();
 	listView.UpdateWindow();
+}
+
+void CDMoniterDlg::OnMenuMeasuredown()
+{
+	// TODO: 在此添加命令处理程序代码
+	m_bDirectDown = true;
+	CMenu* pSubMenu = NULL;
+	CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
+	{
+		pSubMenu = pMainMenu->GetSubMenu(3);
+		if (pSubMenu && pSubMenu->GetMenuItemID(0) == ID_MENU_MEASUREUP)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_MEASUREUP,m_bDirectDown?MF_UNCHECKED:MF_CHECKED); 
+		}
+		if (pSubMenu && pSubMenu->GetMenuItemID(1) == ID_MENU_MEASUREDOWN)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_MEASUREDOWN,m_bDirectDown?MF_CHECKED:MF_UNCHECKED); 
+		}
+	}
+}
+
+
+void CDMoniterDlg::OnUpdateMenuMeasuredown(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+}
+
+
+void CDMoniterDlg::OnMenuMeasureup()
+{
+	// TODO: 在此添加命令处理程序代码
+	m_bDirectDown = false;
+	CMenu* pSubMenu = NULL;
+	CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
+	{
+		pSubMenu = pMainMenu->GetSubMenu(3);
+		if (pSubMenu && pSubMenu->GetMenuItemID(0) == ID_MENU_MEASUREUP)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_MEASUREUP,m_bDirectDown?MF_UNCHECKED:MF_CHECKED); 
+		}
+		if (pSubMenu && pSubMenu->GetMenuItemID(1) == ID_MENU_MEASUREDOWN)
+		{
+			pSubMenu->CheckMenuItem(ID_MENU_MEASUREDOWN,m_bDirectDown?MF_CHECKED:MF_UNCHECKED); 
+		}
+	}
+}
+
+
+void CDMoniterDlg::OnUpdateMenuMeasureup(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+}
+
+
+BOOL CDMoniterDlg::OnEraseBkgnd(CDC* pDC)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	return CDialogEx::OnEraseBkgnd(pDC);
+}
+
+
+void CDMoniterDlg::OnMenuInstrument()
+{
+	// TODO: 在此添加命令处理程序代码
+	CJobDlg m_jDlg;
+	m_jDlg.m_Path=theApp.ToolPath;
+	m_jDlg.m_Title=_T("力擎仪器管理");
+	m_jDlg.DoModal();
 }
