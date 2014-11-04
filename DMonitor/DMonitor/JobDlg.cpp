@@ -24,7 +24,6 @@ CJobDlg::~CJobDlg()
 void CJobDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST_JOB, listJob);
 	DDX_Control(pDX, IDC_BUTTON_NEWJOB, btnNewJob);
 	DDX_Control(pDX, IDC_BUTTON_CLOSE, btnClose);
 }
@@ -46,15 +45,8 @@ BOOL CJobDlg::OnInitDialog()
 
 	// TODO:  在此添加额外的初始化
 	SetWindowText(m_Title); 
-	listJob.InsertColumn( 1, theApp.GetResString(IDS_WHY_VALUE), LVCFMT_LEFT, 60 ); 
-	listJob.InsertColumn( 2, theApp.GetResString(IDS_WHY_UNIT), LVCFMT_LEFT, 60 ); 
-	listJob.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP );
 	CRect rectMain;
 	GetClientRect(rectMain);
-	if(listJob.m_hWnd != NULL)
-	{
-		listJob.SetWindowPos(NULL,rectMain.left+20,rectMain.top+20,rectMain.Width()-40,rectMain.Height() - 80 ,0);
-	}
 	if(btnClose.m_hWnd != NULL)
 	{
 		btnClose.SetWindowPos(NULL,rectMain.right-105 ,rectMain.bottom -50 ,100,40 ,0);
@@ -131,10 +123,6 @@ void CJobDlg::OnSize(UINT nType, int cx, int cy)
 	// TODO: 在此处添加消息处理程序代码
 	CRect rectMain;
 	GetClientRect(rectMain);
-	if(listJob.m_hWnd != NULL)
-	{
-		listJob.SetWindowPos(NULL,rectMain.left+20,rectMain.top+20,rectMain.Width()-40,rectMain.Height() - 80 ,0);
-	}
 	if(btnClose.m_hWnd != NULL)
 	{
 		btnClose.SetWindowPos(NULL,rectMain.right-105 ,rectMain.bottom -50 ,100,40 ,0);
