@@ -106,6 +106,8 @@
     <None Include="res\toolbar1.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ColorButton.h" />
+    <ClInclude Include="ColorStatic.h" />
     <ClInclude Include="CommLayer.h" />
     <ClInclude Include="DirTreeCtrl.h" />
     <ClInclude Include="DMonitor.h" />
@@ -135,8 +137,14 @@
     <ClInclude Include="SortStringArray.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TestDlg.h" />
+    <ClInclude Include="tinystr.h" />
+    <ClInclude Include="tinyxml.h" />
+    <ClInclude Include="WorkInfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ColorButton.cpp" />
+    <ClCompile Include="ColorStatic.cpp" />
     <ClCompile Include="CommLayer.cpp" />
     <ClCompile Include="DirTreeCtrl.cpp" />
     <ClCompile Include="DMonitor.cpp" />
@@ -160,6 +168,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TestDlg.cpp" />
+    <ClCompile Include="tinystr.cpp" />
+    <ClCompile Include="tinyxml.cpp" />
+    <ClCompile Include="tinyxmlerror.cpp" />
+    <ClCompile Include="tinyxmlparser.cpp" />
+    <ClCompile Include="WorkInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DMonitor.rc" />

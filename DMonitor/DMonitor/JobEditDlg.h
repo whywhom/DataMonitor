@@ -72,4 +72,5 @@ public:
 	afx_msg void OnBnClickedUpdate();
 	afx_msg void OnBnClickedZcwJobeditImport();
 	afx_msg void OnBnClickedZcwJobeditExport();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

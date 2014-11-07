@@ -10,7 +10,7 @@
 
 #include "resource.h"		// 主符号
 #include "CommLayer.h"
-
+#include "WorkInfo.h"
 // CDMoniterApp:
 // 有关此类的实现，请参阅 DMonitor.cpp
 //
@@ -22,6 +22,8 @@ public:
 	CString GetResString(UINT uStringID);
 	char *FromUNICODEToANSI(CString str);
 	short FromUnicodeToUTF8 (LPSTR utf8Str, short utf8StrLen, WORD * unStr, unsigned short unMaxLen);
+	short FromUTF8ToUnicode (unsigned char *utf8Str, short utf8StrLen, WORD * unStr, unsigned short unMaxLen);
+	short Utf8TextBytes (const unsigned char *mstr);
 	void GetModulePath();
 	//int CreateDmFile(CString strFile);
 	int CreateIniFile(CString strFile);
@@ -54,6 +56,8 @@ public:
 	CString strUnitsFile;//记录度量单位的配置文件
 	CString strCurveFile;//记录绘图模板的配置文件
 	CString strSettingFile;//记录用户设置的常用数值配置文件
+
+	CTypedPtrList < CPtrList, CWorkInfo * >workInfoList;
 
 	//当前作业信息
 	//仪器信息定义开始

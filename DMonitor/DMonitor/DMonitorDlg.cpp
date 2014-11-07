@@ -7,6 +7,9 @@
 #include "DMonitorDlg.h"
 #include "afxdialogex.h"
 #include "JobDlg.h"
+#include <string>
+#include <iostream> 
+using namespace std; 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -160,6 +163,7 @@ BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_TOOL, &CDMoniterDlg::OnMenuTool)
 	ON_COMMAND(ID_MENU_NEWJOB, &CDMoniterDlg::OnMenuNewjob)
 	ON_COMMAND(ID_MENU_JOBLOAD, &CDMoniterDlg::OnMenuJobload)
+	ON_COMMAND(ID_TEST_MODE1, &CDMoniterDlg::OnTestMode1)
 END_MESSAGE_MAP()
 
 
@@ -196,6 +200,7 @@ BOOL CDMoniterDlg::OnInitDialog()
 	m_hMenu = LoadMenu(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_MAINFRAME));//导入资源,创建菜单
 	::SetMenu(this->GetSafeHwnd(),m_hMenu);//添加到对话框
 	OnInitWidget();
+	ParseTestData();
     RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST, 0);
 	// TODO: 在此添加额外的初始化代码
 	ShowWindow(SW_SHOWMAXIMIZED);
@@ -2697,4 +2702,111 @@ void CDMoniterDlg::OnMenuJobload()
 	m_jDlg.m_Path=theApp.JobPath;
 	m_jDlg.m_Title=_T("力擎作业管理");
 	m_jDlg.DoModal();
+}
+
+
+void CDMoniterDlg::OnTestMode1()
+{
+	// TODO: 在此添加命令处理程序代码
+	testDlg.DoModal();
+}
+
+void CDMoniterDlg::ClearList()
+{
+	CWorkInfo* pCurrent = NULL;
+	while(theApp.workInfoList.IsEmpty()==false)
+	{
+		pCurrent=theApp.workInfoList.RemoveHead();
+		delete pCurrent;
+		pCurrent=NULL;
+	}
+}
+void CDMoniterDlg::ParseTestData()
+{
+	WCHAR pwBuffer[100];
+	CString str;
+	ClearList();
+	string fileXml = theApp.IniFilePath + "workinfo.xml";
+	TiXmlDocument doc(fileXml.c_str());
+	bool loadOkay = doc.LoadFile();
+	if (loadOkay)
+	{
+		if ( !doc.Parse( fileXml.c_str() ) )
+		{
+			cout << doc.ErrorDesc() << endl;
+		}
+		//step 1 : Get the RootElement
+		TiXmlElement *root = doc.RootElement();
+		for ( TiXmlNode *child = root->FirstChild(); child; child = child->NextSibling() )
+		{
+			if ( ( child->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( child->Value(), "WorkInfo" ) ) )
+			{
+				CWorkInfo* plist = new CWorkInfo();
+				for ( TiXmlNode *subchild = child->FirstChild(); subchild; subchild = subchild->NextSibling() )
+				{
+					if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Name" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->strTitie = str;
+					}
+					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Abbr" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->strAbbr = str;
+					}
+					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Unit" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->strUnit = str;
+					}
+					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "LeftLimit" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->leftLimit = _tstoi(pwBuffer);;
+					}
+					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "RightLimit" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->rightLimit = _tstoi(pwBuffer);;
+					}
+					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Color" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->curveColor = _tstoi(pwBuffer);;
+					}
+				}
+				theApp.workInfoList.AddTail(plist);
+			}
+		}
+	}
 }

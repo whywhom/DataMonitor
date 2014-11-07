@@ -349,9 +349,40 @@ void CJobDlg::OnBnClickedButton1()
 	//此处仅测试JobTools，其他参数类似
 	POSITION pos=theApp.m_JobTools.GetHeadPosition();	
 	CString LabelDemo;//显示作业内所有Tool的Label值用-号连接
-	while(pos!=NULL){
-		theApp.m_JobTool=theApp.m_JobTools.GetNext(pos); 	
-		LabelDemo+=theApp.m_JobTool->Label+_T("-");
+	if(pos!=NULL){
+		while(pos)
+		{
+			theApp.m_JobTool=theApp.m_JobTools.GetNext(pos); 	
+			LabelDemo+=theApp.m_JobTool->Label+_T("-");
+		}
+		MessageBox(LabelDemo);
 	}
-	MessageBox(LabelDemo);
+}
+
+
+BOOL CJobDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	switch (pMsg->message)
+	{
+	case WM_KEYDOWN:
+		{
+			switch (pMsg->wParam)
+			{
+			case VK_ESCAPE:
+				return TRUE;
+			case VK_UP://屏蔽上下方向键
+			case VK_DOWN:	
+			case VK_SPACE:
+			case VK_RETURN://屏蔽回车
+				return TRUE;
+			default:
+				break;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return CDialog::PreTranslateMessage(pMsg);
 }

@@ -2,7 +2,7 @@
 #include "jobeditdlg.h"
 #include "dirtreectrl.h"
 #include "afxwin.h"
-
+#include "WorkInfo.h"
 // CJobDlg ¶Ô»°¿ò
 
 class CJobDlg : public CDialog
@@ -35,4 +35,5 @@ public:
 	afx_msg void OnJobLoad();
 	void LoadFile(CString strPath);
 	afx_msg void OnBnClickedButton1();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

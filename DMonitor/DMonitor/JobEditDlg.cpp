@@ -1344,3 +1344,31 @@ void CJobEditDlg::OnBnClickedZcwJobeditExport()
 		}
 	}
 }
+
+
+BOOL CJobEditDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	switch (pMsg->message)
+	{
+	case WM_KEYDOWN:
+		{
+			switch (pMsg->wParam)
+			{
+			case VK_ESCAPE:
+				return TRUE;
+			case VK_UP://屏蔽上下方向键
+			case VK_DOWN:	
+			case VK_SPACE:
+			case VK_RETURN://屏蔽回车
+				return TRUE;
+			default:
+				break;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return CDialog::PreTranslateMessage(pMsg);
+}

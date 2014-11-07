@@ -15,6 +15,8 @@ using namespace std;
 #include <algorithm>
 #include <numeric>
 #include "dirtreectrl.h"
+#include "TestDlg.h"
+#include "tinyxml.h"
 // CDMoniterDlg 对话框
 class CDMoniterDlg : public CDialogEx
 {
@@ -121,8 +123,7 @@ public:
 	DATA_TEMP oldcclArray;
 	DATA_TEMP oldmagArray[3];
 
-	//queue<CPetroData> queueData;
-
+	CTestDlg testDlg;
 public:
 	void GetRectParam(CRect rectMain);
 	void OnInitWidget();
@@ -169,6 +170,8 @@ public:
 	void pushToQueue(CPetroData* pPData);
 	void SetRealtimeDataLimit();
 	void InitColorVariable();
+	void ParseTestData();
+	void ClearList();
 // 实现
 protected:
 	HICON m_hIcon;
@@ -227,4 +230,5 @@ public:
 	afx_msg void OnMenuTool();
 	afx_msg void OnMenuNewjob();
 	afx_msg void OnMenuJobload();
+	afx_msg void OnTestMode1();
 };
