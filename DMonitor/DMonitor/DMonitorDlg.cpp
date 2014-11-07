@@ -156,6 +156,10 @@ BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREUP, &CDMoniterDlg::OnUpdateMenuMeasureup)
 	ON_WM_ERASEBKGND()
 	ON_COMMAND(ID_MENU_INSTRUMENT, &CDMoniterDlg::OnMenuInstrument)
+	ON_COMMAND(ID_MENU_JOB, &CDMoniterDlg::OnMenuJob)
+	ON_COMMAND(ID_MENU_TOOL, &CDMoniterDlg::OnMenuTool)
+	ON_COMMAND(ID_MENU_NEWJOB, &CDMoniterDlg::OnMenuNewjob)
+	ON_COMMAND(ID_MENU_JOBLOAD, &CDMoniterDlg::OnMenuJobload)
 END_MESSAGE_MAP()
 
 
@@ -2633,8 +2637,64 @@ BOOL CDMoniterDlg::OnEraseBkgnd(CDC* pDC)
 void CDMoniterDlg::OnMenuInstrument()
 {
 	// TODO: 在此添加命令处理程序代码
+	
+}
+
+
+void CDMoniterDlg::OnMenuJob()
+{
+	// TODO: 在此添加命令处理程序代码
+	parameterFlag=0;
+	OnMyMenuJob(parameterFlag);
+}
+
+void CDMoniterDlg::OnMyMenuJob(int myparameterFlag)
+{
+	// TODO: 在此添加命令处理程序代码
+	CJobDlg m_jDlg;
+	m_jDlg.m_Path=theApp.JobPath;
+	m_jDlg.receiveFlag = myparameterFlag;
+	m_jDlg.m_Title=_T("力擎作业管理");
+	m_jDlg.m_TreeTitle=_T("作业列表");
+	m_jDlg.DoModal();
+}
+
+void CDMoniterDlg::OnMenuTool()
+{
+	// TODO: 在此添加命令处理程序代码
+	// TODO: 在此添加命令处理程序代码
 	CJobDlg m_jDlg;
 	m_jDlg.m_Path=theApp.ToolPath;
 	m_jDlg.m_Title=_T("力擎仪器管理");
+	m_jDlg.m_TreeTitle=_T("仪器列表");
+	m_jDlg.DoModal();
+}
+
+
+void CDMoniterDlg::OnMenuNewjob()
+{
+	// TODO: 在此添加命令处理程序代码
+	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造保存文件对话框
+	dlg.m_ofn.lpstrInitialDir=theApp.JobPath;
+    if(dlg.DoModal()==IDOK)//显示保存文件对话框
+	{
+		CJobEditDlg m_jeDlg;
+		m_jeDlg.m_jobName=dlg.GetPathName();//获取文件路径名称
+		m_jeDlg.m_Open=FALSE;
+		if(m_jeDlg.DoModal()==IDOK){
+		m_treeCtrl.ModifyStyle(0,TVS_HASBUTTONS   |   TVS_LINESATROOT   |   TVS_HASLINES);	
+		m_treeCtrl.DisplayTree (theApp.JobPath,TRUE);
+		}
+	}
+}
+
+
+void CDMoniterDlg::OnMenuJobload()
+{
+	// TODO: 在此添加命令处理程序代码
+	// TODO: 在此添加命令处理程序代码
+	CJobDlg m_jDlg;
+	m_jDlg.m_Path=theApp.JobPath;
+	m_jDlg.m_Title=_T("力擎作业管理");
 	m_jDlg.DoModal();
 }

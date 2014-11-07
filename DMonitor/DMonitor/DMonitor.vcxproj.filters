@@ -28,6 +28,18 @@
     <None Include="res\toolbar1.bmp">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="json\src\json_internalarray.inl">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="json\src\json_internalmap.inl">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="json\src\json_valueiterator.inl">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="json\src\sconscript">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -63,6 +75,60 @@
     <ClInclude Include="JobDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DirTreeCtrl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobCopyDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlgControl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlgCurve.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlgOrigin.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlgPower.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JobEditDlgTool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\src\json_batchallocator.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\autolink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\features.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\forwards.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\reader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\value.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\include\writer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SortStringArray.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -87,6 +153,42 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="JobDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DirTreeCtrl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobCopyDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgControl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgCurve.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgOrigin.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgPower.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JobEditDlgTool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json\src\json_reader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json\src\json_value.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json\src\json_writer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SortStringArray.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

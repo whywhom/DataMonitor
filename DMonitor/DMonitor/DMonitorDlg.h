@@ -14,6 +14,7 @@ using namespace std;
 #include <queue>
 #include <algorithm>
 #include <numeric>
+#include "dirtreectrl.h"
 // CDMoniterDlg 对话框
 class CDMoniterDlg : public CDialogEx
 {
@@ -188,7 +189,10 @@ protected:
 	CEdit Edit04;
 	CString strEdit04;
 	CListCtrl listView;
+	CDirTreeCtrl m_treeCtrl;
+	int parameterFlag;//send flag to jobdlg for some action, 0-nothing;1-new job
 	// 生成的消息映射函数
+	void OnMyMenuJob(int myparameterFlag);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
@@ -219,4 +223,8 @@ public:
 	afx_msg void OnUpdateMenuMeasureup(CCmdUI *pCmdUI);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnMenuInstrument();
+	afx_msg void OnMenuJob();
+	afx_msg void OnMenuTool();
+	afx_msg void OnMenuNewjob();
+	afx_msg void OnMenuJobload();
 };

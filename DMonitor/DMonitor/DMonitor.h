@@ -54,6 +54,75 @@ public:
 	CString strUnitsFile;//记录度量单位的配置文件
 	CString strCurveFile;//记录绘图模板的配置文件
 	CString strSettingFile;//记录用户设置的常用数值配置文件
+
+	//当前作业信息
+	//仪器信息定义开始
+	typedef struct{
+		CString Label; 
+		CString Type;
+		CString SN;
+		float Length; 
+		float Weight;
+		float OUTERDIAMATER;
+		CString Speed;
+	}JobTool,*lpJobTool;//信息结构体
+
+	typedef CTypedPtrList<CPtrList ,lpJobTool>CJobTools;//模板类型 
+	CJobTools m_JobTools;
+	lpJobTool m_JobTool;
+	//仪器信息定义结束
+
+	//曲线信息定义开始
+	typedef struct{
+		CString Label; 		
+		int UNIT; 
+		int FILTER;		
+	}JobCurve,*lpJobCurve;//信息结构体
+
+	typedef CTypedPtrList<CPtrList ,lpJobCurve>CJobCurves;//模板类型 
+	CJobCurves m_JobCurves;
+	lpJobCurve m_JobCurve;
+	//曲线信息定义结束
+
+	//原始信息定义开始
+	typedef struct{
+		CString Label; 		
+		int UNIT; 
+		int FILTER;		
+	}JobOrigin,*lpJobOrigin;//信息结构体
+
+	typedef CTypedPtrList<CPtrList ,lpJobOrigin>CJobOrigins;//模板类型 
+	CJobOrigins m_JobOrigins;
+	lpJobOrigin m_JobOrigin;
+	//原始信息定义结束
+
+
+	//控制信息定义开始
+	typedef struct{
+		CString Label; 		
+		CString UNITS; 
+		CString DATAVALUE;		
+	}JobControl,*lpJobControl;//信息结构体
+
+	typedef CTypedPtrList<CPtrList ,lpJobControl>CJobControls;//模板类型 
+	CJobControls m_JobControls;
+	lpJobControl m_JobControl;
+	//控制信息定义结束
+
+	//加电信息定义开始
+	typedef struct{
+		CString Label;
+		int CABLE;
+		int TYPE;
+		int VOLTAGE;
+		int ElectricCurrent;
+		CString MODE;
+	}JobPower,*lpJobPower;//信息结构体
+
+	typedef CTypedPtrList<CPtrList ,lpJobPower>CJobPowers;//模板类型 
+	CJobPowers m_JobPowers;
+	lpJobPower m_JobPower;
+	//加电信息定义结束
 	//发送给串口设备的数据buffer
 	bool bCurveFileExist;
 	UINT8 sendCmd[COMM_BUFFER_BASESIZE];//通信层发送数据 buffer

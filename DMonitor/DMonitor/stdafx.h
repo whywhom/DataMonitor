@@ -38,7 +38,9 @@
 #include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
 
 
-
+#ifndef _AFX_NO_DAO_SUPPORT
+#include <afxdao.h>			// MFC DAO database classes.
+#endif // _AFX_NO_DAO_SUPPORT
 
 
 
