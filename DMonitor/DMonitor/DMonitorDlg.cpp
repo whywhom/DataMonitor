@@ -241,7 +241,7 @@ void CDMoniterDlg::OnClose()
 	{
 		theApp.commLayer.m_SerialPort.ClosePort();//¹Ø±Õ´®¿Ú
 		Sleep(500);
-		//initCmdList();
+		ClearList();
 	
 		CDialogEx::OnClose();
 	}
@@ -2744,7 +2744,17 @@ void CDMoniterDlg::ParseTestData()
 				CWorkInfo* plist = new CWorkInfo();
 				for ( TiXmlNode *subchild = child->FirstChild(); subchild; subchild = subchild->NextSibling() )
 				{
-					if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Name" ) ) )
+					if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Signal" ) ) )
+					{
+						TiXmlNode* subsubchild = subchild->FirstChild();
+						memset(pwBuffer,0,sizeof(pwBuffer));
+						const char* strValue = subsubchild->Value();
+						int len = strlen(strValue);
+						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+						str = pwBuffer;
+						plist->strSignal = str;
+					}
+					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Title" ) ) )
 					{
 						TiXmlNode* subsubchild = subchild->FirstChild();
 						memset(pwBuffer,0,sizeof(pwBuffer));
@@ -2753,16 +2763,6 @@ void CDMoniterDlg::ParseTestData()
 						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
 						str = pwBuffer;
 						plist->strTitie = str;
-					}
-					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Abbr" ) ) )
-					{
-						TiXmlNode* subsubchild = subchild->FirstChild();
-						memset(pwBuffer,0,sizeof(pwBuffer));
-						const char* strValue = subsubchild->Value();
-						int len = strlen(strValue);
-						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
-						str = pwBuffer;
-						plist->strAbbr = str;
 					}
 					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Unit" ) ) )
 					{

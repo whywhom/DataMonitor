@@ -16,6 +16,7 @@ public:
 	bool SetCurveInfo(int item);
 	void InitCtrl();
 	void InitComboBox(int id,CString signal,CString title, CString uint);
+	void InitWorkInfoList(CString signal,CString title, CString uint);
 // 对话框数据
 	enum { IDD = IDD_TEST_DLG };
 public:
@@ -31,8 +32,6 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
-	afx_msg void OnBnClickedButton1();
-	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedButtonColor();
 	CListCtrl mTestList;
 	CComboBox mCbSignal;
@@ -42,4 +41,6 @@ public:
 	CEdit nTestEditMax;
 	CButton mTestAdd;
 	CButton mTestDel;
+	afx_msg void OnBnClickedButtonAdd();
+	afx_msg void OnBnClickedButtonDel();
 };

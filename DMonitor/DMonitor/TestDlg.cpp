@@ -10,7 +10,23 @@
 using namespace std; 
 
 // CTestDlg 对话框
-
+CString m_unitary[]={_T("mV"),_T("GAPI"),_T("CPS"),_T("us/m"),_T("m"),
+	_T("cm"),_T("mm"),_T("uS"),_T("mS"),_T("S"),
+	_T("MΩ"),_T("kΩ"),_T("Ω"),_T("Ω.m"),_T("s"),
+	_T("S/m"),_T("mS/m"),_T("m/h"),_T("Kg"),_T("Kn"),
+	_T("N"),_T("℃"),_T("℃/m"),_T("kg/m^3"),_T("g/cm^3"),
+	_T("km"),_T("km^3"),_T("m^3"),_T("dm^3"),_T("m/s^2"),
+	_T("mm/s^2"),_T("rad"),_T("mrad"),_T("urad"),_T("°"),
+	_T("km^2"),_T("ha"),_T("dm^2"),_T("cm^2"),_T("mm^2"),
+	_T("kg/s"),_T("m^3/s"),_T("m^3/min"),_T("m^3/d"),_T("L/s"),
+	_T("Std.m3/m3"),_T("t"),_T("Mg/m^3"),_T("pu"),_T("J"),
+	_T("Mev"),_T("MW"),_T("KW"),_T("W"),_T("Pa"),
+	_T("kPa"),_T("MPa"),_T("ATM"),_T("PSI"),_T("Bq"),
+	_T("r/s"),_T("min"),_T("h"),_T("d"),_T("a"),
+	_T("m/s"),_T("Pa.s"),_T("mPa.s"),_T("N.s/m^2"),_T("%"),
+	_T("NAPI"),_T("inch"),_T("API"),_T("V"),_T("度"),
+	_T("uS/m"),_T("ppm"),_T("I")};
+int arrayLength = 78;
 IMPLEMENT_DYNAMIC(CTestDlg, CDialog)
 
 CTestDlg::CTestDlg(CWnd* pParent /*=NULL*/)
@@ -42,9 +58,9 @@ void CTestDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CTestDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CTestDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CTestDlg::OnBnClickedCancel)
-	ON_BN_CLICKED(IDC_BUTTON1, &CTestDlg::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_BUTTON3, &CTestDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON_COLOR, &CTestDlg::OnBnClickedButtonColor)
+	ON_BN_CLICKED(IDC_BUTTON_ADD, &CTestDlg::OnBnClickedButtonAdd)
+	ON_BN_CLICKED(IDC_BUTTON_DEL, &CTestDlg::OnBnClickedButtonDel)
 END_MESSAGE_MAP()
 
 
@@ -90,35 +106,26 @@ BOOL CTestDlg::OnInitDialog()
     CRect rc2;
     //CWnd::SetWindowPos(NULL,0,0,temprect.Width(),temprect.Height(),SWP_NOZORDER|SWP_NOMOVE);
     CenterWindow();
-	InitCtrl();
-	
+		
 	if(theApp.workInfoList.IsEmpty())
 	{
 		//初始化
-
-		InitComboBox(0,_T("深度"),_T("DEPT"),_T("m"));
-		InitComboBox(1,_T("井温"),_T("TEMP"),_T("C"));
-		InitComboBox(2,_T("电阻率"),_T("RM"),_T("rm"));
-		InitComboBox(3,_T("放射性"),_T("GR"),_T("GAPI"));
-		InitComboBox(4,_T("磁三分量"),_T("MAG"),_T("mag"));
-		InitComboBox(5,_T("磁定位器"),_T("CCL"),_T("CCL"));
-
-		nTestEditMin.SetWindowText(_T(""));
-		nTestEditMax.SetWindowText(_T(""));
-
-		SetCurveInfo(0);
+		InitWorkInfoList(_T("深度"),_T("DEPT"),_T("m"));
+		InitWorkInfoList(_T("井温"),_T("TEMP"),_T("C"));
+		InitWorkInfoList(_T("电阻率"),_T("RM"),_T("rm"));
+		InitWorkInfoList(_T("放射性"),_T("GR"),_T("GAPI"));
+		InitWorkInfoList(_T("磁三分量"),_T("MAG"),_T("mag"));
+		InitWorkInfoList(_T("磁定位器"),_T("CCL"),_T("CCL"));
+		InitCtrl();
+		if(!SetCurveInfo(0))
+		{
+			SendMessage(WM_CLOSE);
+		}
 	}
 	else
 	{
 		//解析theApp.workInfoList
-		int i = 0;
-		POSITION pos3 = theApp.workInfoList.GetHeadPosition();
-		while(pos3)
-		{
-			CWorkInfo* plist = theApp.workInfoList.GetNext(pos3);
-			AddWorkInfo(plist,i);
-			i++;
-		}
+		InitCtrl();
 		if(!SetCurveInfo(0))
 		{
 			SendMessage(WM_CLOSE);
@@ -136,15 +143,25 @@ bool CTestDlg::SetCurveInfo(int item)
 	}
 	CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(item));
 	pCurList = plist;
-
+	mTestList.SetItemState(item, LVIS_FOCUSED | LVIS_SELECTED,
+                                 LVIS_FOCUSED | LVIS_SELECTED );
 	CString str;
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->SetCurSel(item);
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->SetCurSel(item);
-	
+
 	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(item);
 
+	for(int i=0;i<arrayLength;i++)
+	{
+		if(!m_unitary[i].Compare(plist->strUnit))
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(i);
+			break;
+		}
+	}
+	
 	str.Format(_T("%d"),plist->leftLimit);
 	nTestEditMin.SetWindowText(str);
 
@@ -154,6 +171,18 @@ bool CTestDlg::SetCurveInfo(int item)
 	mStaticColor.SetStaiticColor(plist->curveColor);
 	curveSelectColor = plist->curveColor;
 	return true;
+}
+
+void CTestDlg::InitWorkInfoList(CString signal,CString title, CString uint)
+{
+	CWorkInfo* plist = new CWorkInfo();
+	plist->strSignal = signal;
+	plist->strTitie = title;
+	plist->strUnit = uint;
+	plist->leftLimit = 0;
+	plist->rightLimit =0;
+	plist->curveColor = RGB(255,0,0); //颜色
+	theApp.workInfoList.AddTail(plist);
 }
 void CTestDlg::InitComboBox(int id,CString signal,CString title, CString uint)
 {
@@ -174,8 +203,8 @@ void CTestDlg::InitComboBox(int id,CString signal,CString title, CString uint)
 
 void CTestDlg::InitCtrl()
 {
-	CString m_unitary[]={_T("mV"),_T("GAPI"),_T("CPS"),_T("us/m"),_T("m"),_T("cm"),_T("mm"),_T("uS"),_T("mS"),_T("S"),_T("MΩ"),_T("kΩ"),_T("Ω"),_T("Ω.m"),_T("s"),_T("S/m"),_T("mS/m"),_T("m/h"),_T("Kg"),_T("Kn"),_T("N"),_T("℃"),_T("℃/m"),_T("kg/m^3"),_T("g/cm^3"),_T("km"),_T("km^3"),_T("m^3"),_T("dm^3"),_T("m/s^2"),_T("mm/s^2"),_T("rad"),_T("mrad"),_T("urad"),_T("°"),_T("km^2"),_T("ha"),_T("dm^2"),_T("cm^2"),_T("mm^2"),_T("kg/s"),_T("m^3/s"),_T("m^3/min"),_T("m^3/d"),_T("L/s"),_T("Std.m3/m3"),_T("t"),_T("Mg/m^3"),_T("pu"),_T("J"),_T("Mev"),_T("MW"),_T("KW"),_T("W"),_T("Pa"),_T("kPa"),_T("MPa"),_T("ATM"),_T("PSI"),_T("Bq"),_T("r/s"),_T("min"),_T("h"),_T("d"),_T("a"),_T("m/s"),_T("Pa.s"),_T("mPa.s"),_T("N.s/m^2"),_T("%"),_T("NAPI"),_T("inch"),_T("API"),_T("V"),_T("度"),_T("uS/m"),_T("ppm"),_T("I")};
-	for(int i=0;i<78;i++)
+	int id = 0;
+	for(int i=0;i<arrayLength;i++)
 	{
 		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(m_unitary[i]);
 	}
@@ -183,8 +212,28 @@ void CTestDlg::InitCtrl()
 	mTestList.InsertColumn( 0, _T("原始信号"), LVCFMT_LEFT, 60 ); 
     mTestList.InsertColumn( 1, _T("英文简写"), LVCFMT_LEFT, 60 ); 
 	mTestList.InsertColumn( 2, _T("度量单位"), LVCFMT_LEFT, 60 ); 
-	mTestList.InsertColumn( 2, _T("取值范围"), LVCFMT_LEFT, 60 ); 
+	mTestList.InsertColumn( 3, _T("取值范围"), LVCFMT_LEFT, 60 ); 
 	mTestList.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP ); 
+
+	POSITION pos = theApp.workInfoList.GetHeadPosition();
+	while(pos)
+	{
+		CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
+		((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->AddString(plist->strSignal);
+		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->AddString(plist->strTitie);
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(plist->strUnit);
+		mTestList.InsertItem(id,plist->strSignal);
+		mTestList.SetItemText(id,1,plist->strTitie);
+		mTestList.SetItemText(id,2,plist->strUnit);
+		CString strMin,strMax;
+		strMin.Format(_T("%d"),plist->leftLimit);
+		strMax.Format(_T("%d"),plist->rightLimit);
+		if(!strMin.IsEmpty() || !strMax.IsEmpty())
+		{
+			mTestList.SetItemText(id,3,strMin+_T(" - ")+strMax);
+		}
+
+	}
 }
 void CTestDlg::AddWorkInfo(CWorkInfo* pWorkInfo, int item)
 {
@@ -207,23 +256,100 @@ void CTestDlg::OnBnClickedCancel()
 }
 
 
-void CTestDlg::OnBnClickedButton1()
-{
-	// TODO: 在此添加控件通知处理程序代码
-}
-
-
-void CTestDlg::OnBnClickedButton3()
-{
-	// TODO: 在此添加控件通知处理程序代码
-}
-
-
 void CTestDlg::OnBnClickedButtonColor()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	CColorDialog dlg;
+
+	if (dlg.DoModal() == IDOK)
+	{
+		curveSelectColor = dlg.GetColor();
+		mStaticColor.SetStaiticColor(curveSelectColor);
+	}
+}
+
+void CTestDlg::OnBnClickedButtonAdd()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CString str;
+	bool isExist = false;
+	int item = ((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetCurSel();
+	if(item >= 0)
+	{
+		((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetLBText(item , str);
+	}
+	else
+	{
+		((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetWindowText(str);
+	}
+	CWorkInfo* plist;
+	POSITION pos = theApp.workInfoList.GetHeadPosition();
+	while(pos)
+	{
+		plist = theApp.workInfoList.GetNext(pos);
+		if(!str.Compare(plist->strSignal))
+		{
+			isExist = true;
+			break;
+		}
+	}
+	if(isExist)
+	{
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
+		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitie);
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
+		nTestEditMin.GetWindowText(str);
+		plist->leftLimit = _wtoi(str);
+		nTestEditMax.GetWindowText(str);
+		plist->rightLimit = _wtoi(str);
+		plist->curveColor = curveSelectColor;
+	}
+	else
+	{
+		CWorkInfo* plist = new CWorkInfo();
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetCurSel();
+		//((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetLBText(item, plist->strSignal);
+		if(item >= 0)
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetLBText(item , plist->strSignal);
+		}
+		else
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetWindowText(plist->strSignal);
+		}
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
+		//((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitie);
+		if(item >= 0)
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item , plist->strTitie);
+		}
+		else
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetWindowText(plist->strTitie);
+		}
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
+		//((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
+		if(item >= 0)
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item , plist->strUnit);
+		}
+		else
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetWindowText(plist->strUnit);
+		}
+		nTestEditMin.GetWindowText(str);
+		plist->leftLimit = _wtoi(str);
+		nTestEditMax.GetWindowText(str);
+		plist->rightLimit = _wtoi(str);
+		plist->curveColor = curveSelectColor;
+		theApp.workInfoList.AddTail(plist);
+	}
+	MessageBox(_T("保存成功！"),MB_OK);
 }
 
 
-
-
+void CTestDlg::OnBnClickedButtonDel()
+{
+	// TODO: 在此添加控件通知处理程序代码
+}
