@@ -2708,7 +2708,11 @@ void CDMoniterDlg::OnMenuJobload()
 void CDMoniterDlg::OnTestMode1()
 {
 	// TODO: 在此添加命令处理程序代码
-	testDlg.DoModal();
+	//testDlg.DoModal();
+	if (testDlg.DoModal () == IDOK)
+	{
+		CreateCurveFile(theApp.strCurveFile);
+	}
 }
 
 void CDMoniterDlg::ClearList()
@@ -2721,6 +2725,126 @@ void CDMoniterDlg::ClearList()
 		pCurrent=NULL;
 	}
 }
+int CDMoniterDlg::CreateCurveFile(CString strFile)
+{
+
+	TiXmlDocument doc;
+	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "UTF-8", "yes" );
+	doc.LinkEndChild( decl ); 
+	TiXmlElement * element = new TiXmlElement( "Works" );
+	POSITION pos = theApp.workInfoList.GetHeadPosition();
+	while(pos)
+	{
+		CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
+		LinkElementeFuns(element,plist);	
+	}
+	doc.LinkEndChild( element );
+	////
+	char * pFileName = theApp.FromUNICODEToANSI(strFile);
+	doc.SaveFile(pFileName);
+
+	delete []pFileName;
+	pFileName = NULL;
+	return 0;
+}
+
+void CDMoniterDlg::LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist)
+{
+	TiXmlElement* msgs = new TiXmlElement( "WorkInfo" ); 
+	element->LinkEndChild( msgs );
+	TiXmlElement* msg = new TiXmlElement( "Signal" ); 
+	CString str = plist->strSignal;
+	////********/////transfer//////********//////
+	const int maxBufferSize = 64;
+	unsigned short UnicodeStr[maxBufferSize];
+	unsigned short utf8StrLen;
+	DWORD dwLength;//转换后的UTF－8编码的长度in BYTEs
+	char utf8Str[64];
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	short UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "Title" ); 
+	str = plist->strTitle;
+	////********/////transfer//////********//////
+
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "Unit" ); 
+	str = plist->strUnit;
+	////********/////transfer//////********//////
+
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "LeftLimit" ); 
+	str.Format(_T("%d"),plist->leftLimit);
+	////********/////transfer//////********//////
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "RightLimit" ); 
+	str.Format(_T("%d"),plist->rightLimit);
+	////********/////transfer//////********//////
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "Color" ); 
+	str.Format(_T("%d"),plist->curveColor);
+	////********/////transfer//////********//////
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+}
+
 void CDMoniterDlg::ParseTestData()
 {
 	WCHAR pwBuffer[100];
@@ -2762,7 +2886,7 @@ void CDMoniterDlg::ParseTestData()
 						int len = strlen(strValue);
 						theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
 						str = pwBuffer;
-						plist->strTitie = str;
+						plist->strTitle = str;
 					}
 					else if ( ( subchild->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( subchild->Value(), "Unit" ) ) )
 					{

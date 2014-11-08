@@ -172,6 +172,8 @@ public:
 	void InitColorVariable();
 	void ParseTestData();
 	void ClearList();
+	int CreateCurveFile(CString strFile);
+	void LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist);
 // й╣ож
 protected:
 	HICON m_hIcon;

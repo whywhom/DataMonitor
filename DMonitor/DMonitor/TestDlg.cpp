@@ -61,6 +61,8 @@ BEGIN_MESSAGE_MAP(CTestDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_COLOR, &CTestDlg::OnBnClickedButtonColor)
 	ON_BN_CLICKED(IDC_BUTTON_ADD, &CTestDlg::OnBnClickedButtonAdd)
 	ON_BN_CLICKED(IDC_BUTTON_DEL, &CTestDlg::OnBnClickedButtonDel)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, &CTestDlg::OnLvnItemchangedList1)
+	ON_CBN_SELCHANGE(IDC_COMBO_SIGNAL, &CTestDlg::OnCbnSelchangeComboSignal)
 END_MESSAGE_MAP()
 
 
@@ -152,16 +154,23 @@ bool CTestDlg::SetCurveInfo(int item)
 	((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->SetCurSel(item);
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(item);
-
+	/*
+	bool isInList = false;
 	for(int i=0;i<arrayLength;i++)
 	{
-		if(!m_unitary[i].Compare(plist->strUnit))
+		str = m_unitary[i];
+		if(!str.Compare(plist->strUnit))
 		{
 			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(i);
+			isInList = true;
 			break;
 		}
 	}
-	
+	if(!isInList)
+	{
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->InsertString(mTestUnit.GetCount(),plist->strUnit);
+	}
+	*/
 	str.Format(_T("%d"),plist->leftLimit);
 	nTestEditMin.SetWindowText(str);
 
@@ -177,53 +186,49 @@ void CTestDlg::InitWorkInfoList(CString signal,CString title, CString uint)
 {
 	CWorkInfo* plist = new CWorkInfo();
 	plist->strSignal = signal;
-	plist->strTitie = title;
+	plist->strTitle = title;
 	plist->strUnit = uint;
 	plist->leftLimit = 0;
-	plist->rightLimit =0;
+	plist->rightLimit = 100;
 	plist->curveColor = RGB(255,0,0); //颜色
 	theApp.workInfoList.AddTail(plist);
-}
-void CTestDlg::InitComboBox(int id,CString signal,CString title, CString uint)
-{
-	((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->AddString(signal);
-	((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->AddString(title);
-	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(uint);
-	mTestList.InsertItem(id,signal);
-	mTestList.SetItemText(id,1,title);
-	mTestList.SetItemText(id,2,uint);
-	CString strMin,strMax;
-	nTestEditMin.GetWindowText(strMin);
-	nTestEditMax.GetWindowText(strMax);
-	if(!strMin.IsEmpty() || !strMax.IsEmpty())
-	{
-		mTestList.SetItemText(id,3,strMin+_T(" - ")+strMax);
-	}
 }
 
 void CTestDlg::InitCtrl()
 {
 	int id = 0;
+	/*
+	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->ResetContent();
 	for(int i=0;i<arrayLength;i++)
 	{
 		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(m_unitary[i]);
 	}
+	*/
 	mStaticColor.SetStaiticColor(curveSelectColor);
 	mTestList.InsertColumn( 0, _T("原始信号"), LVCFMT_LEFT, 60 ); 
     mTestList.InsertColumn( 1, _T("英文简写"), LVCFMT_LEFT, 60 ); 
 	mTestList.InsertColumn( 2, _T("度量单位"), LVCFMT_LEFT, 60 ); 
 	mTestList.InsertColumn( 3, _T("取值范围"), LVCFMT_LEFT, 60 ); 
 	mTestList.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP ); 
+	RefreshListCtrl();
+}
 
+void CTestDlg::RefreshListCtrl()
+{
+	int id = 0;
+	mTestList.DeleteAllItems();
+	((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->ResetContent();
+	((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->ResetContent();
+	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->ResetContent();
 	POSITION pos = theApp.workInfoList.GetHeadPosition();
 	while(pos)
 	{
 		CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
 		((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->AddString(plist->strSignal);
-		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->AddString(plist->strTitie);
+		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->AddString(plist->strTitle);
 		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(plist->strUnit);
 		mTestList.InsertItem(id,plist->strSignal);
-		mTestList.SetItemText(id,1,plist->strTitie);
+		mTestList.SetItemText(id,1,plist->strTitle);
 		mTestList.SetItemText(id,2,plist->strUnit);
 		CString strMin,strMax;
 		strMin.Format(_T("%d"),plist->leftLimit);
@@ -232,14 +237,8 @@ void CTestDlg::InitCtrl()
 		{
 			mTestList.SetItemText(id,3,strMin+_T(" - ")+strMax);
 		}
-
+		id++;
 	}
-}
-void CTestDlg::AddWorkInfo(CWorkInfo* pWorkInfo, int item)
-{
-	//((CComboBox*)GetDlgItem(IDC_COMBO_BIAOSHI))->InsertString(item,pWorkInfo->strCurveName);
-	//((CComboBox*)GetDlgItem(IDC_COMBO_SHUJU))->InsertString(item,pWorkInfo->strCurveName);
-    
 }
 
 void CTestDlg::OnBnClickedOk()
@@ -272,6 +271,16 @@ void CTestDlg::OnBnClickedButtonAdd()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CString str;
+
+	nTestEditMin.GetWindowText(str);
+	int nMin = _wtoi(str);
+	nTestEditMax.GetWindowText(str);
+	int nMax = _wtoi(str);
+	if(nMax <= nMin)
+	{
+		MessageBox(_T("最大取值应大于最小取值，请重新输入！"),MB_OK);
+		return;
+	}
 	bool isExist = false;
 	int item = ((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetCurSel();
 	if(item >= 0)
@@ -296,7 +305,7 @@ void CTestDlg::OnBnClickedButtonAdd()
 	if(isExist)
 	{
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
-		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitie);
+		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitle);
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
 		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
 		nTestEditMin.GetWindowText(str);
@@ -319,14 +328,14 @@ void CTestDlg::OnBnClickedButtonAdd()
 			((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetWindowText(plist->strSignal);
 		}
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
-		//((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitie);
+		//((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitle);
 		if(item >= 0)
 		{
-			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item , plist->strTitie);
+			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item , plist->strTitle);
 		}
 		else
 		{
-			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetWindowText(plist->strTitie);
+			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetWindowText(plist->strTitle);
 		}
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
 		//((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
@@ -345,6 +354,7 @@ void CTestDlg::OnBnClickedButtonAdd()
 		plist->curveColor = curveSelectColor;
 		theApp.workInfoList.AddTail(plist);
 	}
+	RefreshListCtrl();
 	MessageBox(_T("保存成功！"),MB_OK);
 }
 
@@ -352,4 +362,24 @@ void CTestDlg::OnBnClickedButtonAdd()
 void CTestDlg::OnBnClickedButtonDel()
 {
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CTestDlg::OnLvnItemchangedList1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	if (pNMLV->uNewState == (LVIS_SELECTED | LVIS_FOCUSED))
+    {
+        SetCurveInfo(pNMLV->iItem);    //pNMLV->iItem为选中的项目
+    }
+	*pResult = 0;
+}
+
+
+void CTestDlg::OnCbnSelchangeComboSignal()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	int item = ((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->GetCurSel();
+	SetCurveInfo(item);
 }

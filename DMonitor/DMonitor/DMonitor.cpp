@@ -222,7 +222,7 @@ void CDMoniterApp::GetModulePath()
 	LogFileName = LogPath + _T("log.txt");
 #endif
 	//»æÍ¼Ä£°å
-	strCurveFile = IniFilePath + _T("Curve.xml");
+	strCurveFile = IniFilePath + _T("workinfo.xml");
 	dwAttr=GetFileAttributes(strCurveFile);
 	if(dwAttr==0xFFFFFFFF)
 	{

@@ -12,11 +12,10 @@ class CTestDlg : public CDialog
 public:
 	CTestDlg(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CTestDlg();
-	void AddWorkInfo(CWorkInfo* pWorkInfo, int item);
 	bool SetCurveInfo(int item);
 	void InitCtrl();
-	void InitComboBox(int id,CString signal,CString title, CString uint);
 	void InitWorkInfoList(CString signal,CString title, CString uint);
+	void RefreshListCtrl();
 // 对话框数据
 	enum { IDD = IDD_TEST_DLG };
 public:
@@ -43,4 +42,6 @@ public:
 	CButton mTestDel;
 	afx_msg void OnBnClickedButtonAdd();
 	afx_msg void OnBnClickedButtonDel();
+	afx_msg void OnLvnItemchangedList1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnCbnSelchangeComboSignal();
 };
