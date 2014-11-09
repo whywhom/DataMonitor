@@ -153,24 +153,38 @@ bool CTestDlg::SetCurveInfo(int item)
 
 	((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->SetCurSel(item);
 
-	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(item);
-	/*
+	//((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(item);
+
 	bool isInList = false;
-	for(int i=0;i<arrayLength;i++)
+	//for(int i=0;i<arrayLength;i++)
+	int i=0;
+	CWorkUnit* p = NULL;
+	POSITION pos = theApp.workUnitList.GetHeadPosition();
+	while(pos)
 	{
-		str = m_unitary[i];
-		if(!str.Compare(plist->strUnit))
+		p = theApp.workUnitList.GetNext(pos);
+		if(!p->strUnit.Compare(plist->strUnit))
 		{
-			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(i);
+			//((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(i);
 			isInList = true;
 			break;
 		}
+		i++;
 	}
 	if(!isInList)
 	{
 		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->InsertString(mTestUnit.GetCount(),plist->strUnit);
+		CWorkUnit* pUnit = new CWorkUnit();
+		pUnit->strUnit = plist->strUnit;
+		theApp.workUnitList.AddTail(pUnit);
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(mTestUnit.GetCount()-1);
 	}
-	*/
+	else
+	{
+		//CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(i));
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->SetCurSel(i);
+	}
+
 	str.Format(_T("%d"),plist->leftLimit);
 	nTestEditMin.SetWindowText(str);
 
@@ -197,13 +211,17 @@ void CTestDlg::InitWorkInfoList(CString signal,CString title, CString uint)
 void CTestDlg::InitCtrl()
 {
 	int id = 0;
-	/*
+
 	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->ResetContent();
-	for(int i=0;i<arrayLength;i++)
+	//for(int i=0;i<theApp.workUnitList.GetCount();i++)
+	CWorkUnit* p = NULL;
+	POSITION pos = theApp.workUnitList.GetHeadPosition();
+	while(pos)
 	{
-		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(m_unitary[i]);
+		p = theApp.workUnitList.GetNext(pos);
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(p->strUnit);
 	}
-	*/
+
 	mStaticColor.SetStaiticColor(curveSelectColor);
 	mTestList.InsertColumn( 0, _T("原始信号"), LVCFMT_LEFT, 60 ); 
     mTestList.InsertColumn( 1, _T("英文简写"), LVCFMT_LEFT, 60 ); 
@@ -216,17 +234,24 @@ void CTestDlg::InitCtrl()
 void CTestDlg::RefreshListCtrl()
 {
 	int id = 0;
+	POSITION pos;
 	mTestList.DeleteAllItems();
 	((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->ResetContent();
 	((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->ResetContent();
 	((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->ResetContent();
-	POSITION pos = theApp.workInfoList.GetHeadPosition();
+	pos = theApp.workUnitList.GetHeadPosition();
+	while(pos)
+	{
+		CWorkUnit* plist = theApp.workUnitList.GetNext(pos);
+		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(plist->strUnit);
+	}
+	pos = theApp.workInfoList.GetHeadPosition();
 	while(pos)
 	{
 		CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
 		((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->AddString(plist->strSignal);
 		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->AddString(plist->strTitle);
-		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->AddString(plist->strUnit);
+		
 		mTestList.InsertItem(id,plist->strSignal);
 		mTestList.SetItemText(id,1,plist->strTitle);
 		mTestList.SetItemText(id,2,plist->strUnit);
@@ -304,10 +329,35 @@ void CTestDlg::OnBnClickedButtonAdd()
 	}
 	if(isExist)
 	{
+#if 0
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
 		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitle);
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
 		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
+#endif
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
+		//((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitle);
+		if(item >= 0)
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item , plist->strTitle);
+		}
+		else
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetWindowText(plist->strTitle);
+		}
+		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
+		//((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
+		if(item >= 0)
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item , plist->strUnit);
+		}
+		else
+		{
+			((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetWindowText(plist->strUnit);
+			CWorkUnit* p = new CWorkUnit();
+			p->strUnit = plist->strUnit;
+			theApp.workUnitList.AddTail(p);
+		}
 		nTestEditMin.GetWindowText(str);
 		plist->leftLimit = _wtoi(str);
 		nTestEditMax.GetWindowText(str);

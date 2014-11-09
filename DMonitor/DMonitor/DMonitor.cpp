@@ -204,14 +204,14 @@ void CDMoniterApp::GetModulePath()
 	{
 		CreateDirectory(IniFilePath,NULL);
 	}
-#if 0
+
 	strUnitsFile = IniFilePath + _T("Units.xml");
 	dwAttr=GetFileAttributes(strUnitsFile);
 	if(dwAttr==0xFFFFFFFF)
 	{
 		CreateDmFile(strUnitsFile);
 	}
-#endif
+
 	strIniFilePath = IniFilePath + _T("config.ini");
 	dwAttr=GetFileAttributes(strIniFilePath);
 	if(dwAttr==0xFFFFFFFF)
@@ -241,22 +241,9 @@ int CDMoniterApp::CreateIniFile(CString strFile)
 	::WritePrivateProfileString(_T("TargetDepth"),_T("Depth2"),_T("100"),strFile);
 	return 0;
 }
-#if 0
-int CDataMonitorApp::CreateDmFile(CString strFile)
-{
-	/*
-	CFile downloadFile;
-	CFileException eFileException;
 
-	if(downloadFile != INVALID_HANDLE_VALUE)
-	{
-		downloadFile.Close();
-	}
-	if (!downloadFile.Open (strFile, CFile::modeCreate | CFile::modeWrite , &eFileException))
-	{
-		return 0;
-	}
-	*/
+int CDMoniterApp::CreateDmFile(CString strFile)
+{
 	TiXmlDocument doc;
 	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "UTF-8", "yes" );
 	doc.LinkEndChild( decl ); 
@@ -272,6 +259,9 @@ int CDataMonitorApp::CreateDmFile(CString strFile)
 	LinkElementeFuns(element,_T("uS"));
 	LinkElementeFuns(element,_T("mS"));
 	LinkElementeFuns(element,_T("S"));
+	LinkElementeFuns(element,_T("rm"));
+	LinkElementeFuns(element,_T("CCL"));
+	LinkElementeFuns(element,_T("mag"));
 	LinkElementeFuns(element,_T("M¦¸"));
 	LinkElementeFuns(element,_T("k¦¸"));
 	LinkElementeFuns(element,_T("¦¸"));
@@ -350,7 +340,7 @@ int CDataMonitorApp::CreateDmFile(CString strFile)
 	pFileName = NULL;
 	return 0;
 }
-void CDataMonitorApp::LinkElementeFuns(TiXmlElement * element,CString str)
+void CDMoniterApp::LinkElementeFuns(TiXmlElement * element,CString str)
 {
 	TiXmlElement* msgs = new TiXmlElement( "Unit" ); 
 	element->LinkEndChild( msgs );
@@ -372,7 +362,7 @@ void CDataMonitorApp::LinkElementeFuns(TiXmlElement * element,CString str)
 	msg->LinkEndChild( new TiXmlText( utf8Str )); 
 	msgs->LinkEndChild( msg ); 
 }
-#endif
+
 /**************************************************************************/
 /***  specifications;              ***/
 /***  NAME   = FromUNICODEToANSI;       ***/

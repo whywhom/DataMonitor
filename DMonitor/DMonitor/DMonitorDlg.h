@@ -170,9 +170,15 @@ public:
 	void pushToQueue(CPetroData* pPData);
 	void SetRealtimeDataLimit();
 	void InitColorVariable();
-	void ParseTestData();
-	void ClearList();
+	void ParseWorkInfoData();
+	void ParseWorkUnitData();
+	void ClearWorkInfoList();
+	void ClearWorkUnitList();
 	int CreateCurveFile(CString strFile);
+	bool ParseElementeFuns(TiXmlNode * element,char* str);
+	int CreateUnitFile(CString strFile);
+	void LinkUnitElementeFuns(TiXmlElement * element,CWorkUnit* plist);
+private:
 	void LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist);
 // й╣ож
 protected:

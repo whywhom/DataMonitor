@@ -200,7 +200,8 @@ BOOL CDMoniterDlg::OnInitDialog()
 	m_hMenu = LoadMenu(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_MAINFRAME));//导入资源,创建菜单
 	::SetMenu(this->GetSafeHwnd(),m_hMenu);//添加到对话框
 	OnInitWidget();
-	ParseTestData();
+	ParseWorkInfoData();
+	ParseWorkUnitData();
     RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST, 0);
 	// TODO: 在此添加额外的初始化代码
 	ShowWindow(SW_SHOWMAXIMIZED);
@@ -241,7 +242,7 @@ void CDMoniterDlg::OnClose()
 	{
 		theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
 		Sleep(500);
-		ClearList();
+		ClearWorkInfoList();
 	
 		CDialogEx::OnClose();
 	}
@@ -2712,10 +2713,11 @@ void CDMoniterDlg::OnTestMode1()
 	if (testDlg.DoModal () == IDOK)
 	{
 		CreateCurveFile(theApp.strCurveFile);
+		CreateUnitFile(theApp.strUnitsFile);
 	}
 }
 
-void CDMoniterDlg::ClearList()
+void CDMoniterDlg::ClearWorkInfoList()
 {
 	CWorkInfo* pCurrent = NULL;
 	while(theApp.workInfoList.IsEmpty()==false)
@@ -2725,6 +2727,63 @@ void CDMoniterDlg::ClearList()
 		pCurrent=NULL;
 	}
 }
+void CDMoniterDlg::ClearWorkUnitList()
+{
+	CWorkUnit* pCurrent = NULL;
+	while(theApp.workUnitList.IsEmpty()==false)
+	{
+		pCurrent=theApp.workUnitList.RemoveHead();
+		delete pCurrent;
+		pCurrent=NULL;
+	}
+}
+
+int CDMoniterDlg::CreateUnitFile(CString strFile)
+{
+	TiXmlDocument doc;
+	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "UTF-8", "yes" );
+	doc.LinkEndChild( decl ); 
+	TiXmlElement * element = new TiXmlElement( "Units" );
+	////
+	POSITION pos = theApp.workUnitList.GetHeadPosition();
+	while(pos)
+	{
+		CWorkUnit* plist = theApp.workUnitList.GetNext(pos);
+		LinkUnitElementeFuns(element,plist);	
+	}
+
+	doc.LinkEndChild( element );
+	////
+	char * pFileName = theApp.FromUNICODEToANSI(strFile);
+	doc.SaveFile(pFileName);
+
+	delete []pFileName;
+	pFileName = NULL;
+	return 0;
+}
+void CDMoniterDlg::LinkUnitElementeFuns(TiXmlElement * element,CWorkUnit* plist)
+{
+	TiXmlElement* msgs = new TiXmlElement( "Unit" ); 
+	element->LinkEndChild( msgs );
+	TiXmlElement* msg = new TiXmlElement( "Label" ); 
+	////********/////transfer//////********//////
+	const int maxBufferSize = 64;
+	unsigned short UnicodeStr[maxBufferSize];
+	unsigned short utf8StrLen;
+	DWORD dwLength;//转换后的UTF－8编码的长度in BYTEs
+	char utf8Str[64];
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	short UnicodeStrLen=2*plist->strUnit.GetLength();
+	memcpy(UnicodeStr,plist->strUnit,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+}
+
 int CDMoniterDlg::CreateCurveFile(CString strFile)
 {
 
@@ -2845,11 +2904,11 @@ void CDMoniterDlg::LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist)
 
 }
 
-void CDMoniterDlg::ParseTestData()
+void CDMoniterDlg::ParseWorkInfoData()
 {
 	WCHAR pwBuffer[100];
 	CString str;
-	ClearList();
+	ClearWorkInfoList();
 	string fileXml = theApp.IniFilePath + "workinfo.xml";
 	TiXmlDocument doc(fileXml.c_str());
 	bool loadOkay = doc.LoadFile();
@@ -2930,6 +2989,381 @@ void CDMoniterDlg::ParseTestData()
 					}
 				}
 				theApp.workInfoList.AddTail(plist);
+			}
+		}
+	}
+}
+bool CDMoniterDlg::ParseElementeFuns(TiXmlNode * element,char* str)
+{
+	WCHAR pwBuffer[100];
+	if ( ( element->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( element->Value(), str ) ) )
+	{
+		CWorkUnit* pWorkUnit = new CWorkUnit();
+		TiXmlNode* subsubchild = element->FirstChild();
+		memset(pwBuffer,0,sizeof(pwBuffer));
+		const char* strValue = subsubchild->Value();
+		int len = strlen(strValue);
+		theApp.FromUTF8ToUnicode((BYTE*)strValue,  len, (WORD*)pwBuffer, sizeof(pwBuffer));
+		CString str = pwBuffer;
+		pWorkUnit->strUnit = str;
+		theApp.workUnitList.AddTail(pWorkUnit);
+		return true;
+	}
+	return false;
+}
+void CDMoniterDlg::ParseWorkUnitData()
+{
+	WCHAR pwBuffer[100];
+	
+	ClearWorkUnitList();
+	string fileXml = theApp.IniFilePath + "Units.xml";
+	TiXmlDocument doc(fileXml.c_str());
+	bool loadOkay = doc.LoadFile();
+	if (loadOkay)
+	{
+		if ( !doc.Parse( fileXml.c_str() ) )
+		{
+			cout << doc.ErrorDesc() << endl;
+		}
+		//step 1 : Get the RootElement
+		TiXmlElement *root = doc.RootElement();
+		for ( TiXmlNode *child = root->FirstChild(); child; child = child->NextSibling() )
+		{
+			if ( ( child->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( child->Value(), "Unit" ) ) )
+			{
+				for ( TiXmlNode *subchild = child->FirstChild(); subchild; subchild = subchild->NextSibling() )
+				{
+					if ( ParseElementeFuns( subchild, "Label" ))
+					{
+						continue;
+					}
+#if 0
+					if ( ParseElementeFuns( subchild, "mV" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "rm" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "CCL" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mag" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "GAPI" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "CPS" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "us/m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "cm" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mm" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "uS" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mS" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "S" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "MΩ" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "kΩ" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Ω" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Ω.m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "S/m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mS/m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m/h" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Kg" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Kn" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "N" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "℃" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "℃/m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "kg/m^3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "g/cm^3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "km" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "km^3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m^3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "dm^3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m/s^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mm/s^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "rad" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mrad" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "urad" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "°" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "km^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "ha" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "dm^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mm^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "kg/s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m^3/s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m^3/min" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m^3/d" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "L/s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Std.m3/m3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "t" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Mg/m^3" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "pu" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "J" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Mev" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "MW" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "KW" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "W" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Pa" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "kPa" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "MPa" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "ATM" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "PSI" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Bq" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "r/s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "min" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "h" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "d" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "a" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "m/s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "Pa.s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "mPa.s" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "N.s/m^2" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "%" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "NAPI" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "inch" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "API" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "V" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "度" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "uS/m" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "ppm" ))
+					{
+						continue;
+					}
+					else if ( ParseElementeFuns( subchild, "I" ))
+					{
+						continue;
+					}
+#endif
+				}
 			}
 		}
 	}

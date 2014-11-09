@@ -147,6 +147,9 @@
     <ClInclude Include="ColorStatic.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="WorkUnit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -231,6 +234,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ColorStatic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkUnit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

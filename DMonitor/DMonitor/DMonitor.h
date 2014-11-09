@@ -11,6 +11,8 @@
 #include "resource.h"		// 主符号
 #include "CommLayer.h"
 #include "WorkInfo.h"
+#include "WorkUnit.h"
+#include "tinyxml.h"
 // CDMoniterApp:
 // 有关此类的实现，请参阅 DMonitor.cpp
 //
@@ -25,10 +27,10 @@ public:
 	short FromUTF8ToUnicode (unsigned char *utf8Str, short utf8StrLen, WORD * unStr, unsigned short unMaxLen);
 	short Utf8TextBytes (const unsigned char *mstr);
 	void GetModulePath();
-	//int CreateDmFile(CString strFile);
+	int CreateDmFile(CString strFile);
 	int CreateIniFile(CString strFile);
 
-	//void LinkElementeFuns(TiXmlElement * element, CString str);
+	void LinkElementeFuns(TiXmlElement * element, CString str);
 
 	CCommLayer commLayer;//串口通信管理
 	HINSTANCE exe_hInstance;
@@ -58,6 +60,7 @@ public:
 	CString strSettingFile;//记录用户设置的常用数值配置文件
 
 	CTypedPtrList < CPtrList, CWorkInfo * >workInfoList;
+	CTypedPtrList < CPtrList, CWorkUnit * >workUnitList;
 
 	//当前作业信息
 	//仪器信息定义开始

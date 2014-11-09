@@ -141,6 +141,7 @@
     <ClInclude Include="tinystr.h" />
     <ClInclude Include="tinyxml.h" />
     <ClInclude Include="WorkInfo.h" />
+    <ClInclude Include="WorkUnit.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ColorButton.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="tinyxmlerror.cpp" />
     <ClCompile Include="tinyxmlparser.cpp" />
     <ClCompile Include="WorkInfo.cpp" />
+    <ClCompile Include="WorkUnit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DMonitor.rc" />
