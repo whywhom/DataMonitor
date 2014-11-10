@@ -2714,6 +2714,7 @@ void CDMoniterDlg::OnTestMode1()
 	{
 		CreateCurveFile(theApp.strCurveFile);
 		CreateUnitFile(theApp.strUnitsFile);
+
 	}
 }
 
