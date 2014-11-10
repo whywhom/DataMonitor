@@ -14,7 +14,7 @@ public:
 	virtual ~CTestDlg();
 	bool SetCurveInfo(int item);
 	void InitCtrl();
-	void InitWorkInfoList(CString signal,CString title, CString uint);
+	void InitWorkInfoList(CString signal,CString title, CString uint, int min=0, int max=100);
 	void RefreshListCtrl();
 // 对话框数据
 	enum { IDD = IDD_TEST_DLG };

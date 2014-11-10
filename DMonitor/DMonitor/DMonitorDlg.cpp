@@ -93,6 +93,8 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 	fileLimit = 1024*1024*4;
 	processType == NO_PROCESSING;
 
+	pPen = NULL;
+
 	VERIFY(m_font.CreateFont(
 		18,                        // nHeight
 		0,                         // nWidth
@@ -532,8 +534,18 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 		}
 		else if(tmp[i] == ',' || tmp[i] == '*')//数据结束
 		{
-			if(str == "DEPT" || str == "TEMP" || str == "RM" 
-				|| str == "GM" || str == "MAGX" || str == "CCL" )
+			bool bUnit = false;
+			for(int k=0;k<str_unitlist.size();k++)
+			{
+				string s = str_unitlist.at(k);
+				if(str == s)
+				{
+					bUnit = true;
+				}
+			}
+			//if(str == "DEPT" || str == "TEMP" || str == "RM" 
+			//	|| str == "GM" || str == "MAGX" || str == "CCL" )
+			if(bUnit)
 			{
 				strTitle = str;
 				if(str == "DEPT")
@@ -557,6 +569,39 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 					num=atof(str.c_str());
 					if(pPData != NULL)
 					{
+						for(int k=0;k<str_unitlist.size();k++)
+						{
+							string s = str_unitlist.at(k);
+							if(strTitle == s)
+							{
+								if(strTitle == "MAGX")
+								{
+									for(int kk=0;kk<3;kk++)
+									{
+										if(pPData->mag[kk].bAssign == false)
+										{
+											pPData->mag[kk].iData = num;
+											pPData->mag[kk].strData = str.c_str();
+											pPData->mag[kk].bAssign = true;
+											pPData->mag[kk].strTag = strTitle.c_str();
+											CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
+											pPData->mag[kk].strUnit = plist->strUnit;
+										}
+									}
+								}
+								else
+								{
+									TRACE(_T("strTitle == %s \r\n"),s);
+									pPData->dept.iData = num;
+									pPData->dept.strData = str.c_str();
+									pPData->dept.bAssign = true;
+									pPData->dept.strTag = strTitle.c_str();
+									CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
+									pPData->dept.strUnit =plist->strUnit;
+								}
+							}
+						}
+#if 0
 						if(strTitle == "DEPT")
 						{
 							//TRACE(_T("strTitle == 'DEPT' \r\n"));
@@ -633,6 +678,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 							pPData->ccl.strTag = strTitle.c_str();
 							pPData->ccl.strUnit = _T("？");
 						}
+#endif
 					}
 				}
 				str.clear();
@@ -1143,13 +1189,14 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 	int iDrawType = PS_SOLID;
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
-
+#if 0
 	CPen pen(iDrawType, 1,colorRed); //画笔
 	CPen pen2(iDrawType, 1,colorBlue); //画笔2
 	CPen pen3(iDrawType, 1,colorGreen); //画笔3
 	CPen pen4(iDrawType, 1,colorCyan); //画笔4
 	CPen pen5(iDrawType, 1,colorBlack); //画笔5
 	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
+#endif
 	int mCounter = 0;
 	if(processType == REALTIME_PROCESSING)
 	{
@@ -1163,12 +1210,12 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 				{
 					if(pPData->dept.iData > minDepth)
 					{
-						DrawDeptData(pDC,pPData,&pen);//深度
-						DrawTempData(pDC,pPData,&pen);//draw tepm
-						DrawRmData(pDC,pPData,&pen2);//rm
-						DrawGmData(pDC,pPData,&pen3);//gm
-						DrawCclData(pDC,pPData,&pen4);//ccl
-						DrawMagxData(pDC,pPData,&pen5);//magx
+						DrawDeptData(pDC,pPData,pPen);//深度
+						DrawTempData(pDC,pPData,pPen);//draw tepm
+						DrawRmData(pDC,pPData,pPen);//rm
+						DrawGmData(pDC,pPData,pPen);//gm
+						DrawCclData(pDC,pPData,pPen);//ccl
+						DrawMagxData(pDC,pPData,pPen);//magx
 					}
 					else
 					{
@@ -1190,12 +1237,12 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 				{
 					if(pPData->dept.iData < maxDepth)
 					{
-						DrawDeptData(pDC,pPData,&pen);//深度
-						DrawTempData(pDC,pPData,&pen);//draw tepm
-						DrawRmData(pDC,pPData,&pen2);//rm
-						DrawGmData(pDC,pPData,&pen3);//gm
-						DrawCclData(pDC,pPData,&pen4);//ccl
-						DrawMagxData(pDC,pPData,&pen5);//magx
+						DrawDeptData(pDC,pPData,pPen);//深度
+						DrawTempData(pDC,pPData,pPen);//draw tepm
+						DrawRmData(pDC,pPData,pPen);//rm
+						DrawGmData(pDC,pPData,pPen);//gm
+						DrawCclData(pDC,pPData,pPen);//ccl
+						DrawMagxData(pDC,pPData,pPen);//magx
 					}
 					else
 					{
@@ -1206,132 +1253,6 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 			}
 			UpdatePanelListView(pPData);
 		}	
-	}
-	else if(processType == FILEDATA_PROCESSING)
-	{
-		if(m_bDirectDown)
-		{
-			int TempPos = mScrollV.GetScrollPos();
-			int pageMeter = m_clientRect.Height()/unitPixel;
-			minDepth = (int)TempPos+minDepthLimit;
-			maxDepth = (int)minDepth+pageMeter;
-
-			pos = petroList.GetHeadPosition();
-			while(pos)
-			{
-				pPData = petroList.GetNext(pos);
-				if(pPData->dept.bAssign == true)
-				{
-					if(pPData->dept.iData < minDepth)
-					{
-						continue;
-					}
-					else
-					{
-						if(pPData->dept.iData < maxDepth)
-						{
-							if(pPData->dept.bAssign)
-							{
-								DrawDeptData(pDC,pPData,&pen);//深度
-								DrawTempData(pDC,pPData,&pen);//draw tepm
-								DrawRmData(pDC,pPData,&pen2);//rm
-								DrawGmData(pDC,pPData,&pen3);//gm
-								DrawCclData(pDC,pPData,&pen4);//ccl
-								DrawMagxData(pDC,pPData,&pen5);//magx
-							}
-						}
-						else
-						{
-							break;
-						}
-					}
-			
-				}
-		
-			}
-			pDC->SelectObject(pOldPen);
-		}
-		else
-		{
-			pos = petroList.GetTailPosition();
-			while(pos)
-			{
-				pPData = petroList.GetPrev(pos);
-				if(pPData->dept.bAssign == true)
-				{
-					if(pPData->dept.iData > maxDepth)
-					{
-						continue;
-					}
-					else
-					{
-						if(pPData->dept.iData > minDepth && (!bScroll))
-						{
-							if(mCounter < m_drawCount*m_iterator)
-							{
-								if(pPData->dept.bAssign)
-								{
-									DrawDeptData(pDC,pPData,&pen);//深度
-									DrawTempData(pDC,pPData,&pen);//draw tepm
-									DrawRmData(pDC,pPData,&pen2);//rm
-									DrawGmData(pDC,pPData,&pen3);//gm
-									DrawCclData(pDC,pPData,&pen4);//ccl
-									DrawMagxData(pDC,pPData,&pen5);//magx
-								}
-								mCounter++;
-							}
-							else
-							{
-								m_iterator++;
-								pDC->SelectObject(pOldPen);
-								break;
-							}
-						}
-						else if(pPData->dept.iData > minDepth && bScroll)
-						{
-							if(pPData->dept.bAssign)
-							{
-								DrawDeptData(pDC,pPData,&pen);//深度
-								DrawTempData(pDC,pPData,&pen);//draw tepm
-								DrawRmData(pDC,pPData,&pen2);//rm
-								DrawGmData(pDC,pPData,&pen3);//gm
-								DrawCclData(pDC,pPData,&pen4);//ccl
-								DrawMagxData(pDC,pPData,&pen5);//magx
-							}
-						}
-						else
-						{
-							if(!bScroll)
-							{
-								bScroll = true;
-							}
-							maxDepth =(int) (maxDepth - m_step);
-							m_iterator = 1;
-							mCounter = 0;
-							break;
-						}
-					}
-			
-				}
-		
-			}
-			if(pos == NULL)
-			{
-				KillTimer(TIMER_CMD_DRAW);//
-			}
-			else
-			{
-				//UpdatePanelListView(pPData);
-				if(bTimer)
-				{
-					SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
-				}
-			}
-		}	
-	}
-	else
-	{
-
 	}
 }
 void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth)
@@ -2181,7 +2102,7 @@ void CDMoniterDlg::StartTimer()
 		minDepthLimit = 0;
 		maxDepthLimit = 0;
 		bScroll = false;
-		SetRealtimeDataLimit();
+		//SetRealtimeDataLimit();
 		//AddPanelListView();
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
@@ -2714,7 +2635,22 @@ void CDMoniterDlg::OnTestMode1()
 	{
 		CreateCurveFile(theApp.strCurveFile);
 		CreateUnitFile(theApp.strUnitsFile);
-
+		POSITION pos = theApp.workInfoList.GetHeadPosition();
+		while(pos)
+		{
+			CWorkInfo* p = theApp.workInfoList.GetNext(pos);
+			if(p)
+			{
+				CT2CA pszConvertedAnsiString (p->strTitle);   
+				// construct a std::string using the LPCSTR input   
+				std::string strStd (pszConvertedAnsiString);  
+				str_unitlist.push_back(strStd);
+			}
+		}
+		if(MessageBox(_T("是否发起连接请求？"),_T("提示"), MB_YESNO ) == IDYES)
+		{
+		
+		}
 	}
 }
 
