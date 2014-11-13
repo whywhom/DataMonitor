@@ -124,6 +124,8 @@ public:
 	DATA_TEMP oldmagArray[3];
 
 	CTestDlg testDlg;
+	std::vector<std::string>   str_unitlist;
+	CPen* pPen;
 public:
 	void GetRectParam(CRect rectMain);
 	void OnInitWidget();

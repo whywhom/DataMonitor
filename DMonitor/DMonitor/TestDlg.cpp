@@ -112,12 +112,12 @@ BOOL CTestDlg::OnInitDialog()
 	if(theApp.workInfoList.IsEmpty())
 	{
 		//初始化
-		InitWorkInfoList(_T("深度"),_T("DEPT"),_T("m"));
-		InitWorkInfoList(_T("井温"),_T("TEMP"),_T("C"));
-		InitWorkInfoList(_T("电阻率"),_T("RM"),_T("rm"));
-		InitWorkInfoList(_T("放射性"),_T("GR"),_T("GAPI"));
-		InitWorkInfoList(_T("磁三分量"),_T("MAG"),_T("mag"));
-		InitWorkInfoList(_T("磁定位器"),_T("CCL"),_T("CCL"));
+		InitWorkInfoList(_T("深度"),_T("DEPT"),_T("m"), 0, 6000);
+		InitWorkInfoList(_T("井温"),_T("TEMP"),_T("C"), -10, 90);
+		InitWorkInfoList(_T("电阻率"),_T("RM"),_T("rm"), 0, 40);
+		InitWorkInfoList(_T("放射性"),_T("GR"),_T("GAPI"), 0, 2000);
+		InitWorkInfoList(_T("磁三分量"),_T("MAG"),_T("mag"),-10000, 10000);
+		InitWorkInfoList(_T("磁定位器"),_T("CCL"),_T("CCL"), 0, 1);
 		InitCtrl();
 		if(!SetCurveInfo(0))
 		{
@@ -196,14 +196,14 @@ bool CTestDlg::SetCurveInfo(int item)
 	return true;
 }
 
-void CTestDlg::InitWorkInfoList(CString signal,CString title, CString uint)
+void CTestDlg::InitWorkInfoList(CString signal,CString title, CString uint, int min, int max)
 {
 	CWorkInfo* plist = new CWorkInfo();
 	plist->strSignal = signal;
 	plist->strTitle = title;
 	plist->strUnit = uint;
-	plist->leftLimit = 0;
-	plist->rightLimit = 100;
+	plist->leftLimit = min;
+	plist->rightLimit = max;
 	plist->curveColor = RGB(255,0,0); //颜色
 	theApp.workInfoList.AddTail(plist);
 }
