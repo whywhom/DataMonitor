@@ -108,21 +108,7 @@ public:
 	//字体设置
 	CFont		m_font;
 	LOGFONT		m_zoomFont;
-#if 0
-	//保存各个可测变量的最大最小值
-	long tempLimitArray[2];
-	long gmLimitArray[2];
-	long rmLimitArray[2];
-	long cclLimitArray[2];
-	long magLimitArray[3][2];
 
-	DATA_TEMP olddeptArray;
-	DATA_TEMP oldtempArray;
-	DATA_TEMP oldgmArray;
-	DATA_TEMP oldrmArray;
-	DATA_TEMP oldcclArray;
-	DATA_TEMP oldmagArray[3];
-#endif
 	CTestDlg testDlg;
 	std::vector<std::string>   str_unitlist;
 	std::vector<DATA_TEMP>   oldArray;
@@ -159,14 +145,7 @@ public:
 	void StartTimer();
 	void StopTimer();
 	void CalculateParam();
-#if 0
-	void DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制高度曲线
-	void DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制温度曲线
-	void DrawRmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Rm曲线
-	void DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制磁三分量曲线
-	void DrawGmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Gm曲线
-	void DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen);//绘制Ccl曲线
-#endif
+
 	void DrawParamData(CDC* pDC ,CPetroData* pPData);
 
 	void AddPanelListView( );

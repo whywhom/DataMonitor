@@ -842,37 +842,17 @@ void CDMoniterDlg::PrepareDraw()
 }
 void CDMoniterDlg::SetRealtimeDataLimit()
 {
-#if 0
-	tempLimitArray[0] = 0;
-	tempLimitArray[1] = 60000;
 
-	gmLimitArray[0] = 0;
-	gmLimitArray[1] = 60000;
-
-	rmLimitArray[0] = 0;
-	rmLimitArray[1] = 60000;
-
-	cclLimitArray[0] = 0;
-	cclLimitArray[1] = 60000;
-
-	magLimitArray[0][0] = 0;
-	magLimitArray[0][1] = 60000;
-
-	magLimitArray[1][0] = 0;
-	magLimitArray[1][1] = 60000;
-
-	magLimitArray[2][0] = 0;
-	magLimitArray[2][1] = 60000;
-#endif
 }
 void CDMoniterDlg::GetMaxMinData()
 {
+	bool isFound = false;
+	POSITION pos;
+	int mpos = 0;
 	if(!petroList.IsEmpty())
 	{
-		bool isFound = false;
 		CPetroData* p = NULL;
-		int mpos = 0;
-		POSITION pos = petroList.GetHeadPosition();
+		pos = petroList.GetHeadPosition();
 		while(pos)
 		{
 			p = petroList.GetNext(pos);
@@ -900,45 +880,41 @@ void CDMoniterDlg::GetMaxMinData()
 		{
 			minDepthLimit = 0;
 			maxDepthLimit = 6000;
+			return;
 		}
 	}
-	POSITION nPos = petroList.GetHeadPosition();
-	while(nPos)
+	pos = petroList.GetHeadPosition();
+	isFound = false;
+	mpos = 0;
+	while(pos)
 	{
-		CPetroData* pData = petroList.GetNext(nPos);
-
-		//查找当前最小深度值
-		if(minDepthLimit > pData->dept.iData)
+		CPetroData* pData = petroList.GetNext(pos);
+		int size = pData->pData.size();
+		for(int i=0;i<size;i++)
 		{
-			minDepthLimit = pData->dept.iData;
+			if(pData->pData.at(i).strTag == _T("DEPT"))
+			{
+				isFound = true;
+				mpos = i;
+				break;
+			}
 		}
-		if(maxDepthLimit < pData->dept.iData)
+		if(isFound)
 		{
-			maxDepthLimit = pData->dept.iData;
+			break;
+		}
+		//查找当前最小深度值
+		double dData = pData->pData.at(mpos).iData;
+		if(minDepthLimit > dData)
+		{
+			minDepthLimit = dData;
+		}
+		if(maxDepthLimit < dData)
+		{
+			maxDepthLimit = dData;
 		}
 
 		unsigned long m = 0;
-		
-		tempLimitArray[0] = GetMinData(pData->temp,tempLimitArray[0]);
-		tempLimitArray[1] = max(tempLimitArray[1], pData->temp.iData/10*10+10);
-
-		gmLimitArray[0] = GetMinData(pData->gr,gmLimitArray[0]);
-		gmLimitArray[1] = max(gmLimitArray[1], pData->gr.iData/10*10+10);
-
-		rmLimitArray[0] = GetMinData(pData->rm,rmLimitArray[0]);
-		rmLimitArray[1] = max(rmLimitArray[1], pData->rm.iData/10*10+10);
-
-		cclLimitArray[0] = GetMinData(pData->ccl,cclLimitArray[0]);
-		cclLimitArray[1] = max(cclLimitArray[1], pData->ccl.iData/10*10+10);
-
-		magLimitArray[0][0] = GetMinData(pData->mag[0],magLimitArray[0][0]);
-		magLimitArray[0][1] = max(magLimitArray[0][1], pData->mag[0].iData/10*10+10);
-
-		magLimitArray[1][0] = GetMinData(pData->mag[1],magLimitArray[1][0]);
-		magLimitArray[1][1] = max(magLimitArray[1][1], pData->mag[1].iData/10*10+10);
-
-		magLimitArray[2][0] = GetMinData(pData->mag[2],magLimitArray[2][0]);
-		magLimitArray[2][1] = max(magLimitArray[2][1], pData->mag[2].iData/10*10+10);
 	}
 }
 
@@ -1003,14 +979,6 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 				{
 					if(mDataPart.iData > minDepth)
 					{
-#if 0
-						DrawDeptData(pDC,pPData,pPen);//深度
-						DrawTempData(pDC,pPData,pPen);//draw tepm
-						DrawRmData(pDC,pPData,pPen);//rm
-						DrawGmData(pDC,pPData,pPen);//gm
-						DrawCclData(pDC,pPData,pPen);//ccl
-						DrawMagxData(pDC,pPData,pPen);//magx
-#endif
 						DrawParamData(pDC,pPData);//通用
 					}
 					else
@@ -1049,14 +1017,6 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 					//if(pPData->dept.iData < maxDepth)
 					if(mDataPart.iData < maxDepth)
 					{
-#if 0
-						DrawDeptData(pDC,pPData,pPen);//深度
-						DrawTempData(pDC,pPData,pPen);//draw tepm
-						DrawRmData(pDC,pPData,pPen);//rm
-						DrawGmData(pDC,pPData,pPen);//gm
-						DrawCclData(pDC,pPData,pPen);//ccl
-						DrawMagxData(pDC,pPData,pPen);//magx
-#endif
 						DrawParamData(pDC,pPData);//通用
 					}
 					else
@@ -1079,14 +1039,7 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
-#if 0
-	CPen pen(iDrawType, 1,colorRed); //画笔
-	CPen pen2(iDrawType, 1,colorBlue); //画笔2
-	CPen pen3(iDrawType, 1,colorGreen); //画笔3
-	CPen pen4(iDrawType, 1,colorCyan); //画笔4
-	CPen pen5(iDrawType, 1,colorBlack); //画笔5
-	CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-#endif
+
 	int mCounter = 0;
 	if(processType == FILEDATA_PROCESSING)
 	{
@@ -1114,10 +1067,8 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 				{
 					continue;
 				}
-				//if(pPData->dept.bAssign == true)
 				if(mDataPart.bAssign == true)
 				{
-					//if(pPData->dept.iData < minDepth)
 					if(mDataPart.iData < minDepth)
 					{
 						continue;
@@ -1128,14 +1079,6 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 						{
 							if(mDataPart.bAssign)
 							{
-#if 0
-								DrawDeptData(pDC,pPData,&pen);//深度
-								DrawTempData(pDC,pPData,&pen);//draw tepm
-								DrawRmData(pDC,pPData,&pen2);//rm
-								DrawGmData(pDC,pPData,&pen3);//gm
-								DrawCclData(pDC,pPData,&pen4);//ccl
-								DrawMagxData(pDC,pPData,&pen5);//magx
-#endif
 								DrawParamData(pDC,pPData);//通用
 							}
 						}
@@ -1148,7 +1091,6 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 				}
 			}
 			UpdatePanelListView(pPData);
-			//pDC->SelectObject(pOldPen);
 		}
 		else
 		{
@@ -1173,30 +1115,18 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 				{
 					continue;
 				}
-				//if(pPData->dept.bAssign == true)
 				if(mDataPart.bAssign == true)
 				{
-					//if(pPData->dept.iData > maxDepth)
 					if(mDataPart.iData > maxDepth)
 					{
 						continue;
 					}
 					else
 					{
-						//if(pPData->dept.iData > minDepth)
-						if(mDataPart.iData < minDepth)
+						if(mDataPart.iData > minDepth)
 						{
-								//if(pPData->dept.bAssign)
 								if(mDataPart.bAssign)
 								{
-#if 0
-									DrawDeptData(pDC,pPData,&pen);//深度
-									DrawTempData(pDC,pPData,&pen);//draw tepm
-									DrawRmData(pDC,pPData,&pen2);//rm
-									DrawGmData(pDC,pPData,&pen3);//gm
-									DrawCclData(pDC,pPData,&pen4);//ccl
-									DrawMagxData(pDC,pPData,&pen5);//magx
-#endif
 									DrawParamData(pDC,pPData);//通用
 								}
 						}
@@ -1210,230 +1140,10 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 		
 			}
 			UpdatePanelListView(pPData);
-			//pDC->SelectObject(pOldPen);
 		}	
 	}
 }
-#if 0
-void CDMoniterDlg::DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
-{
-	return;
-}
-void CDMoniterDlg::DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
-{
-	long pre_iy=0,cur_iy=0;
-	long pre_ix=0,cur_ix=0;
-	if(pPData->temp.bAssign)
-	{
-		if(oldtempArray.bAssign)
-		{
-			pDC->SelectObject(pPpen);
-			long tempRange = tempLimitArray[1]-tempLimitArray[0];
-			int i_dx = (int)((oldtempArray.dx - (int)oldtempArray.dx)*10);
-			int d_dx = (int)(oldtempArray.dx);
-			pre_ix = (int)((d_dx-tempLimitArray[0])*m_plot1Rect.Width()/tempRange
-				+i_dx*m_plot1Rect.Width()/(10*tempRange));
-			double mid = (pPData->temp.iData-tempLimitArray[0])*m_plot1Rect.Width()/tempRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldtempArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldtempArray.bAssign = pPData->temp.bAssign;
-			oldtempArray.dx = pPData->temp.iData;
-			oldtempArray.dy = pPData->dept.iData;
-			oldtempArray.strDx = pPData->temp.strData;
-		}
-	}
-}
-void CDMoniterDlg::DrawRmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
-{
-	long pre_iy=0,cur_iy=0;
-	long pre_ix=0,cur_ix=0;
-	if(pPData->rm.bAssign)
-	{
-		if(oldtempArray.bAssign)
-		{
-			pDC->SelectObject(pPpen);
-			long rmRange = rmLimitArray[1]-rmLimitArray[0];
-			int i_dx = (int)((oldrmArray.dx - (int)oldrmArray.dx)*10);
-			int d_dx = (int)(oldrmArray.dx);
-			pre_ix = (int)((d_dx-rmLimitArray[0])*m_plot1Rect.Width()/rmRange
-				+i_dx*m_plot1Rect.Width()/(10*rmRange));
-			double mid = (pPData->rm.iData-rmLimitArray[0])*m_plot1Rect.Width()/rmRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldrmArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldrmArray.bAssign = pPData->rm.bAssign;
-			oldrmArray.dx = pPData->rm.iData;
-			oldrmArray.dy = pPData->dept.iData;
-			oldrmArray.strDx = pPData->rm.strData;
-		}
-	}
-}
-//绘制磁三分量曲线
-void CDMoniterDlg::DrawMagxData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
-{
-	int iDrawType = PS_SOLID;
-	COLORREF color1 = RGB(255,0,255);
-	COLORREF color2 = RGB(0,255,255);
 
-	CPen penmag0(iDrawType, 1,color1); //画笔
-	CPen penmag1(iDrawType, 1,color1); //画笔2
-	CPen penmag2(iDrawType, 1,color2); //画笔3
-	
-	long pre_iy=0,cur_iy=0;
-	long pre_ix=0,cur_ix=0;
-	//0
-	if(pPData->mag[0].bAssign)
-	{
-		if(oldmagArray[0].bAssign)
-		{
-			pDC->SelectObject(pPpen);
-			long magRange = magLimitArray[0][1]-magLimitArray[0][0];
-			int i_dx = (int)((oldmagArray[0].dx - (int)oldmagArray[0].dx)*10);
-			int d_dx = (int)(oldmagArray[0].dx);
-			pre_ix = (int)((d_dx-magLimitArray[0][0])*m_plot1Rect.Width()/magRange
-				+i_dx*m_plot1Rect.Width()/(10*magRange));
-			double mid = (pPData->mag[0].iData-magLimitArray[0][0])*m_plot1Rect.Width()/magRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldmagArray[0].dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldmagArray[0].bAssign = pPData->mag[0].bAssign;
-			oldmagArray[0].dx = pPData->mag[0].iData;
-			oldmagArray[0].dy = pPData->dept.iData;
-			oldmagArray[0].strDx = pPData->mag[0].strData;
-		}
-	}
-	//1
-	if(pPData->mag[1].bAssign)
-	{
-		if(oldmagArray[1].bAssign)
-		{
-			pDC->SelectObject(&penmag1);
-			long magRange = magLimitArray[1][1]-magLimitArray[1][0];
-			int i_dx = (int)((oldmagArray[1].dx - (int)oldmagArray[1].dx)*10);
-			int d_dx = (int)(oldmagArray[1].dx);
-			pre_ix = (int)((d_dx-magLimitArray[1][0])*m_plot1Rect.Width()/magRange
-				+i_dx*m_plot1Rect.Width()/(10*magRange));
-			double mid = (pPData->mag[1].iData-magLimitArray[1][0])*m_plot1Rect.Width()/magRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldmagArray[1].dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldmagArray[1].bAssign = pPData->mag[1].bAssign;
-			oldmagArray[1].dx = pPData->mag[1].iData;
-			oldmagArray[1].dy = pPData->dept.iData;
-			oldmagArray[1].strDx = pPData->mag[1].strData;
-		}
-	}
-	//2
-	if(pPData->mag[2].bAssign)
-	{
-		if(oldmagArray[2].bAssign)
-		{
-			pDC->SelectObject(&penmag2);
-			long magRange = magLimitArray[2][1]-magLimitArray[2][0];
-			int i_dx = (int)((oldmagArray[2].dx - (int)oldmagArray[2].dx)*10);
-			int d_dx = (int)(oldmagArray[2].dx);
-			pre_ix = (int)((d_dx-magLimitArray[2][0])*m_plot1Rect.Width()/magRange
-				+i_dx*m_plot1Rect.Width()/(10*magRange));
-			double mid = (pPData->mag[2].iData-magLimitArray[2][0])*m_plot1Rect.Width()/magRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldmagArray[2].dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldmagArray[2].bAssign = pPData->mag[2].bAssign;
-			oldmagArray[2].dx = pPData->mag[2].iData;
-			oldmagArray[2].dy = pPData->dept.iData;
-			oldmagArray[2].strDx = pPData->mag[2].strData;
-		}
-	}
-}
-//绘制Gm曲线
-void CDMoniterDlg::DrawGmData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
-{
-	long pre_iy=0,cur_iy=0;
-	long pre_ix=0,cur_ix=0;
-	if(pPData->gr.bAssign)
-	{
-		if(oldgmArray.bAssign)
-		{
-			pDC->SelectObject(pPpen);
-			long gmRange = gmLimitArray[1]-gmLimitArray[0];
-			int i_dx = (int)((oldgmArray.dx - (int)oldgmArray.dx)*10);
-			int d_dx = (int)(oldgmArray.dx);
-			pre_ix = (int)((d_dx-gmLimitArray[0])*m_plot1Rect.Width()/gmRange
-				+i_dx*m_plot1Rect.Width()/(10*gmRange));
-			double mid = (pPData->gr.iData-gmLimitArray[0])*m_plot1Rect.Width()/gmRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldgmArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldgmArray.bAssign = pPData->gr.bAssign;
-			oldgmArray.dx = pPData->gr.iData;
-			oldgmArray.dy = pPData->dept.iData;
-			oldgmArray.strDx = pPData->gr.strData;
-		}
-	}
-}
-//绘制Ccl曲线
-void CDMoniterDlg::DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
-{
-	long pre_iy=0,cur_iy=0;
-	long pre_ix=0,cur_ix=0;
-	if(pPData->ccl.bAssign)
-	{
-		if(oldcclArray.bAssign)
-		{
-			pDC->SelectObject(pPpen);
-			long cclRange = cclLimitArray[1]-cclLimitArray[0];
-			int i_dx = (int)((oldcclArray.dx - (int)oldcclArray.dx)*10);
-			int d_dx = (int)(oldcclArray.dx);
-			pre_ix = (int)((d_dx-cclLimitArray[0])*m_plot1Rect.Width()/cclRange
-				+i_dx*m_plot1Rect.Width()/(10*cclRange));
-			double mid = (pPData->ccl.iData-cclLimitArray[0])*m_plot1Rect.Width()/cclRange;
-			cur_ix = (int)mid;
-			pre_iy = (oldcclArray.dy - minDepth)*unitPixel;
-			cur_iy = (pPData->dept.iData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			oldcclArray.bAssign = pPData->ccl.bAssign;
-			oldcclArray.dx = pPData->ccl.iData;
-			oldcclArray.dy = pPData->dept.iData;
-			oldcclArray.strDx = pPData->ccl.strData;
-		}
-	}
-}
-#endif
 void CDMoniterDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 {
 	long pre_iy=0,cur_iy=0;
@@ -1550,46 +1260,49 @@ void CDMoniterDlg::DrawRealtimeBasic(CDC * pDC)
 	{
 		CPetroData * pHeadData = petroList.GetHead();
 		CPetroData * pTailData = petroList.GetTail();
-		
+		DATA_PART headData;
+		DATA_PART tailData;
+		for(int j =0;j<str_unitlist.size();j++)
+		{			
+			if(pHeadData->pData.at(j).strTag == _T("DEPT"))
+			{
+				headData = pHeadData->pData.at(j);
+			}
+			if(tailData.strTag == _T("DEPT"))
+			{
+				tailData = pTailData->pData.at(j);
+			}
+		}
 		if(m_bDirectDown)
 		{
-			minDepthLimit = pHeadData->dept.iData;
-			maxDepthLimit = pTailData->dept.iData;
+			minDepthLimit = headData.iData;
+			maxDepthLimit = tailData.iData;
 			if(bScroll)
 			{
 				maxDepth = maxDepthLimit;
 				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 			}
 			else
 			{
-				//minDepth = minDepthLimit;
-				maxDepth = maxDepthLimit;//minDepth + m_clientRect.Height()/unitPixel;
+				maxDepth = maxDepthLimit;
 				minDepth = maxDepth - m_clientRect.Height()/unitPixel;
-				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 			}
 		}
 		else
 		{
-			maxDepthLimit = pHeadData->dept.iData;
-			minDepthLimit = pTailData->dept.iData;
+			maxDepthLimit = headData.iData;
+			minDepthLimit = tailData.iData;
 			if(bScroll)
 			{
 				minDepth = minDepthLimit;
 				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
 			}
 			else
 			{
-				//maxDepth = maxDepthLimit;
-				//minDepth = maxDepth - m_clientRect.Height()/unitPixel;
 				minDepth = minDepthLimit;
 				maxDepth = minDepth + m_clientRect.Height()/unitPixel;
-				//depPixel = (int)((maxDepth - minDepthLimit)*10/10) * unitPixel;
-				
 			}
 		}
-		//m_totalRect.bottom = m_totalRect.top + max(depPixel,m_totalRect.Height());
 	
 		mScrollV.SetScrollRange(0,0);
 		mScrollV.SetScrollPos(0);
@@ -1988,7 +1701,27 @@ void CDMoniterDlg::CalculateParam()
 {
 	CPetroData * pHeadData = petroList.GetHead();
 	CPetroData * pTailData = petroList.GetTail();
-	if(pHeadData->dept.iData < pTailData->dept.iData)
+
+	DATA_PART headData;
+	DATA_PART tailData;
+	for(int j =0;j<pHeadData->pData.size();j++)
+	{			
+		if(pHeadData->pData.at(j).strTag == _T("DEPT"))
+		{
+			headData = pHeadData->pData.at(j);
+			break;
+		}
+	}
+
+	for(int j =0;j<pTailData->pData.size();j++)
+	{
+		if(pTailData->pData.at(j).strTag == _T("DEPT"))
+		{
+			tailData = pTailData->pData.at(j);
+			break;
+		}
+	}
+	if(headData.iData < tailData.iData)
 	{
 		m_bDirectDown = true;
 	}
@@ -2022,8 +1755,6 @@ void CDMoniterDlg::StartTimer()
 		minDepthLimit = 0;
 		maxDepthLimit = 0;
 		bScroll = false;
-		//SetRealtimeDataLimit();
-		//AddPanelListView();
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
 	else if(processType == FILEDATA_PROCESSING)
@@ -2377,6 +2108,10 @@ void CDMoniterDlg::AddPanelListView( )
 {
 	listView.SetRedraw(FALSE);
 	listView.DeleteAllItems();
+	for(int i=0;i<str_unitlist.size();i++)
+	{
+
+	}
 	listView.InsertItem(0,_T("DEPT"));
 	listView.InsertItem(1,_T("TEMP"));
 	listView.InsertItem(2,_T("RM"));
