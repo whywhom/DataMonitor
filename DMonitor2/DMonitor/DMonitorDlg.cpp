@@ -516,6 +516,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 {
 	std::string str,strTitle,strData;
 	CPetroData* pPData = NULL;
+	int subId = 0;
 	BYTE buf0 = 0;
 	for(int i = 0; i< wParam; i++)
 	{
@@ -574,6 +575,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 						petroList.AddTail(pPData);
 					}
 					pPData = new CPetroData();
+					subId = 0;
 				}
 				str.clear();
 			}
@@ -593,51 +595,20 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 							if(strTitle == s)
 							{
 								TRACE(_T("strTitle == %s \r\n"),s);
-#if 0
-								if(strTitle == "MAGX")
 								{
-									for(int kk=0;kk<3;kk++)
-									{
-										if(pPData->mag[kk].bAssign == false)
-										{
-
-											pPData->mag[kk].iData = num;
-											pPData->mag[kk].strData = str.c_str();
-											pPData->mag[kk].bAssign = true;
-											pPData->mag[kk].subIndex = kk;
-											pPData->mag[kk].strTag = strTitle.c_str();
-											CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
-											pPData->mag[kk].strUnit = plist->strUnit;
-
-											DATA_PART dataPart;
-											dataPart.iData = num;
-											dataPart.strData = str.c_str();
-											dataPart.bAssign = true;
-											dataPart.subIndex = kk;
-											dataPart.strTag = strTitle.c_str();
-											CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
-											dataPart.strUnit = plist->strUnit;
-											pPData->pData.push_back(dataPart);
-
-										}
-									}
-								}
-								else
-#endif
-								{
-#if 0
-									pPData->dept.iData = num;
-									pPData->dept.strData = str.c_str();
-									pPData->dept.bAssign = true;
-									pPData->dept.strTag = strTitle.c_str();
-									CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
-									pPData->dept.strUnit =plist->strUnit;
-#endif
 									DATA_PART dataPart;
 									dataPart.iData = num;
 									dataPart.strData = str.c_str();
 									dataPart.bAssign = true;
-									dataPart.subIndex = 0;
+									if(s == "MAG")
+									{
+										dataPart.subIndex = subId;
+										subId++;
+									}
+									else
+									{
+										dataPart.subIndex = 0;
+									}
 									dataPart.strTag = strTitle.c_str();
 									CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
 									dataPart.strUnit = plist->strUnit;
@@ -1040,7 +1011,6 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
 
-	int mCounter = 0;
 	if(processType == FILEDATA_PROCESSING)
 	{
 		if(m_bDirectDown)
@@ -2110,47 +2080,56 @@ void CDMoniterDlg::AddPanelListView( )
 	listView.DeleteAllItems();
 	for(int i=0;i<str_unitlist.size();i++)
 	{
-
+		string s =str_unitlist.at(i).c_str();
+		CString str(s.c_str()); 
+		listView.InsertItem(i,str);
 	}
-	listView.InsertItem(0,_T("DEPT"));
-	listView.InsertItem(1,_T("TEMP"));
-	listView.InsertItem(2,_T("RM"));
-	listView.InsertItem(3,_T("GM"));
-	listView.InsertItem(4,_T("MAGX"));
-	listView.InsertItem(5,_T("CCL"));
 	listView.SetRedraw(TRUE);
 	listView.Invalidate();
 	listView.UpdateWindow();
 }
 void CDMoniterDlg::UpdatePanelListView(CPetroData* pPData)
 {
-	Edit01.SetWindowText(pPData->dept.strData);
-
-	listView.SetRedraw(FALSE);
-	listView.SetItemText(0,1,pPData->dept.strData);
-	listView.SetItemText(0,2,pPData->dept.strUnit);
-
-	listView.SetItemText(1,1,oldtempArray.strDx);
-	listView.SetItemText(1,2,pPData->temp.strUnit);
-
-	listView.SetItemText(2,1,oldrmArray.strDx);
-	listView.SetItemText(2,2,pPData->rm.strUnit);
-
-	listView.SetItemText(3,1,oldgmArray.strDx);
-	listView.SetItemText(3,2,pPData->gr.strUnit);
-
-	CString str;
-	str += oldmagArray[0].strDx;
-	str += _T(",");
-	str += oldmagArray[1].strDx;
-	str += _T(",");
-	str += oldmagArray[2].strDx;
-	listView.SetItemText(4,1,str);
-	listView.SetItemText(4,2,pPData->mag[0].strUnit);
-
-	listView.SetItemText(5,1,oldcclArray.strDx);
-	listView.SetItemText(5,2,pPData->ccl.strUnit);
-
+	CString strMag;
+	for(int i=0;i<pPData->pData.size();i++)
+	{
+		for(int j =0;j<str_unitlist.size();j++)
+		{
+			CString str(str_unitlist.at(j).c_str());
+			if(str.Compare(pPData->pData.at(i).strTag))
+			{
+				if(!str.Compare(_T("DEPT")))
+				{
+					Edit01.SetWindowText(pPData->pData.at(i).strData);
+				}
+				if(!str.Compare(_T("MAG")))
+				{
+					if(pPData->pData.at(i).subIndex == 0)
+					{
+						strMag += pPData->pData.at(i).strData;
+						strMag += _T(",");
+					}
+					else if(pPData->pData.at(i).subIndex == 1)
+					{
+						strMag += pPData->pData.at(i).strData;
+						strMag += _T(",");
+					}
+					else
+					{
+						strMag += pPData->pData.at(i).strData;
+						listView.SetItemText(4,1,strMag);
+						listView.SetItemText(j,2,pPData->pData.at(i).strUnit);
+					}
+				}
+				else
+				{
+					listView.SetItemText(j,1,pPData->pData.at(i).strData);
+					listView.SetItemText(j,2,pPData->pData.at(i).strUnit);
+				}
+				break;
+			}
+		}
+	}
 	listView.SetRedraw(TRUE);
 	listView.Invalidate();
 	listView.UpdateWindow();

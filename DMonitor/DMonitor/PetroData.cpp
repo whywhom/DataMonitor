@@ -10,16 +10,19 @@
 
 CPetroData::CPetroData()
 {
-	InitData();
+	//InitData();
+	pData.clear();
 }
 
 CPetroData::~CPetroData()
 {
-	InitData();
+	//InitData();
+	pData.clear();
 }
 
 
 // CPetroData 成员函数
+#if 0
 void CPetroData::InitData()
 {
 	dept.iData = 0;//深度
@@ -54,3 +57,4 @@ void CPetroData::InitData()
 	ccl.strData.Empty();
 	ccl.bAssign = false;
 }
+#endif
