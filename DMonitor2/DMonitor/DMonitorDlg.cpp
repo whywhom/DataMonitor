@@ -46,13 +46,13 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CDMoniterDlg 对话框
+// CDMonitorDlg 对话框
 
 
 
 
-CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(CDMoniterDlg::IDD, pParent)
+CDMonitorDlg::CDMonitorDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CDMonitorDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	//设置主界面大小
@@ -113,7 +113,7 @@ CDMoniterDlg::CDMoniterDlg(CWnd* pParent /*=NULL*/)
 
 }
 
-void CDMoniterDlg::DoDataExchange(CDataExchange* pDX)
+void CDMonitorDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SCROLLBAR_V, mScrollV);
@@ -136,42 +136,42 @@ void CDMoniterDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_DETAIL, listView);
 }
 
-BEGIN_MESSAGE_MAP(CDMoniterDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CDMonitorDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDOK, &CDMoniterDlg::OnBnClickedOk)
-	ON_BN_CLICKED(IDCANCEL, &CDMoniterDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDOK, &CDMonitorDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDCANCEL, &CDMonitorDlg::OnBnClickedCancel)
 	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
 	ON_WM_DESTROY()
-	ON_COMMAND(ID_FILE_OPEN, &CDMoniterDlg::OnFileOpen)
-	ON_UPDATE_COMMAND_UI(ID_FILE_OPEN, &CDMoniterDlg::OnUpdateFileOpen)
+	ON_COMMAND(ID_FILE_OPEN, &CDMonitorDlg::OnFileOpen)
+	ON_UPDATE_COMMAND_UI(ID_FILE_OPEN, &CDMonitorDlg::OnUpdateFileOpen)
 	ON_WM_TIMER()
 	ON_WM_VSCROLL()
 	ON_WM_CLOSE()
-	ON_COMMAND(ID_MENU_CONN, &CDMoniterDlg::OnMenuConn)
-	ON_UPDATE_COMMAND_UI(ID_MENU_CONN, &CDMoniterDlg::OnUpdateMenuConn)
-	ON_COMMAND(ID_MENU_DISCONN, &CDMoniterDlg::OnMenuDisconn)
-	ON_UPDATE_COMMAND_UI(ID_MENU_DISCONN, &CDMoniterDlg::OnUpdateMenuDisconn)
-	ON_COMMAND(ID_MENU_MEASUREDOWN, &CDMoniterDlg::OnMenuMeasuredown)
-	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREDOWN, &CDMoniterDlg::OnUpdateMenuMeasuredown)
-	ON_COMMAND(ID_MENU_MEASUREUP, &CDMoniterDlg::OnMenuMeasureup)
-	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREUP, &CDMoniterDlg::OnUpdateMenuMeasureup)
+	ON_COMMAND(ID_MENU_CONN, &CDMonitorDlg::OnMenuConn)
+	ON_UPDATE_COMMAND_UI(ID_MENU_CONN, &CDMonitorDlg::OnUpdateMenuConn)
+	ON_COMMAND(ID_MENU_DISCONN, &CDMonitorDlg::OnMenuDisconn)
+	ON_UPDATE_COMMAND_UI(ID_MENU_DISCONN, &CDMonitorDlg::OnUpdateMenuDisconn)
+	ON_COMMAND(ID_MENU_MEASUREDOWN, &CDMonitorDlg::OnMenuMeasuredown)
+	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREDOWN, &CDMonitorDlg::OnUpdateMenuMeasuredown)
+	ON_COMMAND(ID_MENU_MEASUREUP, &CDMonitorDlg::OnMenuMeasureup)
+	ON_UPDATE_COMMAND_UI(ID_MENU_MEASUREUP, &CDMonitorDlg::OnUpdateMenuMeasureup)
 	ON_WM_ERASEBKGND()
-	ON_COMMAND(ID_MENU_INSTRUMENT, &CDMoniterDlg::OnMenuInstrument)
-	ON_COMMAND(ID_MENU_JOB, &CDMoniterDlg::OnMenuJob)
-	ON_COMMAND(ID_MENU_TOOL, &CDMoniterDlg::OnMenuTool)
-	ON_COMMAND(ID_MENU_NEWJOB, &CDMoniterDlg::OnMenuNewjob)
-	ON_COMMAND(ID_MENU_JOBLOAD, &CDMoniterDlg::OnMenuJobload)
-	ON_COMMAND(ID_TEST_MODE1, &CDMoniterDlg::OnTestMode1)
+	ON_COMMAND(ID_MENU_INSTRUMENT, &CDMonitorDlg::OnMenuInstrument)
+	ON_COMMAND(ID_MENU_JOB, &CDMonitorDlg::OnMenuJob)
+	ON_COMMAND(ID_MENU_TOOL, &CDMonitorDlg::OnMenuTool)
+	ON_COMMAND(ID_MENU_NEWJOB, &CDMonitorDlg::OnMenuNewjob)
+	ON_COMMAND(ID_MENU_JOBLOAD, &CDMonitorDlg::OnMenuJobload)
+	ON_COMMAND(ID_TEST_MODE1, &CDMonitorDlg::OnTestMode1)
 END_MESSAGE_MAP()
 
 
-// CDMoniterDlg 消息处理程序
+// CDMonitorDlg 消息处理程序
 
-BOOL CDMoniterDlg::OnInitDialog()
+BOOL CDMonitorDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
@@ -209,7 +209,7 @@ BOOL CDMoniterDlg::OnInitDialog()
 	ShowWindow(SW_SHOWMAXIMIZED);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
-void CDMoniterDlg::OnInitWidget()
+void CDMonitorDlg::OnInitWidget()
 {
 	value01.LoadString(IDS_DEEPTH);
 	cs01.SetWindowText(value01);
@@ -225,7 +225,7 @@ void CDMoniterDlg::OnInitWidget()
 	listView.InsertColumn( 2, theApp.GetResString(IDS_WHY_UNIT), LVCFMT_LEFT, 60 ); 
 	listView.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP ); 
 }
-void CDMoniterDlg::OnSysCommand(UINT nID, LPARAM lParam)
+void CDMonitorDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
@@ -237,7 +237,7 @@ void CDMoniterDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
-void CDMoniterDlg::OnClose()
+void CDMonitorDlg::OnClose()
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if (MessageBox(theApp.GetResString(IDS_EXIT_APP_QUESTION),_T("提示"),MB_ICONQUESTION|MB_OKCANCEL)==IDOK)
@@ -252,7 +252,7 @@ void CDMoniterDlg::OnClose()
 // 如果向对话框添加最小化按钮，则需要下面的代码
 //  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
-BOOL CDMoniterDlg::PreTranslateMessage(MSG* pMsg)
+BOOL CDMonitorDlg::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
 	switch (pMsg->message)
@@ -279,7 +279,7 @@ BOOL CDMoniterDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
-void CDMoniterDlg::OnPaint()
+void CDMonitorDlg::OnPaint()
 {
 	if (IsIconic())
 	{
@@ -343,13 +343,13 @@ void CDMoniterDlg::OnPaint()
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR CDMoniterDlg::OnQueryDragIcon()
+HCURSOR CDMonitorDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 
-void CDMoniterDlg::InitColorVariable()
+void CDMonitorDlg::InitColorVariable()
 {
 	crViewBackground = RGB(255,255,255);//背景
 	crViewCoordinate = RGB(0,0,0);
@@ -364,21 +364,21 @@ void CDMoniterDlg::InitColorVariable()
 	colorCyan = RGB(2,141,153);
 	colorArray = NULL;
 }
-void CDMoniterDlg::OnBnClickedOk()
+void CDMonitorDlg::OnBnClickedOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CDialogEx::OnOK();
 }
 
 
-void CDMoniterDlg::OnBnClickedCancel()
+void CDMonitorDlg::OnBnClickedCancel()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CDialogEx::OnCancel();
 }
 
 
-void CDMoniterDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+void CDMonitorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	lpMMI-> ptMinTrackSize.x = minMainDialogWidth ; //宽 
@@ -387,7 +387,7 @@ void CDMoniterDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 }
 
 
-void CDMoniterDlg::OnSize(UINT nType, int cx, int cy)
+void CDMonitorDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
 	GetClientRect(rectMain);
@@ -444,7 +444,7 @@ void CDMoniterDlg::OnSize(UINT nType, int cx, int cy)
 	// TODO: 在此处添加消息处理程序代码
 }
 
-void CDMoniterDlg::GetRectParam(CRect rectMain)
+void CDMonitorDlg::GetRectParam(CRect rectMain)
 {
 	rectMain.left += 2;
 	rectMain.top += 25;
@@ -469,7 +469,7 @@ void CDMoniterDlg::GetRectParam(CRect rectMain)
 }
 
 
-void CDMoniterDlg::OnDestroy()
+void CDMonitorDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 	
@@ -478,7 +478,7 @@ void CDMoniterDlg::OnDestroy()
 }
 
 
-void CDMoniterDlg::OnFileOpen()
+void CDMonitorDlg::OnFileOpen()
 {
 	// TODO: 在此添加命令处理程序代码
 	bool bReturn=false;
@@ -507,12 +507,12 @@ void CDMoniterDlg::OnFileOpen()
 }
 
 
-void CDMoniterDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
+void CDMonitorDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 }
 
-void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam) 
+void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam) 
 {
 	std::string str,strTitle,strData;
 	CPetroData* pPData = NULL;
@@ -572,7 +572,8 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 								pPData->pData.at(subi).iDeptData = iDept;
 							}
 						}
-						petroList.AddTail(pPData);
+						//petroList.AddTail(pPData);
+						pushToQueue(pPData);
 					}
 					pPData = new CPetroData();
 					subId = 0;
@@ -597,6 +598,7 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 								TRACE(_T("strTitle == %s \r\n"),s);
 								{
 									DATA_PART dataPart;
+									initDataPart(dataPart);
 									dataPart.iData = num;
 									dataPart.strData = str.c_str();
 									dataPart.bAssign = true;
@@ -637,11 +639,11 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 	}
 }
 
-void CDMoniterDlg::pushToQueue(CPetroData* pPData)
+void CDMonitorDlg::pushToQueue(CPetroData* pPData)
 {
 	int nSize = petroList.GetSize();
 	CPetroData* pCurrent = NULL;
-	if(nSize >= maxqueue)
+	if(nSize >= maxqueue && processType == REALTIME_PROCESSING)
 	{
 		pCurrent = petroList.RemoveHead();
 		delete pCurrent;
@@ -649,7 +651,7 @@ void CDMoniterDlg::pushToQueue(CPetroData* pPData)
 	}
 	petroList.AddTail(pPData);
 }
-int CDMoniterDlg::CheckString( std::string str )
+int CDMonitorDlg::CheckString( std::string str )
 {
 	bool bIsDigit = true;
 	bool bIsPoint = false;
@@ -683,7 +685,7 @@ int CDMoniterDlg::CheckString( std::string str )
 	}
 }
 
-void CDMoniterDlg::ClearPetroData()
+void CDMonitorDlg::ClearPetroData()
 {
 	CPetroData* pCurrent = NULL;
 	while(petroList.IsEmpty()==false)
@@ -693,7 +695,7 @@ void CDMoniterDlg::ClearPetroData()
 		pCurrent=NULL;
 	}
 }
-void CDMoniterDlg::InitArrayData()
+void CDMonitorDlg::InitArrayData()
 {
 #if 0
 	for(int i = 0;i<2;i++)
@@ -708,7 +710,7 @@ void CDMoniterDlg::InitArrayData()
 	}
 #endif
 }
-void CDMoniterDlg::InitOldArrayData()
+void CDMonitorDlg::InitOldArrayData()
 {
 #if 0
 	olddeptArray.dx = 0;
@@ -752,7 +754,7 @@ void CDMoniterDlg::InitOldArrayData()
 	oldmagArray[2].strDx = _T("");
 #endif
 }
-void CDMoniterDlg::PrepareDraw()
+void CDMonitorDlg::PrepareDraw()
 {
 	base = 0;
 	bias = 0;
@@ -811,11 +813,11 @@ void CDMoniterDlg::PrepareDraw()
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
-void CDMoniterDlg::SetRealtimeDataLimit()
+void CDMonitorDlg::SetRealtimeDataLimit()
 {
 
 }
-void CDMoniterDlg::GetMaxMinData()
+void CDMonitorDlg::GetMaxMinData()
 {
 	bool isFound = false;
 	POSITION pos;
@@ -889,7 +891,7 @@ void CDMoniterDlg::GetMaxMinData()
 	}
 }
 
-void CDMoniterDlg::DrawData(CDC* pDC)
+void CDMonitorDlg::DrawData(CDC* pDC)
 {
 	if(processType == REALTIME_PROCESSING)
 	{
@@ -914,7 +916,7 @@ void CDMoniterDlg::DrawData(CDC* pDC)
 }
 
 
-void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth)
+void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth)
 {
 	int iDrawType = PS_SOLID;
 	DATA_PART mDataPart;
@@ -1001,7 +1003,7 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 		}	
 	}
 }
-void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth)
+void CDMonitorDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth)
 {
 	int iDrawType = PS_SOLID;
 	DATA_PART mDataPart;
@@ -1114,7 +1116,7 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 	}
 }
 
-void CDMoniterDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
+void CDMonitorDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 {
 	long pre_iy=0,cur_iy=0;
 	long pre_ix=0,cur_ix=0;
@@ -1183,7 +1185,7 @@ void CDMoniterDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 	}
 }
 
-unsigned long CDMoniterDlg::GetMinData(DATA_PART tmp,unsigned long m)
+unsigned long CDMonitorDlg::GetMinData(DATA_PART tmp,unsigned long m)
 {
 	unsigned long t = 0;
 	if(tmp.bAssign == false)
@@ -1207,7 +1209,7 @@ unsigned long CDMoniterDlg::GetMinData(DATA_PART tmp,unsigned long m)
 		return m;
 	}
 }
-void CDMoniterDlg::DrawBasic(CDC * pDC)
+void CDMonitorDlg::DrawBasic(CDC * pDC)
 {
 	m_totalRect = rectView;
 	maxPreDepth = maxDepth;
@@ -1221,7 +1223,7 @@ void CDMoniterDlg::DrawBasic(CDC * pDC)
 	
 	}
 }
-void CDMoniterDlg::DrawRealtimeBasic(CDC * pDC)
+void CDMonitorDlg::DrawRealtimeBasic(CDC * pDC)
 {
 	m_totalRect = rectView;
 	maxPreDepth = maxDepth;
@@ -1278,7 +1280,7 @@ void CDMoniterDlg::DrawRealtimeBasic(CDC * pDC)
 		mScrollV.SetScrollPos(0);
 	}
 }
-void CDMoniterDlg::DrawFileDataBasic(CDC * pDC)
+void CDMonitorDlg::DrawFileDataBasic(CDC * pDC)
 {
 	m_totalRect = rectView;
 	maxPreDepth = maxDepth;
@@ -1288,7 +1290,7 @@ void CDMoniterDlg::DrawFileDataBasic(CDC * pDC)
 
 	}
 }
-void CDMoniterDlg::DrawGrid(CDC * pDC)
+void CDMonitorDlg::DrawGrid(CDC * pDC)
 {
 	m_plot1Rect = m_clientRect;
 	m_plot1Rect.right = m_plot1Rect.left + 400;
@@ -1374,7 +1376,7 @@ void CDMoniterDlg::DrawGrid(CDC * pDC)
 	//画笔刷新
 	pDC->SelectObject(old);
 }
-void CDMoniterDlg::DrawRealtimeGrid(CDC * pDC)
+void CDMonitorDlg::DrawRealtimeGrid(CDC * pDC)
 {
 	m_plot1Rect = m_clientRect;
 	m_plot1Rect.right = m_plot1Rect.left + 400;
@@ -1459,7 +1461,7 @@ void CDMoniterDlg::DrawRealtimeGrid(CDC * pDC)
 	//画笔刷新
 	pDC->SelectObject(old);
 }
-void CDMoniterDlg::DrawFileDataGrid(CDC * pDC)
+void CDMonitorDlg::DrawFileDataGrid(CDC * pDC)
 {
 	m_plot1Rect = m_clientRect;
 	m_plot1Rect.right = m_plot1Rect.left + 400;
@@ -1544,7 +1546,7 @@ void CDMoniterDlg::DrawFileDataGrid(CDC * pDC)
 	//画笔刷新
 	pDC->SelectObject(old);
 }
-void CDMoniterDlg::DrawPlot(CDC* pDC)
+void CDMonitorDlg::DrawPlot(CDC* pDC)
 {
 	m_zoomFont.lfHeight			= -13;
 	m_zoomFont.lfWidth			= 0;
@@ -1585,7 +1587,7 @@ void CDMoniterDlg::DrawPlot(CDC* pDC)
 	}
 	pDC->SelectObject(oFont);
 }
-void CDMoniterDlg::DrawRealtimePlot(CDC* pDC)
+void CDMonitorDlg::DrawRealtimePlot(CDC* pDC)
 {
 	m_zoomFont.lfHeight			= -13;
 	m_zoomFont.lfWidth			= 0;
@@ -1626,7 +1628,7 @@ void CDMoniterDlg::DrawRealtimePlot(CDC* pDC)
 	}
 	pDC->SelectObject(oFont);
 }
-void CDMoniterDlg::DrawFileDataPlot(CDC* pDC)
+void CDMonitorDlg::DrawFileDataPlot(CDC* pDC)
 {
 	m_zoomFont.lfHeight			= -13;
 	m_zoomFont.lfWidth			= 0;
@@ -1667,7 +1669,7 @@ void CDMoniterDlg::DrawFileDataPlot(CDC* pDC)
 	}
 	pDC->SelectObject(oFont);
 }
-void CDMoniterDlg::CalculateParam()
+void CDMonitorDlg::CalculateParam()
 {
 	CPetroData * pHeadData = petroList.GetHead();
 	CPetroData * pTailData = petroList.GetTail();
@@ -1702,7 +1704,7 @@ void CDMoniterDlg::CalculateParam()
 	
 }
 
-void CDMoniterDlg::StartTimer()
+void CDMonitorDlg::StartTimer()
 {
 	base = 0;
 	bias = 0;
@@ -1763,13 +1765,13 @@ void CDMoniterDlg::StartTimer()
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
-void CDMoniterDlg::StopTimer()
+void CDMonitorDlg::StopTimer()
 {
 	bTimer = false;
 	KillTimer(TIMER_CMD_DRAW);
 }
 
-void CDMoniterDlg::OnTimer(UINT_PTR nIDEvent)
+void CDMonitorDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	switch(nIDEvent)
@@ -1804,7 +1806,7 @@ void CDMoniterDlg::OnTimer(UINT_PTR nIDEvent)
 }
 
 
-void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	int TempPos = pScrollBar->GetScrollPos();
@@ -1909,7 +1911,7 @@ void CDMoniterDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 
 
-void CDMoniterDlg::OnMenuConn()
+void CDMonitorDlg::OnMenuConn()
 {
 	// TODO: 在此添加命令处理程序代码
 	CMenu* pSubMenu = NULL;
@@ -1960,13 +1962,13 @@ void CDMoniterDlg::OnMenuConn()
 }
 
 
-void CDMoniterDlg::OnUpdateMenuConn(CCmdUI *pCmdUI)
+void CDMonitorDlg::OnUpdateMenuConn(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 }
 
 
-void CDMoniterDlg::OnMenuDisconn()
+void CDMonitorDlg::OnMenuDisconn()
 {
 	// TODO: 在此添加命令处理程序代码
 	CMenu* pSubMenu = NULL;
@@ -1994,19 +1996,19 @@ void CDMoniterDlg::OnMenuDisconn()
 }
 
 
-void CDMoniterDlg::OnUpdateMenuDisconn(CCmdUI *pCmdUI)
+void CDMonitorDlg::OnUpdateMenuDisconn(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 }
 
-void CDMoniterDlg::closeDataFile(CString strFile)  
+void CDMonitorDlg::closeDataFile(CString strFile)  
 {    
 	if(fp != NULL)
 	{
 		fclose(fp);   
 	}
 } 
-void CDMoniterDlg::openDataFile(CString strFile)  
+void CDMonitorDlg::openDataFile(CString strFile)  
 {   
 	if(fp != NULL)
 	{
@@ -2014,7 +2016,7 @@ void CDMoniterDlg::openDataFile(CString strFile)
 	}
 	fp = _wfopen(strFile, _T("w")); 
 } 
-LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
+LRESULT CDMonitorDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
 #ifdef _DEBUG
 #if 0
@@ -2063,7 +2065,7 @@ LRESULT CDMoniterDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 	ParseData(&theApp.commLayer.m_ReceiveBuff[0],wParam);
     return 0;
 }
-void CDMoniterDlg::writeDataFile(BYTE* tmp, WPARAM wParam)  
+void CDMonitorDlg::writeDataFile(BYTE* tmp, WPARAM wParam)  
 {     
     if(fp != NULL)
 	{ 
@@ -2074,7 +2076,7 @@ void CDMoniterDlg::writeDataFile(BYTE* tmp, WPARAM wParam)
     }   
 }  
 
-void CDMoniterDlg::AddPanelListView( )
+void CDMonitorDlg::AddPanelListView( )
 {
 	listView.SetRedraw(FALSE);
 	listView.DeleteAllItems();
@@ -2088,7 +2090,7 @@ void CDMoniterDlg::AddPanelListView( )
 	listView.Invalidate();
 	listView.UpdateWindow();
 }
-void CDMoniterDlg::UpdatePanelListView(CPetroData* pPData)
+void CDMonitorDlg::UpdatePanelListView(CPetroData* pPData)
 {
 	CString strMag;
 	for(int i=0;i<pPData->pData.size();i++)
@@ -2135,7 +2137,7 @@ void CDMoniterDlg::UpdatePanelListView(CPetroData* pPData)
 	listView.UpdateWindow();
 }
 
-void CDMoniterDlg::OnMenuMeasuredown()
+void CDMonitorDlg::OnMenuMeasuredown()
 {
 	// TODO: 在此添加命令处理程序代码
 	m_bDirectDown = true;
@@ -2155,13 +2157,13 @@ void CDMoniterDlg::OnMenuMeasuredown()
 }
 
 
-void CDMoniterDlg::OnUpdateMenuMeasuredown(CCmdUI *pCmdUI)
+void CDMonitorDlg::OnUpdateMenuMeasuredown(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 }
 
 
-void CDMoniterDlg::OnMenuMeasureup()
+void CDMonitorDlg::OnMenuMeasureup()
 {
 	// TODO: 在此添加命令处理程序代码
 	m_bDirectDown = false;
@@ -2181,13 +2183,13 @@ void CDMoniterDlg::OnMenuMeasureup()
 }
 
 
-void CDMoniterDlg::OnUpdateMenuMeasureup(CCmdUI *pCmdUI)
+void CDMonitorDlg::OnUpdateMenuMeasureup(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 }
 
 
-BOOL CDMoniterDlg::OnEraseBkgnd(CDC* pDC)
+BOOL CDMonitorDlg::OnEraseBkgnd(CDC* pDC)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 
@@ -2195,21 +2197,21 @@ BOOL CDMoniterDlg::OnEraseBkgnd(CDC* pDC)
 }
 
 
-void CDMoniterDlg::OnMenuInstrument()
+void CDMonitorDlg::OnMenuInstrument()
 {
 	// TODO: 在此添加命令处理程序代码
 	
 }
 
 
-void CDMoniterDlg::OnMenuJob()
+void CDMonitorDlg::OnMenuJob()
 {
 	// TODO: 在此添加命令处理程序代码
 	parameterFlag=0;
 	OnMyMenuJob(parameterFlag);
 }
 
-void CDMoniterDlg::OnMyMenuJob(int myparameterFlag)
+void CDMonitorDlg::OnMyMenuJob(int myparameterFlag)
 {
 	// TODO: 在此添加命令处理程序代码
 	CJobDlg m_jDlg;
@@ -2220,7 +2222,7 @@ void CDMoniterDlg::OnMyMenuJob(int myparameterFlag)
 	m_jDlg.DoModal();
 }
 
-void CDMoniterDlg::OnMenuTool()
+void CDMonitorDlg::OnMenuTool()
 {
 	// TODO: 在此添加命令处理程序代码
 	// TODO: 在此添加命令处理程序代码
@@ -2232,7 +2234,7 @@ void CDMoniterDlg::OnMenuTool()
 }
 
 
-void CDMoniterDlg::OnMenuNewjob()
+void CDMonitorDlg::OnMenuNewjob()
 {
 	// TODO: 在此添加命令处理程序代码
 	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造保存文件对话框
@@ -2250,7 +2252,7 @@ void CDMoniterDlg::OnMenuNewjob()
 }
 
 
-void CDMoniterDlg::OnMenuJobload()
+void CDMonitorDlg::OnMenuJobload()
 {
 	// TODO: 在此添加命令处理程序代码
 	// TODO: 在此添加命令处理程序代码
@@ -2261,7 +2263,7 @@ void CDMoniterDlg::OnMenuJobload()
 }
 
 
-void CDMoniterDlg::OnTestMode1()
+void CDMonitorDlg::OnTestMode1()
 {
 	// TODO: 在此添加命令处理程序代码
 	//testDlg.DoModal();
@@ -2288,7 +2290,7 @@ void CDMoniterDlg::OnTestMode1()
 	}
 }
 
-void CDMoniterDlg::ClearWorkInfoList()
+void CDMonitorDlg::ClearWorkInfoList()
 {
 	CWorkInfo* pCurrent = NULL;
 	while(theApp.workInfoList.IsEmpty()==false)
@@ -2298,7 +2300,7 @@ void CDMoniterDlg::ClearWorkInfoList()
 		pCurrent=NULL;
 	}
 }
-void CDMoniterDlg::ClearWorkUnitList()
+void CDMonitorDlg::ClearWorkUnitList()
 {
 	CWorkUnit* pCurrent = NULL;
 	while(theApp.workUnitList.IsEmpty()==false)
@@ -2309,7 +2311,7 @@ void CDMoniterDlg::ClearWorkUnitList()
 	}
 }
 
-int CDMoniterDlg::CreateUnitFile(CString strFile)
+int CDMonitorDlg::CreateUnitFile(CString strFile)
 {
 	TiXmlDocument doc;
 	TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "UTF-8", "yes" );
@@ -2332,7 +2334,7 @@ int CDMoniterDlg::CreateUnitFile(CString strFile)
 	pFileName = NULL;
 	return 0;
 }
-void CDMoniterDlg::LinkUnitElementeFuns(TiXmlElement * element,CWorkUnit* plist)
+void CDMonitorDlg::LinkUnitElementeFuns(TiXmlElement * element,CWorkUnit* plist)
 {
 	TiXmlElement* msgs = new TiXmlElement( "Unit" ); 
 	element->LinkEndChild( msgs );
@@ -2355,7 +2357,7 @@ void CDMoniterDlg::LinkUnitElementeFuns(TiXmlElement * element,CWorkUnit* plist)
 	msgs->LinkEndChild( msg ); 
 }
 
-int CDMoniterDlg::CreateCurveFile(CString strFile)
+int CDMonitorDlg::CreateCurveFile(CString strFile)
 {
 
 	TiXmlDocument doc;
@@ -2378,7 +2380,7 @@ int CDMoniterDlg::CreateCurveFile(CString strFile)
 	return 0;
 }
 
-void CDMoniterDlg::LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist)
+void CDMonitorDlg::LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist)
 {
 	TiXmlElement* msgs = new TiXmlElement( "WorkInfo" ); 
 	element->LinkEndChild( msgs );
@@ -2475,7 +2477,7 @@ void CDMoniterDlg::LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist)
 
 }
 
-void CDMoniterDlg::ParseWorkInfoData()
+void CDMonitorDlg::ParseWorkInfoData()
 {
 	WCHAR pwBuffer[100];
 	CString str;
@@ -2564,7 +2566,7 @@ void CDMoniterDlg::ParseWorkInfoData()
 		}
 	}
 }
-bool CDMoniterDlg::ParseElementeFuns(TiXmlNode * element,char* str)
+bool CDMonitorDlg::ParseElementeFuns(TiXmlNode * element,char* str)
 {
 	WCHAR pwBuffer[100];
 	if ( ( element->Type() == TiXmlNode::TINYXML_ELEMENT ) && ( !strcmp( element->Value(), str ) ) )
@@ -2582,7 +2584,17 @@ bool CDMoniterDlg::ParseElementeFuns(TiXmlNode * element,char* str)
 	}
 	return false;
 }
-void CDMoniterDlg::ParseWorkUnitData()
+void CDMonitorDlg::initDataPart(DATA_PART &dataPart)
+{
+	dataPart.bAssign = false;
+	dataPart.iData = 0;
+	dataPart.iDeptData = 0;
+	dataPart.strData = _T("");
+	dataPart.strTag = _T("");
+	dataPart.strUnit = _T("");
+	dataPart.subIndex = 0;
+}
+void CDMonitorDlg::ParseWorkUnitData()
 {
 	WCHAR pwBuffer[100];
 	

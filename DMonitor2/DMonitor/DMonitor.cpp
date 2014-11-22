@@ -94,7 +94,7 @@ BOOL CDMoniterApp::InitInstance()
 		return FALSE;
 	}
 	GetModulePath();//必要文件夹初始化
-	CDMoniterDlg dlg;
+	CDMonitorDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
