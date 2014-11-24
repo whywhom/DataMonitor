@@ -38,10 +38,12 @@ typedef struct _SEND_COMMAND_LIST
 typedef struct _DATA_PART
 {
 	double iData;
+	double iDeptData;//记录深度
 	CString strData;
 	CString strTag;//记录曲线名称
 	CString strUnit;//记录曲线单位
 	bool bAssign;
+	int subIndex;//一个数据tag对应多个数据时，记录数据id，例如磁三分量有三个数据
 }DATA_PART;
 
 typedef struct _DATA_TEMP
@@ -49,7 +51,9 @@ typedef struct _DATA_TEMP
 	double dy;
 	double dx;
 	CString strDx;//横坐标数据的字符串
+	CString strTag;//测试变量的标示，DEPT,TEMP等
 	bool bAssign;
+	int subIndex;
 }DATA_TEMP;
 
 #define TIMER_CMD_DRAW 0x20

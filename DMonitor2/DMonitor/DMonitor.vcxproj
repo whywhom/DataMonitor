@@ -109,6 +109,7 @@
     <ClInclude Include="ColorButton.h" />
     <ClInclude Include="ColorStatic.h" />
     <ClInclude Include="CommLayer.h" />
+    <ClInclude Include="DataTemp.h" />
     <ClInclude Include="DirTreeCtrl.h" />
     <ClInclude Include="DMonitor.h" />
     <ClInclude Include="DMonitorDlg.h" />
@@ -147,6 +148,7 @@
     <ClCompile Include="ColorButton.cpp" />
     <ClCompile Include="ColorStatic.cpp" />
     <ClCompile Include="CommLayer.cpp" />
+    <ClCompile Include="DataTemp.cpp" />
     <ClCompile Include="DirTreeCtrl.cpp" />
     <ClCompile Include="DMonitor.cpp" />
     <ClCompile Include="DMonitorDlg.cpp" />

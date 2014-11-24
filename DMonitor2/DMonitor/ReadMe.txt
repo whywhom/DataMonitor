@@ -35,7 +35,7 @@ res\DMonitor.rc2
 应用程序向导创建一个对话框类:
 
 DMoniterDlg.h，DMoniterDlg.cpp - 对话框
-这些文件包含 CDMoniterDlg 类。该类定义应用程序主对话框的行为。该对话框的模板位于 DMonitor.rc 中，该文件可以在 Microsoft Visual C++ 中进行编辑。
+这些文件包含 CDMonitorDlg 类。该类定义应用程序主对话框的行为。该对话框的模板位于 DMonitor.rc 中，该文件可以在 Microsoft Visual C++ 中进行编辑。
 
 
 /////////////////////////////////////////////////////////////////////////////

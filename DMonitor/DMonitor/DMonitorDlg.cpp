@@ -553,6 +553,24 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 					//TRACE(_T("Find Char 'DEPT' \r\n"));
 					if(pPData != NULL)
 					{
+						bool isFound = false;
+						int iDept = 0;
+						for(int subi=0;subi<pPData->pData.size();subi++)
+						{
+							if(pPData->pData.at(subi).strTag == _T("DEPT"))
+							{
+								isFound = true;
+								iDept = pPData->pData.at(subi).iData;
+								break;
+							}
+						}
+						if(isFound)
+						{
+							for(int subi=0;subi<pPData->pData.size();subi++)
+							{
+								pPData->pData.at(subi).iDeptData = iDept;
+							}
+						}
 						petroList.AddTail(pPData);
 					}
 					pPData = new CPetroData();
@@ -574,111 +592,59 @@ void CDMoniterDlg::ParseData(BYTE* tmp, WPARAM wParam)
 							string s = str_unitlist.at(k);
 							if(strTitle == s)
 							{
+								TRACE(_T("strTitle == %s \r\n"),s);
+#if 0
 								if(strTitle == "MAGX")
 								{
 									for(int kk=0;kk<3;kk++)
 									{
 										if(pPData->mag[kk].bAssign == false)
 										{
+
 											pPData->mag[kk].iData = num;
 											pPData->mag[kk].strData = str.c_str();
 											pPData->mag[kk].bAssign = true;
+											pPData->mag[kk].subIndex = kk;
 											pPData->mag[kk].strTag = strTitle.c_str();
 											CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
 											pPData->mag[kk].strUnit = plist->strUnit;
+
+											DATA_PART dataPart;
+											dataPart.iData = num;
+											dataPart.strData = str.c_str();
+											dataPart.bAssign = true;
+											dataPart.subIndex = kk;
+											dataPart.strTag = strTitle.c_str();
+											CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
+											dataPart.strUnit = plist->strUnit;
+											pPData->pData.push_back(dataPart);
+
 										}
 									}
 								}
 								else
+#endif
 								{
-									TRACE(_T("strTitle == %s \r\n"),s);
+#if 0
 									pPData->dept.iData = num;
 									pPData->dept.strData = str.c_str();
 									pPData->dept.bAssign = true;
 									pPData->dept.strTag = strTitle.c_str();
 									CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
 									pPData->dept.strUnit =plist->strUnit;
+#endif
+									DATA_PART dataPart;
+									dataPart.iData = num;
+									dataPart.strData = str.c_str();
+									dataPart.bAssign = true;
+									dataPart.subIndex = 0;
+									dataPart.strTag = strTitle.c_str();
+									CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
+									dataPart.strUnit = plist->strUnit;
+									pPData->pData.push_back(dataPart);
 								}
 							}
 						}
-#if 0
-						if(strTitle == "DEPT")
-						{
-							//TRACE(_T("strTitle == 'DEPT' \r\n"));
-							pPData->dept.iData = num;
-							pPData->dept.strData = str.c_str();
-							pPData->dept.bAssign = true;
-							pPData->dept.strTag = strTitle.c_str();
-							pPData->dept.strUnit = _T("m");
-						}
-						else if(strTitle == "TEMP")
-						{
-							//TRACE(_T("strTitle == 'TEMP' \r\n"));
-							pPData->temp.iData = num;
-							pPData->temp.strData = str.c_str();
-							pPData->temp.bAssign = true;
-							pPData->temp.strTag = strTitle.c_str();
-							pPData->temp.strUnit = _T("¡æ");
-						}
-						else if(strTitle == "RM")
-						{
-							//TRACE(_T("strTitle == 'RM' \r\n"));
-							pPData->rm.iData = num;
-							pPData->rm.strData = str.c_str();
-							pPData->rm.bAssign = true;
-							pPData->rm.strTag = strTitle.c_str();
-							pPData->rm.strUnit = _T("£¿");
-						}
-						else if(strTitle == "GM")
-						{
-							//TRACE(_T("strTitle == 'GM' \r\n"));
-							pPData->gr.iData = num;
-							pPData->gr.strData = str.c_str();
-							pPData->gr.bAssign = true;
-							pPData->gr.strTag = strTitle.c_str();
-							pPData->gr.strUnit = _T("£¿");
-						}
-						else if(strTitle == "MAGX")
-						{
-							//TRACE(_T("strTitle == 'MAGX' \r\n"));
-							if(pPData->mag[0].iData == 0)
-							{
-								pPData->mag[0].iData = num;
-								pPData->mag[0].strData = str.c_str();
-								pPData->mag[0].bAssign = true;
-								pPData->mag[0].strTag = strTitle.c_str();
-								pPData->mag[0].strUnit = _T("£¿");
-							}
-							else if(pPData->mag[1].iData == 0)
-							{
-								pPData->mag[1].iData = num;
-								pPData->mag[1].strData = str.c_str();
-								pPData->mag[1].bAssign = true;
-								pPData->mag[1].strTag = strTitle.c_str();
-								pPData->mag[1].strUnit = _T("£¿");
-							}
-							else if(pPData->mag[2].iData == 0)
-							{
-								pPData->mag[2].iData = num;
-								pPData->mag[2].strData = str.c_str();
-								pPData->mag[2].bAssign = true;
-								pPData->mag[2].strTag = strTitle.c_str();
-								pPData->mag[2].strUnit = _T("£¿");
-							}
-							else
-							{
-							}
-						}
-						else if(strTitle == "CCL")
-						{
-							//TRACE(_T("strTitle == 'CCL' \r\n"));
-							pPData->ccl.iData = num;
-							pPData->ccl.strData = str.c_str();
-							pPData->ccl.bAssign = true;
-							pPData->ccl.strTag = strTitle.c_str();
-							pPData->ccl.strUnit = _T("£¿");
-						}
-#endif
 					}
 				}
 				str.clear();
@@ -1187,6 +1153,8 @@ void CDMoniterDlg::DrawCurve(CDC* pDC , double upDepth, double DownDepth)
 void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth)
 {
 	int iDrawType = PS_SOLID;
+	DATA_PART mDataPart;
+	bool bFound = false;
 	long pre_iy=0,cur_iy=0,pre_dy=0,cur_dy=0;
 	long pre_ix=0,cur_ix=0,pre_dx=0,cur_dx=0;
 #if 0
@@ -1206,16 +1174,33 @@ void CDMoniterDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 			while(pos)
 			{
 				pPData = petroList.GetPrev(pos);
-				if(pPData->dept.bAssign == true)
+
+				for(int j =0;j<pPData->pData.size();j++)
 				{
-					if(pPData->dept.iData > minDepth)
+					mDataPart = pPData->pData.at(j);
+					if(mDataPart.strTag == _T("DEPT"))
 					{
+						bFound = true;
+						break;
+					}
+				}
+				if(!bFound)
+				{
+					continue;
+				}
+				if(mDataPart.bAssign == true)
+				{
+					if(mDataPart.iData > minDepth)
+					{
+#if 0
 						DrawDeptData(pDC,pPData,pPen);//Éî¶È
 						DrawTempData(pDC,pPData,pPen);//draw tepm
 						DrawRmData(pDC,pPData,pPen);//rm
 						DrawGmData(pDC,pPData,pPen);//gm
 						DrawCclData(pDC,pPData,pPen);//ccl
 						DrawMagxData(pDC,pPData,pPen);//magx
+#endif
+						DrawParamData(pDC,pPData);//magx
 					}
 					else
 					{
@@ -1359,14 +1344,7 @@ void CDMoniterDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 }
 void CDMoniterDlg::DrawDeptData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
-	if(olddeptArray.bAssign)
-	{
-							
-	}
-	else
-	{
-						
-	}
+	return;
 }
 void CDMoniterDlg::DrawTempData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 {
@@ -1579,6 +1557,75 @@ void CDMoniterDlg::DrawCclData(CDC* pDC ,CPetroData* pPData,CPen* pPpen)
 			oldcclArray.dx = pPData->ccl.iData;
 			oldcclArray.dy = pPData->dept.iData;
 			oldcclArray.strDx = pPData->ccl.strData;
+		}
+	}
+}
+
+void CDMoniterDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
+{
+	long pre_iy=0,cur_iy=0;
+	long pre_ix=0,cur_ix=0;
+	CWorkInfo* p = NULL;
+	DATA_TEMP mOldArray;
+	int id = 0;
+	bool bFound = false;
+	int iDrawType = PS_SOLID;
+	for(int i=0; i< pPData->pData.size(); i++)
+	{
+		DATA_PART mDataPart = pPData->pData.at(i);
+		POSITION pos = theApp.workInfoList.GetHeadPosition();
+		while(pos)
+		{
+			p = theApp.workInfoList.GetNext(pos);
+			if(!mDataPart.strTag.Compare(p->strTitle))
+			{
+				bFound = true;
+				break;
+			}
+		}
+		if(!bFound)
+		{
+			continue;
+		}
+		bFound = false;
+		for(int j=0; j< oldArray.size(); j++)
+		{
+			mOldArray = oldArray.at(i);
+			if(!mOldArray.strTag.Compare(mDataPart.strTag))
+			{
+				bFound = true;
+				break;
+			}
+		}
+		if(!bFound)
+		{
+			continue;
+		}
+		bFound = false;
+		if(mOldArray.bAssign)
+		{
+			CPen pen(iDrawType, 1, p->curveColor); 
+			pDC->SelectObject(pen);
+			long cclRange = p->rightLimit - p->leftLimit;
+			int i_dx = (int)((mOldArray.dx - (int)mOldArray.dx)*10);
+			int d_dx = (int)(mOldArray.dx);
+			pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/cclRange
+				+i_dx*m_plot1Rect.Width()/(10*cclRange));
+			double mid = (mDataPart.iData - p->leftLimit)*m_plot1Rect.Width()/cclRange;
+			cur_ix = (int)mid;
+			pre_iy = (mOldArray.dy - minDepth)*unitPixel;
+			cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
+			pDC->MoveTo(pre_ix,pre_iy);
+			pDC->LineTo(cur_ix,cur_iy);
+		}
+		//else
+		{
+			mOldArray.bAssign = mDataPart.bAssign;
+			mOldArray.dx = mDataPart.iData;
+			mOldArray.dy = mDataPart.iDeptData;
+			mOldArray.strDx = mDataPart.strData;
+			mOldArray.strTag = mDataPart.strTag;
+			mOldArray.subIndex = mDataPart.subIndex;
 		}
 	}
 }

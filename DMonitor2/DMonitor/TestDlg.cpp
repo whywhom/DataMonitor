@@ -412,6 +412,24 @@ void CTestDlg::OnBnClickedButtonAdd()
 void CTestDlg::OnBnClickedButtonDel()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	POSITION pss=mTestList.GetFirstSelectedItemPosition();//pos就是行索引号，晕
+	int i=0;
+	if(pss==NULL)
+	{
+		return;
+	}
+	else
+	{
+		while(pss)//关键，如果你选择多行
+		{  
+			int nIdx = mTestList.GetNextSelectedItem(pss);//多少行--
+			if(nIdx >=0&&nIdx<mTestList.GetItemCount())
+			{
+				mTestList.DeleteItem(nIdx);
+				break;
+			}
+		}
+	}
 }
 
 

@@ -17,12 +17,13 @@ using namespace std;
 #include "dirtreectrl.h"
 #include "TestDlg.h"
 #include "tinyxml.h"
-// CDMoniterDlg 对话框
-class CDMoniterDlg : public CDialogEx
+#include "DataTemp.h"
+// CDMonitorDlg 对话框
+class CDMonitorDlg : public CDialogEx
 {
 // 构造
 public:
-	CDMoniterDlg(CWnd* pParent = NULL);	// 标准构造函数
+	CDMonitorDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 // 对话框数据
 	enum { IDD = IDD_DMONITER_DIALOG };
@@ -111,7 +112,8 @@ public:
 
 	CTestDlg testDlg;
 	std::vector<std::string>   str_unitlist;
-	std::vector<DATA_TEMP>   oldArray;
+	CTypedPtrList < CPtrList, CDataTemp * >oldArray;//数据存储链表
+
 	CPen* pPen;
 public:
 	void GetRectParam(CRect rectMain);
@@ -161,8 +163,9 @@ public:
 	bool ParseElementeFuns(TiXmlNode * element,char* str);
 	int CreateUnitFile(CString strFile);
 	void LinkUnitElementeFuns(TiXmlElement * element,CWorkUnit* plist);
-private:
 	void LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist);
+	void initDataPart(DATA_PART &dataPart);
+	void ClearDataTempa();
 // 实现
 protected:
 	HICON m_hIcon;
