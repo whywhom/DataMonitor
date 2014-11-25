@@ -40,6 +40,7 @@ public:
 	CRect rectPanel;//数据参数区域
 	CRect rectScale;//比例图标区域
 	CRect rectScrollV;//垂直滚动条区域
+	CRect rectScrollScaleV;//垂直滚动条区域
 	int minMainDialogWidth, minMainDialogHeight;//主界面最小长度、宽度
 	int m_SM_CXFULLSCREEN,m_SM_CYFULLSCREEN;//获取屏幕分辨率
 
@@ -56,7 +57,8 @@ public:
 	int fileNum;
 	CDC   MemDC;          //双缓冲 定义一个显示设备对象  
 	CBitmap   MemBitmap;  //双缓冲 定义一个位图对象  
-
+	CDC   ScaleMemDC;          //双缓冲 定义一个显示设备对象  
+	CBitmap   ScaleMemBitmap;  //双缓冲 定义一个位图对象  
 	//why add 绘图变量
 	unsigned long base;//深度起点
 	unsigned long bias;//深度偏移量
@@ -73,6 +75,8 @@ public:
 	CRect		m_screenRect;// m_screenRect - view的可见范围相对屏幕左上角坐标
 	CRect		m_clientRect;// m_clientRect - view的可见范围客户区
 	CRect		m_totalRect;// m_totalRect - 整个要绘制区域的范围，包括不可见
+	CRect		m_scaleRect;// m_scaleRect - ScaleView的可见范围客户区
+	CRect		m_totalScaleRect;// m_totalScaleRect - 整个要绘制区域的范围，包括不可见
 
 	CRect		m_plot1Rect;// m_plot1Rect - borderspace1
 	CRect		m_plot2Rect;// m_plot2Rect - borderspace2
@@ -127,7 +131,7 @@ public:
 	void closeDataFile(CString strFile);
 	void openDataFile(CString strFile);
 	void DrawData(CDC* pDC);
-	
+	void DrawScale(CDC* pDC);
 	void DrawBasic(CDC * pDC);//绘图函数初始
 	void DrawRealtimeBasic(CDC * pDC);//绘图函数初始
 	void DrawFileDataBasic(CDC * pDC);
@@ -166,6 +170,7 @@ public:
 	void LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist);
 	void initDataPart(DATA_PART &dataPart);
 	void ClearDataTempa();
+	void SetScaleScroll();
 // 实现
 protected:
 	HICON m_hIcon;
@@ -188,6 +193,7 @@ protected:
 	CListCtrl listView;
 	CDirTreeCtrl m_treeCtrl;
 	int parameterFlag;//send flag to jobdlg for some action, 0-nothing;1-new job
+	int scaleScrollPos;
 	// 生成的消息映射函数
 	void OnMyMenuJob(int myparameterFlag);
 	virtual BOOL OnInitDialog();
@@ -225,4 +231,5 @@ public:
 	afx_msg void OnMenuNewjob();
 	afx_msg void OnMenuJobload();
 	afx_msg void OnTestMode1();
+	CScrollBar mScrollScaleV;
 };

@@ -17,7 +17,10 @@ using namespace std;
 
 const int maxqueue=1000;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
-
+int gap = 40;//坐标比例尺跨度
+int gap1 = 400;//坐标系1
+int gap2 = 150;
+int gap3 = 400;//坐标系2
 class CAboutDlg : public CDialogEx
 {
 public:
@@ -135,6 +138,7 @@ void CDMonitorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_04, Edit04);
 	DDX_Text(pDX, IDC_EDIT_04, strEdit04);
 	DDX_Control(pDX, IDC_LIST_DETAIL, listView);
+	DDX_Control(pDX, IDC_SCROLLBAR_SCALE, mScrollScaleV);
 }
 
 BEGIN_MESSAGE_MAP(CDMonitorDlg, CDialogEx)
@@ -309,15 +313,18 @@ void CDMonitorDlg::OnPaint()
 		{
 			mScrollV.SetWindowPos(0,rectScrollV.left,rectScrollV.top,rectScrollV.Width(),rectScrollV.Height(),SWP_NOZORDER);
 		}
-		//CBrush brush(crViewBackground);
-		//CBrush *oBrush = dc.SelectObject(&brush);
+		if(mScrollScaleV)
+		{
+			mScrollScaleV.SetWindowPos(0,rectScrollScaleV.left,rectScrollScaleV.top,rectScrollScaleV.Width(),rectScrollScaleV.Height(),SWP_NOZORDER);
+		}
+		
 		dc.FillSolidRect(rectView,crViewBackground); 
-		//dc.SelectObject(oBrush);
-
+		dc.FillSolidRect(rectScale,crViewBackground); 
 		CPen pen(PS_SOLID, 1, RGB(0,0,0));
 		CPen *oPen = dc.SelectObject(&pen);
 		
 		dc.Rectangle(rectView.left-1,rectView.top-1,rectView.right+1,rectView.bottom+1);
+		dc.Rectangle(rectScale.left-1,rectScale.top-1,rectScale.right+1,rectScale.bottom+1);
 		dc.SelectObject(oPen);
 		///////////////////////
 		//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
@@ -339,6 +346,26 @@ void CDMonitorDlg::OnPaint()
 		MemBitmap.DeleteObject();  
 		MemDC.DeleteDC(); 
 		//////////////////////		
+		//建立与坐标屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
+		ScaleMemDC.CreateCompatibleDC(NULL);  
+		//建立一个与坐标屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
+		ScaleMemBitmap.CreateCompatibleBitmap(&dc,rectScale.Width(),rectScale.Height());  
+		CBitmap *pScaleOldBit=ScaleMemDC.SelectObject(&ScaleMemBitmap);
+		ScaleMemDC.FillSolidRect(0,0,rectScale.Width(),rectScale.Height(),crViewBackground);
+		m_scaleRect = rectScale;
+		m_scaleRect.right -= m_scaleRect.left; 
+		m_scaleRect.left = 0;
+		m_scaleRect.bottom -= m_scaleRect.top; 
+		m_scaleRect.top = 0;
+
+		DrawScale(&ScaleMemDC);
+		//将内存中的图拷贝到屏幕上进行显示  
+		dc.BitBlt(rectScale.left,rectScale.top,rectScale.Width(),rectScale.Height(),&ScaleMemDC,0,0,SRCCOPY);  
+		//绘图完成后的清理  
+		ScaleMemBitmap.DeleteObject();  
+		ScaleMemDC.DeleteDC(); 
+		//////////////////////	
+
 		CDialogEx::OnPaint();
 	}
 }
@@ -442,6 +469,10 @@ void CDMonitorDlg::OnSize(UINT nType, int cx, int cy)
 	{
 		mScrollV.SetWindowPos(0,rectScrollV.left,rectScrollV.top,rectScrollV.Width(),rectScrollV.Height(),SWP_NOZORDER);
 	}
+	if(mScrollScaleV)
+	{
+		mScrollScaleV.SetWindowPos(0,rectScrollScaleV.left,rectScrollScaleV.top,rectScrollScaleV.Width(),rectScrollScaleV.Height(),SWP_NOZORDER);
+	}
 	InvalidateRect(rectMain);
 	// TODO: 在此处添加消息处理程序代码
 }
@@ -467,7 +498,13 @@ void CDMonitorDlg::GetRectParam(CRect rectMain)
 
 	rectScale = rectMain;
 	rectScale.left = rectPanel.right + 1;
-	rectScale.top = rectView.bottom+1;
+	rectScale.top = rectView.bottom + 10;
+	rectScale.right = rectMain.right -20;
+
+	rectScrollScaleV = rectMain;
+	rectScrollScaleV.left = rectScale.right + 1;
+	rectScrollScaleV.top = rectScale.top;
+	rectScrollScaleV.bottom = rectScale.bottom;
 }
 
 
@@ -912,6 +949,116 @@ void CDMonitorDlg::DrawData(CDC* pDC)
 	}
 }
 
+void CDMonitorDlg::DrawScale(CDC* pDC)
+{
+	if(processType == NO_PROCESSING)
+	{
+		mScrollScaleV.SetScrollRange(0,0);
+		mScrollScaleV.SetScrollPos(0);
+	
+	}
+	else
+	{
+		TRACE(_T("DrawCoordinateSystem"));
+		CString str;
+		CFont font;
+		VERIFY(font.CreateFont(
+			14,                        // nHeight
+			0,                         // nWidth
+			0,                         // nEscapement
+			0,                         // nOrientation
+			FW_NORMAL,                 // nWeight
+			FALSE,                     // bItalic
+			FALSE,                     // bUnderline
+			0,                         // cStrikeOut
+			ANSI_CHARSET,              // nCharSet
+			OUT_DEFAULT_PRECIS,        // nOutPrecision
+			CLIP_DEFAULT_PRECIS,       // nClipPrecision
+			DEFAULT_QUALITY,           // nQuality
+			DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
+			_T("Arial")));                 // lpszFacename
+
+		 LOGBRUSH logBrush;
+
+		int i = 0;
+		
+		int iDrawType = PS_SOLID;
+		int iLineWidth = 1;
+		COLORREF colorR = RGB(127,127,127);
+		CPen pen(iDrawType, 1, colorR); //画笔
+		CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
+		int count = theApp.workInfoList.GetCount();
+		if(count > 0)
+		{
+			int count  = 0;
+			POSITION pos = theApp.workInfoList.GetHeadPosition();
+			while(pos)
+			{
+				if(count < scaleScrollPos)
+				{
+					CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
+					count++;
+					continue;
+				}
+				CRect rectTop,rectBottom;
+			
+				CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
+				memset(&logBrush, 0, sizeof(logBrush));
+				logBrush.lbStyle = BS_SOLID;
+				logBrush.lbColor = plist->curveColor;
+				DWORD dwF[] = {5, 10, 15, 20};
+				//画线
+				CPen pen;//(iDrawType, iLineWidth, colorR); //画笔
+				//pen.CreatePen(PS_USERSTYLE|PS_GEOMETRIC|PS_ENDCAP_ROUND, plist->lineWidth, &logBrush,4,dwF);
+				pen.CreatePen(BS_SOLID|PS_GEOMETRIC|PS_ENDCAP_SQUARE, 1, &logBrush);
+				pDC->SelectObject(&pen);//画笔和画线区连接
+			
+				rectTop = m_scaleRect;
+				rectTop.top = gap*i+1;
+				rectTop.bottom = gap*i+gap/2-1;
+				rectTop.right = rectTop.left + gap1;
+
+				rectBottom = m_scaleRect;
+				rectBottom.top = gap*i+gap/2+1;
+				rectBottom.bottom = gap*i+gap-1;
+				rectBottom.right = rectBottom.left + gap1;
+
+				pDC->MoveTo(0, gap*i+gap/2);
+				pDC->LineTo(rectTop.Width(), gap*i+gap/2);
+
+				//画边框
+				CPen pen2(PS_SOLID, 1, RGB(0,0,0)); //画笔
+				pDC->SelectObject(&pen2);//画笔和画线区连接
+
+				pDC->MoveTo(0, rectBottom.bottom);
+				pDC->LineTo(rectBottom.Width(), rectBottom.bottom);
+
+				pDC->MoveTo(rectTop.Width(), rectTop.top);
+				pDC->LineTo(rectTop.Width(), rectBottom.bottom);
+				//画标注
+				pDC->SelectObject(&font);
+				pDC->SetTextColor(colorR);   //文本字体颜色为蓝色
+				//pDC->TextOut(rect.Width()/2,30*i,plist->strCurveName);   //输出文本值
+				pDC->DrawText(plist->strSignal,rectTop,DT_CENTER);
+
+				pDC->SetTextAlign(TA_LEFT);
+				str.Format(_T("%d"),plist->leftLimit);
+				//pDC->TextOut(1,30*i+16,str);   //输出文本值
+				pDC->DrawText(str,rectBottom,DT_LEFT);
+
+				pDC->SetTextAlign(TA_RIGHT);
+				str.Format(_T("%d"),plist->rightLimit);
+				//pDC->TextOut(rect.Width()-100,30*i+16,str);   //输出文本值
+				pDC->DrawText(str,rectBottom,DT_RIGHT);
+				i++;
+				count++;
+			}
+			
+			//画笔刷新
+			pDC->SelectObject(pOldPen);  //
+		}
+	}
+}
 
 void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth)
 {
@@ -1300,15 +1447,15 @@ void CDMonitorDlg::DrawFileDataBasic(CDC * pDC)
 void CDMonitorDlg::DrawGrid(CDC * pDC)
 {
 	m_plot1Rect = m_clientRect;
-	m_plot1Rect.right = m_plot1Rect.left + 400;
+	m_plot1Rect.right = m_plot1Rect.left + gap1;
 
 	m_plot2Rect = m_clientRect;
 	m_plot2Rect.left = m_plot1Rect.right;
-	m_plot2Rect.right = m_plot2Rect.left + 150;
+	m_plot2Rect.right = m_plot2Rect.left + gap2;
 
 	m_plot3Rect = m_clientRect;
 	m_plot3Rect.left = m_plot2Rect.right;
-	m_plot3Rect.right = m_plot3Rect.left + 400;
+	m_plot3Rect.right = m_plot3Rect.left + gap3;
 
 
 	CPen *old, pen(PS_SOLID, 1, crViewGridColor), pen2(PS_DOT, 1,crViewGridColor); //画笔;
@@ -1727,6 +1874,7 @@ void CDMonitorDlg::StartTimer()
 	InitOldArrayData();
 	InitArrayData();
 	ClearDataTempa();
+	SetScaleScroll();
 	if(processType == REALTIME_PROCESSING)
 	{
 		minDepth = 0;
@@ -1772,12 +1920,21 @@ void CDMonitorDlg::StartTimer()
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_FILE,NULL);
 	}
 }
+
 void CDMonitorDlg::StopTimer()
 {
 	bTimer = false;
 	KillTimer(TIMER_CMD_DRAW);
 }
 
+void CDMonitorDlg::SetScaleScroll()
+{
+	scaleScrollPos = 0;
+	m_totalScaleRect = m_scaleRect;
+	m_totalScaleRect.bottom = m_scaleRect.top + gap*theApp.workInfoList.GetCount();
+	mScrollScaleV.SetScrollRange(0,m_totalScaleRect.Height()- m_scaleRect.Height());
+	mScrollScaleV.SetScrollPos(0);
+}
 void CDMonitorDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -1816,101 +1973,199 @@ void CDMonitorDlg::OnTimer(UINT_PTR nIDEvent)
 void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	int TempPos = pScrollBar->GetScrollPos();
-	int pageMeter = m_clientRect.Height()/unitPixel;
-	switch(nSBCode)
+	if((CScrollBar*)GetDlgItem(IDC_SCROLLBAR_V) == pScrollBar)
 	{
-	case SB_THUMBPOSITION://拖动滑块
-		pScrollBar->SetScrollPos(nPos);
-		if(processType == FILEDATA_PROCESSING)
+		int TempPos = pScrollBar->GetScrollPos();
+		int pageMeter = m_clientRect.Height()/unitPixel;
+		switch(nSBCode)
 		{
-			TempPos = pScrollBar->GetScrollPos();
-			if(TempPos<pageMeter)
-			{
-				TempPos = 0;
-			}
-			else if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
-			{
-				TempPos = maxDepthLimit - minDepthLimit - pageMeter;
-			}
-			else
+		case SB_THUMBPOSITION://拖动滑块
+			pScrollBar->SetScrollPos(nPos);
+			if(processType == FILEDATA_PROCESSING)
 			{
 				TempPos = pScrollBar->GetScrollPos();
+				if(TempPos<pageMeter)
+				{
+					TempPos = 0;
+				}
+				else if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+				{
+					TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+				}
+				else
+				{
+					TempPos = pScrollBar->GetScrollPos();
+				}
+				minDepth = (int)TempPos+minDepthLimit;
+				maxDepth = (int)minDepth+pageMeter;
 			}
-			minDepth = (int)TempPos+minDepthLimit;
-			maxDepth = (int)minDepth+pageMeter;
-		}
-		InvalidateRect(rectView,false);
-		break;
-	case SB_LINEUP://点击上边的箭头
-		if(processType == FILEDATA_PROCESSING)
+			InvalidateRect(rectView,false);
+			break;
+		case SB_LINEUP://点击上边的箭头
+			if(processType == FILEDATA_PROCESSING)
+			{
+				if(TempPos<pageMeter)
+				{
+					TempPos = 0;
+				}
+				else
+				{
+					TempPos -= pageMeter;
+				}
+				minDepth = (int)TempPos+minDepthLimit;
+				maxDepth = (int)minDepth+pageMeter;
+				pScrollBar->SetScrollPos(TempPos);
+			}
+			InvalidateRect(rectView,false);
+			break;
+		case SB_LINEDOWN://点击下边的箭头
+			if(processType == FILEDATA_PROCESSING)
+			{
+				if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+				{
+					TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+				}
+				else
+				{
+					TempPos += pageMeter;
+				}
+				minDepth = (int)TempPos+minDepthLimit;
+				maxDepth = (int)minDepth+pageMeter;
+				pScrollBar->SetScrollPos(TempPos);
+			}
+			InvalidateRect(rectView,false);
+			break;
+		case SB_PAGEUP://向上翻页
+			if(processType == FILEDATA_PROCESSING)
+			{
+				if(TempPos<pageMeter)
+				{
+					TempPos = 0;
+				}
+				else
+				{
+					TempPos -= pageMeter;
+				}
+				minDepth = (int)TempPos+minDepthLimit;
+				maxDepth = (int)minDepth+pageMeter;
+				pScrollBar->SetScrollPos(TempPos);
+			}
+			InvalidateRect(rectView,false);
+			break;
+		case SB_PAGEDOWN://向下翻页
+			if(processType == FILEDATA_PROCESSING)
+			{
+				if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+				{
+					TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+				}
+				else
+				{
+					TempPos += pageMeter;
+				}
+				minDepth = (int)TempPos+minDepthLimit;
+				maxDepth = (int)minDepth+pageMeter;
+				pScrollBar->SetScrollPos(TempPos);
+			}
+			InvalidateRect(rectView,false);
+			break;
+		} 
+	}
+	else if((CScrollBar*)GetDlgItem(IDC_SCROLLBAR_SCALE) == pScrollBar)
+	{
+		int TempPos = pScrollBar->GetScrollPos();
+		int pageMeter = m_totalScaleRect.Height() - m_scaleRect.Height();
+		switch(nSBCode)
 		{
-			if(TempPos<pageMeter)
+		case SB_THUMBPOSITION://拖动滑块
+			pScrollBar->SetScrollPos(nPos);
+			if(processType == FILEDATA_PROCESSING)
 			{
-				TempPos = 0;
+				TempPos = pScrollBar->GetScrollPos();
+				if(TempPos<=0)
+				{
+					TempPos = 0;
+
+				}
+				else if(TempPos>pageMeter)
+				{
+					TempPos = pageMeter;
+					scaleScrollPos++;
+				}
+				else
+				{
+					TempPos = pScrollBar->GetScrollPos();
+				}
+				scaleScrollPos = TempPos/gap;
 			}
-			else
+			InvalidateRect(rectScale,false);
+			break;
+		case SB_LINEUP://点击上边的箭头
+			if(processType == FILEDATA_PROCESSING)
 			{
-				TempPos -= pageMeter;
+				if(TempPos<=0)
+				{
+					TempPos = 0;
+				}
+				else
+				{
+					TempPos -= gap;
+				}
+				pScrollBar->SetScrollPos(TempPos);
+				scaleScrollPos = TempPos/gap;
 			}
-			minDepth = (int)TempPos+minDepthLimit;
-			maxDepth = (int)minDepth+pageMeter;
-			pScrollBar->SetScrollPos(TempPos);
-		}
-		InvalidateRect(rectView,false);
-		break;
-	case SB_LINEDOWN://点击下边的箭头
-		if(processType == FILEDATA_PROCESSING)
-		{
-			if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
+			InvalidateRect(rectScale,false);
+			break;
+		case SB_LINEDOWN://点击下边的箭头
+			if(processType == FILEDATA_PROCESSING)
 			{
-				TempPos = maxDepthLimit - minDepthLimit - pageMeter;
+				if(TempPos>pageMeter)
+				{
+					TempPos = pageMeter;
+				}
+				else
+				{
+					TempPos += gap;
+				}
+				pScrollBar->SetScrollPos(TempPos);
+				scaleScrollPos = TempPos/gap;
 			}
-			else
+			InvalidateRect(rectScale,false);
+			break;
+		case SB_PAGEUP://向上翻页
+			if(processType == FILEDATA_PROCESSING)
 			{
-				TempPos += pageMeter;
+				if(TempPos<=0)
+				{
+					TempPos = 0;
+				}
+				else
+				{
+					TempPos -= gap;
+				}
+				pScrollBar->SetScrollPos(TempPos);
+				scaleScrollPos = TempPos/gap;
 			}
-			minDepth = (int)TempPos+minDepthLimit;
-			maxDepth = (int)minDepth+pageMeter;
-			pScrollBar->SetScrollPos(TempPos);
-		}
-		InvalidateRect(rectView,false);
-		break;
-	case SB_PAGEUP://向上翻页
-		if(processType == FILEDATA_PROCESSING)
-		{
-			if(TempPos<pageMeter)
+			InvalidateRect(rectScale,false);
+			break;
+		case SB_PAGEDOWN://向下翻页
+			if(processType == FILEDATA_PROCESSING)
 			{
-				TempPos = 0;
+				if(TempPos>pageMeter)
+				{
+					TempPos = pageMeter;
+				}
+				else
+				{
+					TempPos += gap;
+				}
+				pScrollBar->SetScrollPos(TempPos);
+				scaleScrollPos = TempPos/gap;
 			}
-			else
-			{
-				TempPos -= pageMeter;
-			}
-			minDepth = (int)TempPos+minDepthLimit;
-			maxDepth = (int)minDepth+pageMeter;
-			pScrollBar->SetScrollPos(TempPos);
-		}
-		InvalidateRect(rectView,false);
-		break;
-	case SB_PAGEDOWN://向下翻页
-		if(processType == FILEDATA_PROCESSING)
-		{
-			if(TempPos>maxDepthLimit - minDepthLimit - pageMeter)
-			{
-				TempPos = maxDepthLimit - minDepthLimit - pageMeter;
-			}
-			else
-			{
-				TempPos += pageMeter;
-			}
-			minDepth = (int)TempPos+minDepthLimit;
-			maxDepth = (int)minDepth+pageMeter;
-			pScrollBar->SetScrollPos(TempPos);
-		}
-		InvalidateRect(rectView,false);
-		break;
-	} 
+			InvalidateRect(rectScale,false);
+			break;
+		} 
+	}
 	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
 }
 

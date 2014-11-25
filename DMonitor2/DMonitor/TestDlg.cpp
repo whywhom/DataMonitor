@@ -329,12 +329,7 @@ void CTestDlg::OnBnClickedButtonAdd()
 	}
 	if(isExist)
 	{
-#if 0
-		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
-		((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitle);
-		item = ((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetCurSel();
-		((CComboBox*)GetDlgItem(IDC_COMBO_UNIT))->GetLBText(item, plist->strUnit);
-#endif
+
 		item = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetCurSel();
 		//((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->GetLBText(item, plist->strTitle);
 		if(item >= 0)
@@ -412,6 +407,7 @@ void CTestDlg::OnBnClickedButtonAdd()
 void CTestDlg::OnBnClickedButtonDel()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	CWorkInfo* plist;
 	POSITION pss=mTestList.GetFirstSelectedItemPosition();//pos就是行索引号，晕
 	int i=0;
 	if(pss==NULL)
@@ -425,7 +421,39 @@ void CTestDlg::OnBnClickedButtonDel()
 			int nIdx = mTestList.GetNextSelectedItem(pss);//多少行--
 			if(nIdx >=0&&nIdx<mTestList.GetItemCount())
 			{
+				CString strSingle = mTestList.GetItemText(nIdx, 0);
+				CString strUnit = mTestList.GetItemText(nIdx, 1);
 				mTestList.DeleteItem(nIdx);
+				int nRt = ((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->FindString(-1,strSingle);
+				int nRt2 = ((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->FindString(-1,strUnit);
+				if (nRt!=CB_ERR  )
+				{
+					((CComboBox*)GetDlgItem(IDC_COMBO_SIGNAL))->DeleteString(nRt);
+				}
+				if (nRt2!=CB_ERR  )
+				{
+					((CComboBox*)GetDlgItem(IDC_COMBO_TITLE))->DeleteString(nRt2);
+				}
+				POSITION pos = theApp.workInfoList.GetHeadPosition();
+				POSITION pos2;
+				while(pos)
+				{
+					pos2 = pos;
+					plist = theApp.workInfoList.GetNext(pos);
+					if(!strSingle.Compare(plist->strSignal))
+					{
+						theApp.workInfoList.RemoveAt(pos2);
+						delete plist;
+						break;
+					}
+				}
+				if(nIdx >= mTestList.GetItemCount())
+				{
+					SetCurveInfo(mTestList.GetItemCount() -1);    //pNMLV->iItem为选中的项目
+				} else
+				{
+					SetCurveInfo(nIdx);    //pNMLV->iItem为选中的项目
+				}
 				break;
 			}
 		}
