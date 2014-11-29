@@ -34,6 +34,7 @@ public:
 public:
 	HMENU m_hMenu;//菜单
 	CToolBar m_ToolBar;//工具栏
+	bool bExiting;//点击退出时此变量设置为ture
 	//bool bOperating;
 	CRect rectMain;//主界面区域
 	CRect rectView;//绘图界面区域

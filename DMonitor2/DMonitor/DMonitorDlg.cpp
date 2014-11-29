@@ -206,6 +206,7 @@ BOOL CDMonitorDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	m_hMenu = LoadMenu(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_MAINFRAME));//导入资源,创建菜单
 	::SetMenu(this->GetSafeHwnd(),m_hMenu);//添加到对话框
+	bExiting = false;
 	OnInitWidget();
 	ParseWorkInfoData();
 	ParseWorkUnitData();
@@ -248,6 +249,7 @@ void CDMonitorDlg::OnClose()
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if (MessageBox(theApp.GetResString(IDS_EXIT_APP_QUESTION),_T("提示"),MB_ICONQUESTION|MB_OKCANCEL)==IDOK)
 	{
+		bExiting = true;
 		theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
 		Sleep(500);
 		ClearWorkInfoList();
@@ -327,6 +329,8 @@ void CDMonitorDlg::OnPaint()
 		dc.Rectangle(rectScale.left-1,rectScale.top-1,rectScale.right+1,rectScale.bottom+1);
 		dc.SelectObject(oPen);
 		///////////////////////
+		/////***********///////
+		///////////////////////
 		//建立与屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
 		MemDC.CreateCompatibleDC(NULL);  
 		//建立一个与屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
@@ -345,7 +349,9 @@ void CDMonitorDlg::OnPaint()
 		//绘图完成后的清理  
 		MemBitmap.DeleteObject();  
 		MemDC.DeleteDC(); 
-		//////////////////////		
+		///////////////////////
+		/////***********///////
+		///////////////////////
 		//建立与坐标屏幕显示兼容的内存显示设备，这时还不能绘图，因为没有地方画
 		ScaleMemDC.CreateCompatibleDC(NULL);  
 		//建立一个与坐标屏幕显示兼容的位图，至于位图的大小，可以用窗口的大小  
@@ -364,8 +370,9 @@ void CDMonitorDlg::OnPaint()
 		//绘图完成后的清理  
 		ScaleMemBitmap.DeleteObject();  
 		ScaleMemDC.DeleteDC(); 
-		//////////////////////	
-
+		///////////////////////
+		/////***********///////
+		///////////////////////
 		CDialogEx::OnPaint();
 	}
 }
@@ -553,11 +560,16 @@ void CDMonitorDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 
 void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam) 
 {
+	if(bExiting)
+	{
+		return;
+	}
 	std::string str,strTitle,strData;
 	CPetroData* pPData = NULL;
 	int subId = 0;
 	BYTE buf0 = 0;
 	bool bSupport = false;
+	double iDept = 0;
 	for(int i = 0; i< wParam; i++)
 	{
 		if(i == wParam-1)
@@ -590,9 +602,9 @@ void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam)
 				strTitle = str;
 				if(str == "DEPT")
 				{
-					//TRACE(_T("Find Char 'DEPT' \r\n"));
 					if(pPData != NULL)
 					{
+#if 0
 						bool isFound = false;
 						double iDept = 0;
 						for(int subi=0;subi<pPData->pData.size();subi++)
@@ -611,6 +623,7 @@ void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam)
 								pPData->pData.at(subi).iDeptData = iDept;
 							}
 						}
+#endif
 						//petroList.AddTail(pPData);
 						pushToQueue(pPData);
 					}
@@ -639,7 +652,11 @@ void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam)
 								dataPart.iData = num;
 								dataPart.strData = str.c_str();
 								dataPart.bAssign = true;
-								if(s == "MAG")
+								if(s == "DEPT")
+								{
+									iDept = num;
+								}
+								else if(s == "MAG")
 								{
 									dataPart.subIndex = subId;
 									subId++;
@@ -648,6 +665,7 @@ void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam)
 								{
 									dataPart.subIndex = 0;
 								}
+								dataPart.iDeptData = num;
 								dataPart.strTag = strTitle.c_str();
 								CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
 								dataPart.strUnit = plist->strUnit;
@@ -1103,10 +1121,7 @@ void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 						break;
 					}
 				}
-		
-			}
-			pPData = petroList.GetTail();
-			UpdatePanelListView(pPData);
+			}	
 		}
 		else
 		{
@@ -1141,9 +1156,7 @@ void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 						break;
 					}
 				}
-		
 			}
-			UpdatePanelListView(pPData);
 		}	
 	}
 }
@@ -1388,15 +1401,20 @@ void CDMonitorDlg::DrawRealtimeBasic(CDC * pDC)
 		CPetroData * pTailData = petroList.GetTail();
 		DATA_PART headData;
 		DATA_PART tailData;
-		for(int j =0;j<str_unitlist.size();j++)
+		for(int j =0;j<pHeadData->pData.size();j++)
 		{			
 			if(pHeadData->pData.at(j).strTag == _T("DEPT"))
 			{
 				headData = pHeadData->pData.at(j);
+				break;
 			}
-			if(tailData.strTag == _T("DEPT"))
+		}
+		for(int j =0;j<pTailData->pData.size();j++)
+		{
+			if(pTailData->pData.at(j).strTag == _T("DEPT"))
 			{
 				tailData = pTailData->pData.at(j);
+				break;
 			}
 		}
 		if(m_bDirectDown)
@@ -1771,14 +1789,29 @@ void CDMonitorDlg::DrawRealtimePlot(CDC* pDC)
 	int pageMeter = m_clientRect.Height()/unitPixel;
 	//minDepth = (int)TempPos+minDepthLimit;
 	//maxDepth = (int)minDepth+pageMeter;
-	for (int i=m_plot2Rect.top,iCount = 0;i<=m_plot2Rect.bottom;i+=unitPixel*10,iCount++)
+	if(m_bDirectDown)
 	{
-		textRect.top = m_plot2Rect.top + i-z.cy/2;
-		textRect.bottom = textRect.top + z.cy;
-		double tmp = i/unitPixel+minDepth;
-		str.Format(_T("%.1f"),tmp);
-		pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
+		for (int i=m_plot2Rect.bottom,iCount = 0;i>=m_plot2Rect.top;i-=unitPixel*10,iCount++)
+		{
+			textRect.top = m_plot2Rect.top + i-z.cy/2;
+			textRect.bottom = textRect.top + z.cy;
+			double tmp = maxDepth - (m_plot2Rect.bottom - i/unitPixel);
+			str.Format(_T("%.1f"),tmp);
+			pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
 
+		}
+	}
+	else
+	{
+		for (int i=m_plot2Rect.top,iCount = 0;i<=m_plot2Rect.bottom;i+=unitPixel*10,iCount++)
+		{
+			textRect.top = m_plot2Rect.top + i-z.cy/2;
+			textRect.bottom = textRect.top + z.cy;
+			double tmp = i/unitPixel+minDepth;
+			str.Format(_T("%.1f"),tmp);
+			pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
+
+		}
 	}
 	pDC->SelectObject(oFont);
 }
@@ -1881,6 +1914,7 @@ void CDMonitorDlg::StartTimer()
 		maxDepth = 0;
 		minDepthLimit = 0;
 		maxDepthLimit = 0;
+		AddPanelListView();
 		bScroll = false;
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
@@ -1953,6 +1987,14 @@ void CDMonitorDlg::OnTimer(UINT_PTR nIDEvent)
 				if(!petroList.IsEmpty())
 				{
 					//CalculateParam();
+					if(m_bDirectDown)
+					{
+						UpdatePanelListView(petroList.GetTail());
+					}
+					else
+					{
+						UpdatePanelListView(petroList.GetHead());
+					}
 					InvalidateRect(rectView,false);
 				}
 				SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
@@ -2381,7 +2423,7 @@ void CDMonitorDlg::UpdatePanelListView(CPetroData* pPData)
 					else
 					{
 						strMag += pPData->pData.at(i).strData;
-						listView.SetItemText(4,1,strMag);
+						listView.SetItemText(j,1,strMag);
 						listView.SetItemText(j,2,pPData->pData.at(i).strUnit);
 					}
 				}
