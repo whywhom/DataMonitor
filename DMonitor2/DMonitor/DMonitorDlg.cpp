@@ -977,7 +977,6 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 	}
 	else
 	{
-		TRACE(_T("DrawCoordinateSystem"));
 		CString str;
 		CFont font;
 		VERIFY(font.CreateFont(
@@ -1093,6 +1092,7 @@ void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 		if(m_bDirectDown)
 		{
 			pos = petroList.GetTailPosition();
+			
 			while(pos)
 			{
 				pPData = petroList.GetPrev(pos);
@@ -1103,6 +1103,7 @@ void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 					if(mDataPart.strTag == _T("DEPT"))
 					{
 						bFound = true;
+						OutputDebugString(_T("DrawRealtimeCurve dept = ")+ mDataPart.strData +" \r\n");
 						break;
 					}
 				}
@@ -1795,8 +1796,9 @@ void CDMonitorDlg::DrawRealtimePlot(CDC* pDC)
 		{
 			textRect.top = m_plot2Rect.top + i-z.cy/2;
 			textRect.bottom = textRect.top + z.cy;
-			double tmp = maxDepth - (m_plot2Rect.bottom - i/unitPixel);
+			double tmp = maxDepth - ((m_plot2Rect.bottom - i)/unitPixel);
 			str.Format(_T("%.1f"),tmp);
+			OutputDebugString(_T("DrawRealtimePlot dept = ")+ str +" \r\n");
 			pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
 
 		}
@@ -2121,7 +2123,7 @@ void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		{
 		case SB_THUMBPOSITION://拖动滑块
 			pScrollBar->SetScrollPos(nPos);
-			if(processType == FILEDATA_PROCESSING)
+			if(processType == FILEDATA_PROCESSING || processType == REALTIME_PROCESSING)
 			{
 				TempPos = pScrollBar->GetScrollPos();
 				if(TempPos<=0)
@@ -2143,7 +2145,7 @@ void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			InvalidateRect(rectScale,false);
 			break;
 		case SB_LINEUP://点击上边的箭头
-			if(processType == FILEDATA_PROCESSING)
+			if(processType == FILEDATA_PROCESSING || processType == REALTIME_PROCESSING)
 			{
 				if(TempPos<=0)
 				{
@@ -2159,7 +2161,7 @@ void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			InvalidateRect(rectScale,false);
 			break;
 		case SB_LINEDOWN://点击下边的箭头
-			if(processType == FILEDATA_PROCESSING)
+			if(processType == FILEDATA_PROCESSING || processType == REALTIME_PROCESSING)
 			{
 				if(TempPos>pageMeter)
 				{
@@ -2175,7 +2177,7 @@ void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			InvalidateRect(rectScale,false);
 			break;
 		case SB_PAGEUP://向上翻页
-			if(processType == FILEDATA_PROCESSING)
+			if(processType == FILEDATA_PROCESSING || processType == REALTIME_PROCESSING)
 			{
 				if(TempPos<=0)
 				{
@@ -2191,7 +2193,7 @@ void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			InvalidateRect(rectScale,false);
 			break;
 		case SB_PAGEDOWN://向下翻页
-			if(processType == FILEDATA_PROCESSING)
+			if(processType == FILEDATA_PROCESSING || processType == REALTIME_PROCESSING)
 			{
 				if(TempPos>pageMeter)
 				{
@@ -2293,6 +2295,7 @@ void CDMonitorDlg::OnMenuDisconn()
 		return;
 	}
 	bConnect = false;
+	StopTimer();
 	theApp.commLayer.m_SerialPort.ClosePort();//关闭串口
 	//bRunning = false;
 	Sleep(500);
@@ -2406,6 +2409,7 @@ void CDMonitorDlg::UpdatePanelListView(CPetroData* pPData)
 			{
 				if(!str.Compare(_T("DEPT")))
 				{
+					OutputDebugString(_T("OnTimer dept = ")+ pPData->pData.at(i).strData +" \r\n");
 					Edit01.SetWindowText(pPData->pData.at(i).strData);
 				}
 				if(!str.Compare(_T("MAG")))
@@ -2576,6 +2580,7 @@ void CDMonitorDlg::OnTestMode1()
 		CreateCurveFile(theApp.strCurveFile);
 		CreateUnitFile(theApp.strUnitsFile);
 		POSITION pos = theApp.workInfoList.GetHeadPosition();
+		str_unitlist.clear();
 		while(pos)
 		{
 			CWorkInfo* p = theApp.workInfoList.GetNext(pos);
