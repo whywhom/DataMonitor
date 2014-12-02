@@ -665,7 +665,7 @@ void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam)
 								{
 									dataPart.subIndex = 0;
 								}
-								dataPart.iDeptData = num;
+								dataPart.iDeptData = iDept;
 								dataPart.strTag = strTitle.c_str();
 								CWorkInfo* plist = theApp.workInfoList.GetAt(theApp.workInfoList.FindIndex(k));
 								dataPart.strUnit = plist->strUnit;
@@ -1103,7 +1103,7 @@ void CDMonitorDlg::DrawRealtimeCurve(CDC* pDC , double upDepth, double DownDepth
 					if(mDataPart.strTag == _T("DEPT"))
 					{
 						bFound = true;
-						OutputDebugString(_T("DrawRealtimeCurve dept = ")+ mDataPart.strData +" \r\n");
+						//OutputDebugString(_T("DrawRealtimeCurve dept = ")+ mDataPart.strData +" \r\n");
 						break;
 					}
 				}
@@ -1798,7 +1798,7 @@ void CDMonitorDlg::DrawRealtimePlot(CDC* pDC)
 			textRect.bottom = textRect.top + z.cy;
 			double tmp = maxDepth - ((m_plot2Rect.bottom - i)/unitPixel);
 			str.Format(_T("%.1f"),tmp);
-			OutputDebugString(_T("DrawRealtimePlot dept = ")+ str +" \r\n");
+			//OutputDebugString(_T("DrawRealtimePlot dept = ")+ str +" \r\n");
 			pDC->DrawText(str,textRect,DT_LEFT|DT_VCENTER);
 
 		}
@@ -2409,7 +2409,7 @@ void CDMonitorDlg::UpdatePanelListView(CPetroData* pPData)
 			{
 				if(!str.Compare(_T("DEPT")))
 				{
-					OutputDebugString(_T("OnTimer dept = ")+ pPData->pData.at(i).strData +" \r\n");
+					//OutputDebugString(_T("OnTimer dept = ")+ pPData->pData.at(i).strData +" \r\n");
 					Edit01.SetWindowText(pPData->pData.at(i).strData);
 				}
 				if(!str.Compare(_T("MAG")))
