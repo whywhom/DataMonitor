@@ -1918,6 +1918,7 @@ void CDMonitorDlg::StartTimer()
 		maxDepthLimit = 0;
 		AddPanelListView();
 		bScroll = false;
+		InvalidateRect(rectScale,false);
 		SetTimer(TIMER_CMD_DRAW,TIME_REFRESH_REALTIME,NULL);
 	}
 	else if(processType == FILEDATA_PROCESSING)
