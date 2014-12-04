@@ -153,10 +153,19 @@ void CDMoniterApp::GetModulePath()
 		}
 	}
 	******/
-	TCHAR szModPath[_MAX_PATH];
-	GetModuleFileName(m_hInstance, szModPath, _MAX_PATH);
+	TCHAR szModPath[_MAX_PATH] = {0};
+	//GetModuleFileName(m_hInstance, szModPath, _MAX_PATH);
+	SHGetSpecialFolderPath(NULL, szModPath, CSIDL_APPDATA, FALSE);
     szExePath = szModPath;
-    ModuleFilePath = szExePath.Left(szExePath.ReverseFind('\\'));
+	szExePath += _T("\\");
+	szExePath += AfxGetApp()->m_pszExeName;
+    ModuleFilePath = szExePath;//szExePath.Left(szExePath.ReverseFind('\\'));
+	dwAttr=GetFileAttributes(ModuleFilePath);
+	//若文件夹不存在，创建文件夹
+	if(dwAttr==0xFFFFFFFF)
+	{
+		CreateDirectory(ModuleFilePath,NULL);
+	}
 	LogPath = ModuleFilePath + _T("\\Log\\");
 	dwAttr=GetFileAttributes(LogPath);
 	//若文件夹不存在，创建文件夹

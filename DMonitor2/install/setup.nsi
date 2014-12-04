@@ -113,6 +113,8 @@ Section /o -un.Main UNSEC0000
     RmDir /r /REBOOTOK $INSTDIR\Log
     RmDir /r /REBOOTOK $INSTDIR\Temp
     RmDir /r /REBOOTOK $INSTDIR\Tools
+    
+    
     Delete /REBOOTOK $INSTDIR\DMonitor.exe
     DeleteRegValue HKLM "${REGKEY}\Components" Main
 SectionEnd
