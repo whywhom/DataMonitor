@@ -171,6 +171,7 @@ BEGIN_MESSAGE_MAP(CDMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_NEWJOB, &CDMonitorDlg::OnMenuNewjob)
 	ON_COMMAND(ID_MENU_JOBLOAD, &CDMonitorDlg::OnMenuJobload)
 	ON_COMMAND(ID_TEST_MODE1, &CDMonitorDlg::OnTestMode1)
+	ON_COMMAND(ID_MENU_ABOUT, &CDMonitorDlg::OnMenuAbout)
 END_MESSAGE_MAP()
 
 
@@ -207,6 +208,7 @@ BOOL CDMonitorDlg::OnInitDialog()
 	m_hMenu = LoadMenu(AfxGetInstanceHandle(),MAKEINTRESOURCE(IDR_MAINFRAME));//导入资源,创建菜单
 	::SetMenu(this->GetSafeHwnd(),m_hMenu);//添加到对话框
 	bExiting = false;
+	bLoadAssignment = false;
 	OnInitWidget();
 	ParseWorkInfoData();
 	ParseWorkUnitData();
@@ -527,6 +529,11 @@ void CDMonitorDlg::OnDestroy()
 void CDMonitorDlg::OnFileOpen()
 {
 	// TODO: 在此添加命令处理程序代码
+	if(!bLoadAssignment)
+	{
+		MessageBox(_T("请加载作业"),_T("提示"),MB_OK);
+		return;
+	}
 	bool bReturn=false;
 	processType = FILEDATA_PROCESSING;
 	TCHAR   *pFileBuffer = new TCHAR[MAX_PATH];//最多允许300个文件
@@ -604,27 +611,6 @@ void CDMonitorDlg::ParseData(BYTE* tmp, WPARAM wParam)
 				{
 					if(pPData != NULL)
 					{
-#if 0
-						bool isFound = false;
-						double iDept = 0;
-						for(int subi=0;subi<pPData->pData.size();subi++)
-						{
-							if(pPData->pData.at(subi).strTag == _T("DEPT"))
-							{
-								isFound = true;
-								iDept = pPData->pData.at(subi).iData;
-								break;
-							}
-						}
-						if(isFound)
-						{
-							for(int subi=0;subi<pPData->pData.size();subi++)
-							{
-								pPData->pData.at(subi).iDeptData = iDept;
-							}
-						}
-#endif
-						//petroList.AddTail(pPData);
 						pushToQueue(pPData);
 					}
 					pPData = new CPetroData();
@@ -2217,10 +2203,22 @@ void CDMonitorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 
 
+void CDMonitorDlg::OnMenuAbout()
+{
+	// TODO: 在此添加命令处理程序代码
+	CAboutDlg dlgAbout;
+	dlgAbout.DoModal();
+}
+
 
 void CDMonitorDlg::OnMenuConn()
 {
 	// TODO: 在此添加命令处理程序代码
+	if(!bLoadAssignment)
+	{
+		MessageBox(_T("请加载作业"),_T("提示"),MB_OK);
+		return;
+	}
 	CMenu* pSubMenu = NULL;
 	CMenu* pMainMenu = AfxGetMainWnd()->GetMenu();
 	{
@@ -2593,10 +2591,7 @@ void CDMonitorDlg::OnTestMode1()
 				str_unitlist.push_back(strStd);
 			}
 		}
-		if(MessageBox(_T("是否发起连接请求？"),_T("提示"), MB_YESNO ) == IDYES)
-		{
-		
-		}
+		bLoadAssignment = true;
 	}
 }
 
@@ -3271,3 +3266,4 @@ void CDMonitorDlg::ParseWorkUnitData()
 		}
 	}
 }
+
