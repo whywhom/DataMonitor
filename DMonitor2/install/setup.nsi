@@ -5,7 +5,7 @@ Name 测井地面系统
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.14.12.3
+!define VERSION 1.14.12.7
 !define COMPANY 力擎数控
 !define URL ""
 
@@ -45,7 +45,7 @@ InstallDir $PROGRAMFILES\力擎数控
 CRCCheck on
 XPStyle on
 ShowInstDetails show
-VIProductVersion 1.14.12.3
+VIProductVersion 1.14.12.7
 VIAddVersionKey /LANG=${LANG_SIMPCHINESE} ProductName 测井地面系统
 VIAddVersionKey /LANG=${LANG_SIMPCHINESE} ProductVersion "${VERSION}"
 VIAddVersionKey /LANG=${LANG_SIMPCHINESE} CompanyName "${COMPANY}"
@@ -61,12 +61,33 @@ Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite ifnewer
     File ..\Release\DMonitor.exe
-    CreateDirectory $INSTDIR\Config
-    CreateDirectory $INSTDIR\Data
-    CreateDirectory $INSTDIR\Jobs
-    CreateDirectory $INSTDIR\Log
-    CreateDirectory $INSTDIR\Temp
-    CreateDirectory $INSTDIR\Tools
+#   CreateDirectory $INSTDIR\Config
+#   CreateDirectory $INSTDIR\Data
+#   CreateDirectory $INSTDIR\Jobs
+#   CreateDirectory $INSTDIR\Log
+#   CreateDirectory $INSTDIR\Temp
+#   CreateDirectory $INSTDIR\Tools
+# NSIS 中部分变量可以通过一个环境设置命令 SetShellVarContext 来设置：
+# 设置为当前用户
+# SetShellVarContext current
+# 此时 $DESKTOP 指向 C:\Users\Administrator\Desktop
+# 设置为所有用户
+# SetShellVarContext all
+		CreateDirectory $INSTDIR\Help
+		SetOutPath $INSTDIR\Help
+    SetOverwrite ifnewer
+    File ..\Release\Help\help.doc
+    File ..\Release\Help\help.pdf
+    SetShellVarContext current
+    CreateDirectory $APPDATA\DMonitor
+    CreateDirectory $APPDATA\DMonitor\Config
+    CreateDirectory $APPDATA\DMonitor\Data
+    CreateDirectory $APPDATA\DMonitor\Jobs
+    CreateDirectory $APPDATA\DMonitor\Log
+    CreateDirectory $APPDATA\DMonitor\Temp
+    CreateDirectory $APPDATA\DMonitor\Tools
+    
+    SetShellVarContext all
     SetOutPath $SMPROGRAMS\$StartMenuGroup
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\测井地面系统.lnk" $INSTDIR\DMonitor.exe
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
@@ -107,15 +128,22 @@ done${UNSECTION_ID}:
 Section /o -un.Main UNSEC0000
     SetShellVarContext all
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\测井地面系统.lnk"
-    RmDir /r /REBOOTOK $INSTDIR\Config
-    RmDir /r /REBOOTOK $INSTDIR\Data
-    RmDir /r /REBOOTOK $INSTDIR\Jobs
-    RmDir /r /REBOOTOK $INSTDIR\Log
-    RmDir /r /REBOOTOK $INSTDIR\Temp
-    RmDir /r /REBOOTOK $INSTDIR\Tools
-    
-    
-    Delete /REBOOTOK $INSTDIR\DMonitor.exe
+#    RmDir /r /REBOOTOK $INSTDIR\Config
+#    RmDir /r /REBOOTOK $INSTDIR\Data
+#    RmDir /r /REBOOTOK $INSTDIR\Jobs
+#    RmDir /r /REBOOTOK $INSTDIR\Log
+#    RmDir /r /REBOOTOK $INSTDIR\Temp
+#    RmDir /r /REBOOTOK $INSTDIR\Tools
+    RmDir /r /REBOOTOK $INSTDIR\Help
+    SetShellVarContext current
+    RmDir /r /REBOOTOK $APPDATA\DMonitor\Config
+    RmDir /r /REBOOTOK $APPDATA\DMonitor\Data
+    RmDir /r /REBOOTOK $APPDATA\DMonitor\Jobs
+    RmDir /r /REBOOTOK $APPDATA\DMonitor\Log
+    RmDir /r /REBOOTOK $APPDATA\DMonitor\Temp
+    RmDir /r /REBOOTOK $APPDATA\DMonitor\Tools
+    RmDir /REBOOTOK $APPDATA\DMonitor
+    SetShellVarContext all
     DeleteRegValue HKLM "${REGKEY}\Components" Main
 SectionEnd
 
@@ -130,6 +158,7 @@ Section -un.post UNSEC0001
     DeleteRegKey /IfEmpty HKLM "${REGKEY}"
     RmDir /REBOOTOK $SMPROGRAMS\$StartMenuGroup
     RmDir /REBOOTOK $INSTDIR
+    
 SectionEnd
 
 # Installer functions

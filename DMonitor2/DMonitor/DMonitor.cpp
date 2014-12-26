@@ -159,7 +159,7 @@ void CDMoniterApp::GetModulePath()
     szExePath = szModPath;
 	szExePath += _T("\\");
 	szExePath += AfxGetApp()->m_pszExeName;
-    ModuleFilePath = szExePath;//szExePath.Left(szExePath.ReverseFind('\\'));
+    ModuleFilePath = szExePath;
 	dwAttr=GetFileAttributes(ModuleFilePath);
 	//若文件夹不存在，创建文件夹
 	if(dwAttr==0xFFFFFFFF)

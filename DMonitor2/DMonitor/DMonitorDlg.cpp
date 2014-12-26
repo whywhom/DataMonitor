@@ -172,6 +172,7 @@ BEGIN_MESSAGE_MAP(CDMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_JOBLOAD, &CDMonitorDlg::OnMenuJobload)
 	ON_COMMAND(ID_TEST_MODE1, &CDMonitorDlg::OnTestMode1)
 	ON_COMMAND(ID_MENU_ABOUT, &CDMonitorDlg::OnMenuAbout)
+	ON_COMMAND(ID_INSTRUCTION, &CDMonitorDlg::OnInstruction)
 END_MESSAGE_MAP()
 
 
@@ -3267,3 +3268,35 @@ void CDMonitorDlg::ParseWorkUnitData()
 	}
 }
 
+
+
+void CDMonitorDlg::OnInstruction()
+{
+	// TODO: 在此添加命令处理程序代码
+	DWORD dwAttr = 0;
+	TCHAR szModPath[_MAX_PATH];
+	GetModuleFileName(theApp.m_hInstance, szModPath, _MAX_PATH);
+    CString strName = _T("help.pdf");
+    CString PdfHelpFilePath = szModPath;
+	PdfHelpFilePath = PdfHelpFilePath.Left(PdfHelpFilePath.ReverseFind('\\'));
+	PdfHelpFilePath = PdfHelpFilePath + _T("\\Help\\");
+	dwAttr=GetFileAttributes(PdfHelpFilePath);
+	//若文件夹不存在，创建文件夹
+	if(dwAttr==0xFFFFFFFF)
+	{
+		MessageBox(_T("文件夹不存在\n"),_T("提示"),MB_OK); 
+	}
+	CString DocHelpFilePath = PdfHelpFilePath;
+	PdfHelpFilePath += strName;
+	if (ShellExecute (NULL,_T("open"),PdfHelpFilePath,NULL,NULL,SW_SHOW) <(HANDLE) 32) 
+	{
+		strName = _T("help.doc");
+		DocHelpFilePath += strName;
+		if (ShellExecute (NULL,_T("open"),DocHelpFilePath,NULL,NULL,SW_SHOW) <(HANDLE) 32) 
+		{
+			CString str;
+			str.Format(_T("无法打开%s文件，\n"),DocHelpFilePath);
+			MessageBox(str,_T("提示"),MB_OK); 
+		}
+	}
+}

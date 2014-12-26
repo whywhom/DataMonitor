@@ -235,4 +235,5 @@ public:
 	afx_msg void OnTestMode1();
 	CScrollBar mScrollScaleV;
 	afx_msg void OnMenuAbout();
+	afx_msg void OnInstruction();
 };
