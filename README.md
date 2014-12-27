@@ -1,3 +1,4 @@
-DataMonitor			SDI工程
-DMonitor				Dialog工程
+DataMonitor			SDI
+-------------------------
+DMonitor				Dialog
 
