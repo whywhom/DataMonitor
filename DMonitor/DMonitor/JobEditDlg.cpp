@@ -305,7 +305,37 @@ void CJobEditDlg::CurveInit(CString Label){
 					m_Curve.m_unit=OleVariant.iVal;						
 
 					rs.GetFieldValue (2,OleVariant);
-					m_Curve.m_filter=OleVariant.iVal;		
+					m_Curve.m_filter=OleVariant.iVal;	
+					//标识
+					rs.GetFieldValue (3,OleVariant);
+					m_Curve.m_title=OleVariant.bstrVal;
+					//最小取值
+					CString strMin;
+					rs.GetFieldValue (4,OleVariant);
+					strMin.Format(_T("%d"),OleVariant.bstrVal);
+					m_Curve.m_minLimit=strMin;
+					//最大取值
+					CString strMax;
+					rs.GetFieldValue (5,OleVariant);
+					strMax.Format(_T("%d"),OleVariant.bstrVal);
+					m_Curve.m_maxLimit=strMax;
+					//R颜色
+					BYTE R,G,B;
+					rs.GetFieldValue (6,OleVariant);
+					R=OleVariant.iVal;	
+					//G颜色
+					rs.GetFieldValue (7,OleVariant);
+					G=OleVariant.iVal;	
+					//B颜色
+					rs.GetFieldValue (8,OleVariant);
+					B=OleVariant.iVal;	
+					m_Curve.curveSelectColor=RGB(R,G,B);
+					//轨道	
+					rs.GetFieldValue (9,OleVariant);
+					m_Curve.m_track=OleVariant.iVal;
+					//线型	
+					rs.GetFieldValue (10,OleVariant);
+					m_Curve.m_line=OleVariant.iVal;	
 
 				rs.Close();				
             }
@@ -616,7 +646,15 @@ void CJobEditDlg::CurveAdd()
 			    rs.AddNew();
 				rs.SetFieldValue(0,COleVariant(m_Curve.m_Label));
 				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
-				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));				
+				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));		
+				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
+				rs.SetFieldValue(4,COleVariant(long(_wtoi(m_Curve.m_minLimit))));//最小取值
+				rs.SetFieldValue(5,COleVariant(long(_wtoi(m_Curve.m_maxLimit))));//最大取值
+				rs.SetFieldValue(6,COleVariant(BYTE(GetRValue(m_Curve.curveSelectColor))));//R颜色
+				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
+				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色
+				rs.SetFieldValue(9,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
+				rs.SetFieldValue(10,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型		
 				rs.Update();
 				MessageBox(_T("添加成功"));
 				}else{
@@ -1046,7 +1084,15 @@ void CJobEditDlg::JobInit(){
 				td.Create(_T("CURVE"));
 				td.CreateField(_T("LABEL"),dbText,50,0L);
 				td.CreateField(_T("UNIT"),dbInteger,0L);		
-				td.CreateField(_T("FILTER"),dbInteger,0L);		
+				td.CreateField(_T("FILTER"),dbInteger,0L);	
+				td.CreateField(_T("TITLE"),dbText,50,0L);
+				td.CreateField(_T("MIN"),dbInteger,1L);
+				td.CreateField(_T("MAX"),dbInteger,100L);
+				td.CreateField(_T("COLOR_R"),dbByte,0xFFL);	
+				td.CreateField(_T("COLOR_G"),dbByte,0L);
+				td.CreateField(_T("COLOR_B"),dbByte,0L);
+				td.CreateField(_T("TRACK"),dbInteger,0L);	
+				td.CreateField(_T("LINETYPE"),dbInteger,0L);	
 			    td.Append();
 				td.Close();
 
@@ -1157,6 +1203,12 @@ void CJobEditDlg::CurveUpdate(CString Label)
 				rs.SetFieldValue(0,COleVariant(m_Curve.m_Label));
 				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
 				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));		
+				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
+				rs.SetFieldValue(4,COleVariant(m_Curve.m_minLimit));//最小取值
+				rs.SetFieldValue(5,COleVariant(m_Curve.m_maxLimit));//最大取值
+				rs.SetFieldValue(6,COleVariant(long(m_Curve.curveSelectColor)));//颜色
+				rs.SetFieldValue(7,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
+				rs.SetFieldValue(8,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
 				rs.Update();
 				MessageBox(_T("修改成功,点左侧曲线信息查看"));
 				}else{

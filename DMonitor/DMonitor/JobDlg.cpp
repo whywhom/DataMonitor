@@ -89,11 +89,31 @@ BOOL CJobDlg::OnInitDialog()
 	GetDlgItem(IDC_ZCW_JOB_TREE_TITLE)->SetWindowText(m_TreeTitle);
 	m_treeCtrl.ModifyStyle(0,TVS_HASBUTTONS   |   TVS_LINESATROOT   |   TVS_HASLINES);	
 	m_treeCtrl.DisplayTree (m_Path,TRUE);
-
+	OnExpandtree();
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
-
+void CJobDlg::OnExpandtree() //展开所有节点 
+{ 
+	// TODO: Add your command handler code here 
+	ExpandTreeNode(m_treeCtrl.GetRootItem()); 
+ 
+}
+ 
+void CJobDlg::ExpandTreeNode(HTREEITEM hTreeItem)
+{
+	if(!m_treeCtrl.ItemHasChildren(hTreeItem))
+    {
+        return;
+    }
+    HTREEITEM hNextItem = m_treeCtrl.GetChildItem(hTreeItem);
+    while (hNextItem != NULL)
+    {
+        ExpandTreeNode(hNextItem);
+        hNextItem = m_treeCtrl.GetNextItem(hNextItem, TVGN_NEXT);
+    }
+    m_treeCtrl.Expand(hTreeItem,TVE_EXPAND);
+}
 
 void CJobDlg::OnJobDel()
 {
@@ -150,7 +170,7 @@ void CJobDlg::OnJobLoad()
 	HTREEITEM sel_htem=m_treeCtrl.GetSelectedItem(); 
     CString strPath=m_treeCtrl.GetFullPath(sel_htem);//获取文件路径名称
 	if(!m_treeCtrl.FindSubDir(strPath)){//不能加载目录
-		if(MessageBox(_T("您确定要载入作业")+strPath+_T("吗?"),_T("警告"), MB_OKCANCEL )==IDOK)
+		if(MessageBox(_T("您确定要载入作业")+strPath+_T("吗?"),_T("提示"), MB_OKCANCEL )==IDOK)
 		{
 		  LoadFile(strPath);		 
 		} 
@@ -326,7 +346,7 @@ void CJobDlg::LoadFile(CString strPath){
 			rs.MoveNext();
 		}
 		rs.Close(); 
-
+		
 		root["job"]="CurrentJob";		
 		root["arrayTool"]=arrayTool;	
 		root["arrayCurve"]=arrayCurve;	
@@ -335,12 +355,18 @@ void CJobDlg::LoadFile(CString strPath){
 		root["arrayPower"]=arrayPower;
 		//写入CurrentJob.json文件
 		
-		//当前作业路径,json格式		
+		
+		//文件存储到Config文件夹,json格式		
+		char *chr=new char[theApp.IniFilePath.GetLength()+1];
+		WideCharToMultiByte(CP_ACP,0,theApp.IniFilePath.GetBuffer(),-1,chr,theApp.IniFilePath.GetLength()+1,NULL,NULL);
+		std::string s = chr; 
+
 		std::string json_file = writer.write(root);   
 		ofstream ofs; 
-		ofs.open("currentjob.json"); 
+		ofs.open(s  + "currentjob.json"); 
 		assert(ofs.is_open()); 
 		ofs<<json_file; 
+		delete chr;
 }
 
 void CJobDlg::OnBnClickedButton1()

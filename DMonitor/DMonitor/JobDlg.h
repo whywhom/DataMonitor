@@ -17,6 +17,8 @@ public:
 	enum { IDD = IDD_JOB };
 public:
 	int receiveFlag;
+	void OnExpandtree(); //展开所有节点 
+	void ExpandTreeNode(HTREEITEM hTreeItem);
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 

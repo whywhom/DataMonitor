@@ -16,6 +16,12 @@ CJobEditDlgCurve::CJobEditDlgCurve(CWnd* pParent /*=NULL*/)
 	, m_Label(_T(""))
 	, m_unit(0)
 	, m_filter(0)
+	, m_title(_T(""))
+	, m_minLimit(_T("1"))
+	, m_maxLimit(_T("100"))
+	, m_line(0)
+	, m_track(0)
+	, curveSelectColor(RGB(0xFF,0x00,0x00))
 {
 
 }
@@ -30,11 +36,22 @@ void CJobEditDlgCurve::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ZCW_CURVE_UNIT, m_unitbox);
 	DDX_Control(pDX, IDC_ZCW_CURVE_FILTER, m_filterbox);
 	DDX_Text(pDX, IDC_ZCW_CURVE_LABEL, m_Label);
+	DDX_Control(pDX, IDC_ZCW_CURVE_TRACK, m_trackbox);
+	DDX_Control(pDX, IDC_ZCW_CURVE_LINETYPE, m_linetype);
+	DDX_Control(pDX, IDC_STATIC_COLOR, m_scolor);
+	DDX_Control(pDX, IDC_BUTTON_COLOR, m_btColor);
+	DDX_Control(pDX, IDC_EDIT_MIN, nTestEditMin);
+	DDX_Control(pDX, IDC_EDIT_MAX, nTestEditMax);
+	//DDX_Control(pDX, IDC_ZCW_CURVE_TITLE, m_edittitle);
+	DDX_Text(pDX, IDC_ZCW_CURVE_TITLE, m_title);
+	DDX_Text(pDX, IDC_EDIT_MIN, m_minLimit);
+	DDX_Text(pDX, IDC_EDIT_MAX, m_maxLimit);
 }
 
 
 BEGIN_MESSAGE_MAP(CJobEditDlgCurve, CDialog)
 	ON_EN_CHANGE(IDC_ZCW_CURVE_LABEL, &CJobEditDlgCurve::OnEnChangeLabel)
+	ON_BN_CLICKED(IDC_BUTTON_COLOR, &CJobEditDlgCurve::OnBnClickedButtonColor)
 END_MESSAGE_MAP()
 
 
@@ -56,6 +73,23 @@ BOOL CJobEditDlgCurve::OnInitDialog()
 	m_filterbox.AddString(m_filterary[i]);
 	}
 	m_filterbox.SetCurSel(m_filter);
+
+	m_trackbox.AddString(_T("轨道 1"));
+	m_trackbox.AddString(_T("轨道 2"));
+	m_trackbox.SetCurSel(m_track);
+
+	m_scolor.SetStaiticColor(curveSelectColor);
+
+	m_linetype.InsertString(0,_T("实线"));//PS_SOLID /* —*/
+	m_linetype.InsertString(1,_T("虚线"));//PS_DASH  /* -------  */
+	m_linetype.InsertString(2,_T("点线"));//PS_DOT  /* .......  */
+	m_linetype.InsertString(3,_T("点划线"));//PS_DASHDOT  /* _._._._  */
+	m_linetype.InsertString(4,_T("双点划线"));//PS_DASHDOTDOT  /* _.._.._  */
+	m_linetype.SetCurSel(m_line);
+
+	nTestEditMin.SetWindowText(m_minLimit);
+	nTestEditMax.SetWindowText(m_maxLimit);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
@@ -70,4 +104,17 @@ void CJobEditDlgCurve::OnEnChangeLabel()
 
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData();
+}
+
+
+void CJobEditDlgCurve::OnBnClickedButtonColor()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CColorDialog dlg;
+
+	if (dlg.DoModal() == IDOK)
+	{
+		curveSelectColor = dlg.GetColor();
+		m_scolor.SetStaiticColor(curveSelectColor);
+	}
 }

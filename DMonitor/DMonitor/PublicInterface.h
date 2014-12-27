@@ -28,6 +28,7 @@ const DWORD COMM_ERROE_MALOCMEM_FAIL=0xF501;//申请空间失败
 const DWORD COMM_ERROE_RELEASEMEM_FAIL=0xF502;//释放空间失败
 const DWORD COMM_ERROE_CANCEL=0xEEE1;//取消操作
 
+
 typedef struct _SEND_COMMAND_LIST
 {
     CString cmd;
