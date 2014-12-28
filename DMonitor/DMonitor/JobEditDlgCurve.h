@@ -41,4 +41,7 @@ public:
 	CString m_maxLimit;
 	int m_line;
 	int m_track;
+	afx_msg void OnEnChangeZcwCurveTitle();
+	afx_msg void OnEnChangeEditMin();
+	afx_msg void OnEnChangeEditMax();
 };

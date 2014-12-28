@@ -42,7 +42,7 @@ void CJobEditDlgCurve::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_COLOR, m_btColor);
 	DDX_Control(pDX, IDC_EDIT_MIN, nTestEditMin);
 	DDX_Control(pDX, IDC_EDIT_MAX, nTestEditMax);
-	//DDX_Control(pDX, IDC_ZCW_CURVE_TITLE, m_edittitle);
+	DDX_Control(pDX, IDC_ZCW_CURVE_TITLE, m_edittitle);
 	DDX_Text(pDX, IDC_ZCW_CURVE_TITLE, m_title);
 	DDX_Text(pDX, IDC_EDIT_MIN, m_minLimit);
 	DDX_Text(pDX, IDC_EDIT_MAX, m_maxLimit);
@@ -52,6 +52,9 @@ void CJobEditDlgCurve::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CJobEditDlgCurve, CDialog)
 	ON_EN_CHANGE(IDC_ZCW_CURVE_LABEL, &CJobEditDlgCurve::OnEnChangeLabel)
 	ON_BN_CLICKED(IDC_BUTTON_COLOR, &CJobEditDlgCurve::OnBnClickedButtonColor)
+	ON_EN_CHANGE(IDC_ZCW_CURVE_TITLE, &CJobEditDlgCurve::OnEnChangeZcwCurveTitle)
+	ON_EN_CHANGE(IDC_EDIT_MIN, &CJobEditDlgCurve::OnEnChangeEditMin)
+	ON_EN_CHANGE(IDC_EDIT_MAX, &CJobEditDlgCurve::OnEnChangeEditMax)
 END_MESSAGE_MAP()
 
 
@@ -117,4 +120,40 @@ void CJobEditDlgCurve::OnBnClickedButtonColor()
 		curveSelectColor = dlg.GetColor();
 		m_scolor.SetStaiticColor(curveSelectColor);
 	}
+}
+
+
+void CJobEditDlgCurve::OnEnChangeZcwCurveTitle()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialog::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData();
+}
+
+
+void CJobEditDlgCurve::OnEnChangeEditMin()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialog::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData();
+}
+
+
+void CJobEditDlgCurve::OnEnChangeEditMax()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialog::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData();
 }

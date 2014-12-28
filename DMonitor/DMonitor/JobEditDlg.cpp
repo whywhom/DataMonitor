@@ -310,15 +310,11 @@ void CJobEditDlg::CurveInit(CString Label){
 					rs.GetFieldValue (3,OleVariant);
 					m_Curve.m_title=OleVariant.bstrVal;
 					//最小取值
-					CString strMin;
 					rs.GetFieldValue (4,OleVariant);
-					strMin.Format(_T("%d"),OleVariant.bstrVal);
-					m_Curve.m_minLimit=strMin;
+					m_Curve.m_minLimit=OleVariant.bstrVal;
 					//最大取值
-					CString strMax;
 					rs.GetFieldValue (5,OleVariant);
-					strMax.Format(_T("%d"),OleVariant.bstrVal);
-					m_Curve.m_maxLimit=strMax;
+					m_Curve.m_maxLimit=OleVariant.bstrVal;
 					//R颜色
 					BYTE R,G,B;
 					rs.GetFieldValue (6,OleVariant);
@@ -648,8 +644,8 @@ void CJobEditDlg::CurveAdd()
 				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
 				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));		
 				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
-				rs.SetFieldValue(4,COleVariant(long(_wtoi(m_Curve.m_minLimit))));//最小取值
-				rs.SetFieldValue(5,COleVariant(long(_wtoi(m_Curve.m_maxLimit))));//最大取值
+				rs.SetFieldValue(4,COleVariant(m_Curve.m_minLimit));//最小取值
+				rs.SetFieldValue(5,COleVariant(m_Curve.m_maxLimit));//最大取值
 				rs.SetFieldValue(6,COleVariant(BYTE(GetRValue(m_Curve.curveSelectColor))));//R颜色
 				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
 				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色
@@ -1086,8 +1082,8 @@ void CJobEditDlg::JobInit(){
 				td.CreateField(_T("UNIT"),dbInteger,0L);		
 				td.CreateField(_T("FILTER"),dbInteger,0L);	
 				td.CreateField(_T("TITLE"),dbText,50,0L);
-				td.CreateField(_T("MIN"),dbInteger,1L);
-				td.CreateField(_T("MAX"),dbInteger,100L);
+				td.CreateField(_T("MIN"),dbText,50,0L);
+				td.CreateField(_T("MAX"),dbText,50,0L);
 				td.CreateField(_T("COLOR_R"),dbByte,0xFFL);	
 				td.CreateField(_T("COLOR_G"),dbByte,0L);
 				td.CreateField(_T("COLOR_B"),dbByte,0L);
