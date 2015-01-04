@@ -1306,37 +1306,85 @@ void CDMonitorDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 		{
 			CPen pen(iDrawType, 1, p->curveColor); 
 			pDC->SelectObject(pen);
-			long lRange = p->rightLimit - p->leftLimit;
-			int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
-			int d_dx = (int)(mOldArray->dx);
-			pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
-				+i_dx*m_plot1Rect.Width()/(10*lRange));
-
-			int i_dx2 = (int)((mDataPart.iData - (int)mDataPart.iData)*10);
-			int d_dx2 = (int)(mDataPart.iData);
-			//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
-			int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
-				+i_dx2*m_plot1Rect.Width()/(10*lRange));
-			cur_ix = (int)mid;
-			pre_iy = (mOldArray->dy - minDepth)*unitPixel;
-			cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
-			pDC->MoveTo(pre_ix,pre_iy);
-			pDC->LineTo(cur_ix,cur_iy);
-		}
-		//else
-		{
-			mOldArray->bAssign = mDataPart.bAssign;
-			mOldArray->dx = mDataPart.iData;
-			mOldArray->dy = mDataPart.iDeptData;
-			mOldArray->strDx = mDataPart.strData;
-			mOldArray->strTag = mDataPart.strTag;
-			mOldArray->subIndex = mDataPart.subIndex;
-			if(!bFound)
+			if(mDataPart.iData >= p->rightLimit)
 			{
-				oldArray.AddTail(mOldArray);
+				long lRange = p->rightLimit - p->leftLimit;
+				int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
+				int d_dx = (int)(mOldArray->dx);
+				pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx*m_plot1Rect.Width()/(10*lRange));
+
+				int i_dx2 = (int)((p->rightLimit - (int)p->rightLimit)*10);
+				int d_dx2 = (int)(p->rightLimit);
+				//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
+				int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx2*m_plot1Rect.Width()/(10*lRange));
+				cur_ix = (int)mid;
+				pre_iy = (mOldArray->dy - minDepth)*unitPixel;
+				cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
+				pDC->MoveTo(pre_ix,pre_iy);
+				pDC->LineTo(cur_ix,cur_iy);
 			}
-			bFound = false;
+			else if(mDataPart.iData <= p->leftLimit)
+			{
+				long lRange = p->rightLimit - p->leftLimit;
+				int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
+				int d_dx = (int)(mOldArray->dx);
+				pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx*m_plot1Rect.Width()/(10*lRange));
+
+				int i_dx2 = (int)((p->leftLimit - (int)p->leftLimit)*10);
+				int d_dx2 = (int)(p->leftLimit);
+				//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
+				int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx2*m_plot1Rect.Width()/(10*lRange));
+				cur_ix = (int)mid;
+				pre_iy = (mOldArray->dy - minDepth)*unitPixel;
+				cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
+				pDC->MoveTo(pre_ix,pre_iy);
+				pDC->LineTo(cur_ix,cur_iy);
+			}
+			else{
+				long lRange = p->rightLimit - p->leftLimit;
+				int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
+				int d_dx = (int)(mOldArray->dx);
+				pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx*m_plot1Rect.Width()/(10*lRange));
+
+				int i_dx2 = (int)((mDataPart.iData - (int)mDataPart.iData)*10);
+				int d_dx2 = (int)(mDataPart.iData);
+				//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
+				int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx2*m_plot1Rect.Width()/(10*lRange));
+				cur_ix = (int)mid;
+				pre_iy = (mOldArray->dy - minDepth)*unitPixel;
+				cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
+				pDC->MoveTo(pre_ix,pre_iy);
+				pDC->LineTo(cur_ix,cur_iy);
+			}
 		}
+		if(mDataPart.iData >= p->rightLimit)
+		{
+			mOldArray->dx = p->rightLimit;
+		}
+		else if(mDataPart.iData <= p->leftLimit)
+		{
+			mOldArray->dx = p->leftLimit;
+		}
+		else
+		{
+			mOldArray->dx = mDataPart.iData;
+		}
+		mOldArray->bAssign = mDataPart.bAssign;
+		mOldArray->dy = mDataPart.iDeptData;
+		mOldArray->strDx = mDataPart.strData;
+		mOldArray->strTag = mDataPart.strTag;
+		mOldArray->subIndex = mDataPart.subIndex;
+		if(!bFound)
+		{
+			oldArray.AddTail(mOldArray);
+		}
+		bFound = false;
 	}
 }
 
