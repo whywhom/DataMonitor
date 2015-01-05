@@ -394,7 +394,7 @@ void CDMonitorDlg::InitColorVariable()
 	crViewCoordinate = RGB(0,0,0);
 	crViewPlot = RGB(127,127,127);//坐标线
 	crViewGraduation  = RGB(0,0,0);//刻度
-	crViewGridColor = RGB(0,0,0);//RGB(127,127,127);
+	crViewGridColor = RGB(127,127,127);//RGB(127,127,127);RGB(0,0,0)
 
 	colorRed = RGB(255,0,0);
 	colorBlue = RGB(0,0,255);
@@ -985,77 +985,154 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 		 LOGBRUSH logBrush;
 
 		int i = 0;
-		
+		int j = 0;
 		int iDrawType = PS_SOLID;
 		int iLineWidth = 1;
 		COLORREF colorR = RGB(127,127,127);
 		CPen pen(iDrawType, 1, colorR); //画笔
 		CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
-		int count = theApp.workInfoList.GetCount();
-		if(count > 0)
+		int count1 = theApp.workInfoList.GetCount();
+		if(count1 > 0)
 		{
 			int count  = 0;
+			int count2  = 0;
 			POSITION pos = theApp.workInfoList.GetHeadPosition();
 			while(pos)
 			{
-				if(count < scaleScrollPos)
+				if(count < scaleScrollPos && count2 < scaleScrollPos)
 				{
 					CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
-					count++;
+					if(plist->strTitle == _T("DEPT"))
+					{
+						continue;
+					}
+					if(plist->trackNum == 0)
+					{
+						count++;
+					}
+					else
+					{
+						count2++;
+					}
 					continue;
 				}
 				CRect rectTop,rectBottom;
 			
 				CWorkInfo* plist = theApp.workInfoList.GetNext(pos);
-				memset(&logBrush, 0, sizeof(logBrush));
-				logBrush.lbStyle = BS_SOLID;
-				logBrush.lbColor = plist->curveColor;
-				DWORD dwF[] = {5, 10, 15, 20};
-				//画线
-				CPen pen;//(iDrawType, iLineWidth, colorR); //画笔
-				//pen.CreatePen(PS_USERSTYLE|PS_GEOMETRIC|PS_ENDCAP_ROUND, plist->lineWidth, &logBrush,4,dwF);
-				pen.CreatePen(BS_SOLID|PS_GEOMETRIC|PS_ENDCAP_SQUARE, 1, &logBrush);
-				pDC->SelectObject(&pen);//画笔和画线区连接
+				if(plist->strTitle == _T("DEPT"))
+				{
+					continue;
+				}
+				if(plist->trackNum == 0)
+				{
+					memset(&logBrush, 0, sizeof(logBrush));
+					logBrush.lbStyle = BS_SOLID;
+					logBrush.lbColor = plist->curveColor;
+					DWORD dwF[] = {5, 10, 15, 20};
+					//画线
+					CPen pen;//(iDrawType, iLineWidth, colorR); //画笔
+					//pen.CreatePen(PS_USERSTYLE|PS_GEOMETRIC|PS_ENDCAP_ROUND, plist->lineWidth, &logBrush,4,dwF);
+					pen.CreatePen(plist->lineType|PS_GEOMETRIC|PS_ENDCAP_SQUARE, plist->lineWidth, &logBrush);
+					pDC->SelectObject(&pen);//画笔和画线区连接
 			
-				rectTop = m_scaleRect;
-				rectTop.top = gap*i+1;
-				rectTop.bottom = gap*i+gap/2-1;
-				rectTop.right = rectTop.left + gap1;
+					rectTop = m_scaleRect;
+					rectTop.top = gap*i+1;
+					rectTop.bottom = gap*i+gap/2-1;
+					rectTop.right = rectTop.left + gap1;
 
-				rectBottom = m_scaleRect;
-				rectBottom.top = gap*i+gap/2+1;
-				rectBottom.bottom = gap*i+gap-1;
-				rectBottom.right = rectBottom.left + gap1;
+					rectBottom = m_scaleRect;
+					rectBottom.top = gap*i+gap/2+1;
+					rectBottom.bottom = gap*i+gap-1;
+					rectBottom.right = rectBottom.left + gap1;
 
-				pDC->MoveTo(0, gap*i+gap/2);
-				pDC->LineTo(rectTop.Width(), gap*i+gap/2);
+					pDC->MoveTo(0, gap*i+gap/2);
+					pDC->LineTo(rectTop.Width(), gap*i+gap/2);
 
-				//画边框
-				CPen pen2(PS_SOLID, 1, RGB(0,0,0)); //画笔
-				pDC->SelectObject(&pen2);//画笔和画线区连接
+					//画边框
+					CPen pen2(PS_SOLID, 1, RGB(0,0,0)); //画笔
+					pDC->SelectObject(&pen2);//画笔和画线区连接
 
-				pDC->MoveTo(0, rectBottom.bottom);
-				pDC->LineTo(rectBottom.Width(), rectBottom.bottom);
+					pDC->MoveTo(0, rectBottom.bottom);
+					pDC->LineTo(rectBottom.Width(), rectBottom.bottom);
 
-				pDC->MoveTo(rectTop.Width(), rectTop.top);
-				pDC->LineTo(rectTop.Width(), rectBottom.bottom);
-				//画标注
-				pDC->SelectObject(&font);
-				pDC->SetTextColor(colorR);   //文本字体颜色为蓝色
-				//pDC->TextOut(rect.Width()/2,30*i,plist->strCurveName);   //输出文本值
-				pDC->DrawText(plist->strSignal,rectTop,DT_CENTER);
+					pDC->MoveTo(rectTop.Width(), rectTop.top);
+					pDC->LineTo(rectTop.Width(), rectBottom.bottom);
+					//画标注
+					pDC->SelectObject(&font);
+					pDC->SetTextColor(colorR);   //文本字体颜色为蓝色
+					//pDC->TextOut(rect.Width()/2,30*i,plist->strCurveName);   //输出文本值
+					pDC->DrawText(plist->strSignal,rectTop,DT_CENTER);
 
-				pDC->SetTextAlign(TA_LEFT);
-				str.Format(_T("%d"),plist->leftLimit);
-				//pDC->TextOut(1,30*i+16,str);   //输出文本值
-				pDC->DrawText(str,rectBottom,DT_LEFT);
+					pDC->SetTextAlign(TA_LEFT);
+					str.Format(_T("%d"),plist->leftLimit);
+					//pDC->TextOut(1,30*i+16,str);   //输出文本值
+					pDC->DrawText(str,rectBottom,DT_LEFT);
 
-				pDC->SetTextAlign(TA_RIGHT);
-				str.Format(_T("%d"),plist->rightLimit);
-				//pDC->TextOut(rect.Width()-100,30*i+16,str);   //输出文本值
-				pDC->DrawText(str,rectBottom,DT_RIGHT);
-				i++;
-				count++;
+					pDC->SetTextAlign(TA_RIGHT);
+					str.Format(_T("%d"),plist->rightLimit);
+					//pDC->TextOut(rect.Width()-100,30*i+16,str);   //输出文本值
+					pDC->DrawText(str,rectBottom,DT_RIGHT);
+					i++;
+					count++;
+				}
+				else
+				{
+					memset(&logBrush, 0, sizeof(logBrush));
+					logBrush.lbStyle = BS_SOLID;
+					logBrush.lbColor = plist->curveColor;
+					DWORD dwF[] = {5, 10, 15, 20};
+					//画线
+					CPen pen;//(iDrawType, iLineWidth, colorR); //画笔
+					//pen.CreatePen(PS_USERSTYLE|PS_GEOMETRIC|PS_ENDCAP_ROUND, plist->lineWidth, &logBrush,4,dwF);
+					pen.CreatePen(plist->lineType|PS_GEOMETRIC|PS_ENDCAP_SQUARE, plist->lineWidth, &logBrush);
+					pDC->SelectObject(&pen);//画笔和画线区连接
+			
+					rectTop = m_scaleRect;
+					rectTop.top = gap*j+1;
+					rectTop.bottom = gap*j+gap/2-1;
+					rectTop.left = rectTop.left + gap1 + gap2;
+					rectTop.right = rectTop.left + gap3;
+
+					rectBottom = m_scaleRect;
+					rectBottom.top = gap*j+gap/2+1;
+					rectBottom.bottom = gap*j+gap-1;
+					rectBottom.left = rectBottom.left + gap1 + gap2;
+					rectBottom.right = rectBottom.left + gap3;
+
+					pDC->MoveTo(rectBottom.left, gap*j+gap/2);
+					pDC->LineTo(rectBottom.right, gap*j+gap/2);
+
+					//画边框
+					CPen pen2(PS_SOLID, 1, RGB(0,0,0)); //画笔
+					pDC->SelectObject(&pen2);//画笔和画线区连接
+
+					pDC->MoveTo(rectBottom.left, rectBottom.bottom);
+					pDC->LineTo(rectBottom.right, rectBottom.bottom);
+
+					pDC->MoveTo(rectTop.left-1, rectTop.top);
+					pDC->LineTo(rectTop.left-1, rectBottom.bottom);
+
+					pDC->MoveTo(rectTop.right, rectTop.top);
+					pDC->LineTo(rectTop.right, rectBottom.bottom);
+					//画标注
+					pDC->SelectObject(&font);
+					pDC->SetTextColor(colorR);   //文本字体颜色为蓝色
+					//pDC->TextOut(rect.Width()/2,30*i,plist->strCurveName);   //输出文本值
+					pDC->DrawText(plist->strSignal,rectTop,DT_CENTER);
+
+					pDC->SetTextAlign(TA_LEFT);
+					str.Format(_T("%d"),plist->leftLimit);
+					//pDC->TextOut(1,30*i+16,str);   //输出文本值
+					pDC->DrawText(str,rectBottom,DT_LEFT);
+
+					pDC->SetTextAlign(TA_RIGHT);
+					str.Format(_T("%d"),plist->rightLimit);
+					//pDC->TextOut(rect.Width()-100,30*i+16,str);   //输出文本值
+					pDC->DrawText(str,rectBottom,DT_RIGHT);
+					j++;
+					count2++;
+				}
+				
 			}
 			
 			//画笔刷新
@@ -1263,12 +1340,17 @@ void CDMonitorDlg::DrawFileDataCurve(CDC* pDC , double upDepth, double DownDepth
 
 void CDMonitorDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 {
+	CPen* pOldPen = NULL;
+	LOGBRUSH logBrush;
 	long pre_iy=0,cur_iy=0;
 	long pre_ix=0,cur_ix=0;
 	CWorkInfo* p = NULL;
 	CDataTemp* mOldArray = NULL;
 	int id = 0;
 	bool bFound = false;
+	int mid = 0;
+	int i_dx2 = 0;
+	int d_dx2 = 0;
 	int iDrawType = PS_SOLID;
 	for(int i=0; i< pPData->pData.size(); i++)
 	{
@@ -1287,6 +1369,7 @@ void CDMonitorDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 		{
 			continue;
 		}
+		iDrawType = p->lineType;
 		bFound = false;
 		pos = oldArray.GetHeadPosition();
 		while(pos)
@@ -1304,63 +1387,69 @@ void CDMonitorDlg::DrawParamData(CDC* pDC ,CPetroData* pPData)
 		}
 		if(mOldArray->bAssign && mOldArray->strTag != _T("DEPT"))
 		{
-			CPen pen(iDrawType, 1, p->curveColor); 
-			pDC->SelectObject(pen);
-			if(mDataPart.iData >= p->rightLimit)
+			CPen pen;//(iDrawType, 1, p->curveColor); 
+			memset(&logBrush, 0, sizeof(logBrush));
+			logBrush.lbStyle = BS_SOLID;
+			logBrush.lbColor = p->curveColor;
+			pen.CreatePen(p->lineType|PS_GEOMETRIC|PS_ENDCAP_SQUARE, p->lineWidth, &logBrush);
+			pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
+
+			long lRange = p->rightLimit - p->leftLimit;
+			int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
+			int d_dx = (int)(mOldArray->dx);
+			pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
+					+i_dx*m_plot1Rect.Width()/(10*lRange));
+			if(p->trackNum == 0)
 			{
-				long lRange = p->rightLimit - p->leftLimit;
-				int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
-				int d_dx = (int)(mOldArray->dx);
 				pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
 					+i_dx*m_plot1Rect.Width()/(10*lRange));
-
-				int i_dx2 = (int)((p->rightLimit - (int)p->rightLimit)*10);
-				int d_dx2 = (int)(p->rightLimit);
-				//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
-				int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
-					+i_dx2*m_plot1Rect.Width()/(10*lRange));
-				cur_ix = (int)mid;
-				pre_iy = (mOldArray->dy - minDepth)*unitPixel;
-				cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
-				pDC->MoveTo(pre_ix,pre_iy);
-				pDC->LineTo(cur_ix,cur_iy);
+			}
+			else
+			{
+				pre_ix = (int)((d_dx - p->leftLimit)*m_plot3Rect.Width()/lRange
+					+i_dx*m_plot3Rect.Width()/(10*lRange));
+			}
+			if(mDataPart.iData >= p->rightLimit)
+			{
+				i_dx2 = (int)((p->rightLimit - (int)p->rightLimit)*10);
+				d_dx2 = (int)(p->rightLimit);
 			}
 			else if(mDataPart.iData <= p->leftLimit)
 			{
-				long lRange = p->rightLimit - p->leftLimit;
-				int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
-				int d_dx = (int)(mOldArray->dx);
-				pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
-					+i_dx*m_plot1Rect.Width()/(10*lRange));
-
-				int i_dx2 = (int)((p->leftLimit - (int)p->leftLimit)*10);
-				int d_dx2 = (int)(p->leftLimit);
-				//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
-				int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
-					+i_dx2*m_plot1Rect.Width()/(10*lRange));
-				cur_ix = (int)mid;
-				pre_iy = (mOldArray->dy - minDepth)*unitPixel;
-				cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
+				i_dx2 = (int)((p->leftLimit - (int)p->leftLimit)*10);
+				d_dx2 = (int)(p->leftLimit);				
+			}
+			else
+			{
+				i_dx2 = (int)((mDataPart.iData - (int)mDataPart.iData)*10);
+				d_dx2 = (int)(mDataPart.iData);
+			}
+			if(p->trackNum == 0)
+			{
+				mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
+				+i_dx2*m_plot1Rect.Width()/(10*lRange));
+			}
+			else
+			{
+				mid = (int)((d_dx2 - p->leftLimit)*m_plot3Rect.Width()/lRange
+				+i_dx2*m_plot3Rect.Width()/(10*lRange));
+			}
+			cur_ix = (int)mid;
+			pre_iy = (mOldArray->dy - minDepth)*unitPixel;
+			cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
+			if(p->trackNum == 0)
+			{
 				pDC->MoveTo(pre_ix,pre_iy);
 				pDC->LineTo(cur_ix,cur_iy);
 			}
-			else{
-				long lRange = p->rightLimit - p->leftLimit;
-				int i_dx = (int)((mOldArray->dx - (int)mOldArray->dx)*10);
-				int d_dx = (int)(mOldArray->dx);
-				pre_ix = (int)((d_dx - p->leftLimit)*m_plot1Rect.Width()/lRange
-					+i_dx*m_plot1Rect.Width()/(10*lRange));
-
-				int i_dx2 = (int)((mDataPart.iData - (int)mDataPart.iData)*10);
-				int d_dx2 = (int)(mDataPart.iData);
-				//double mid = (int(mDataPart.iData)%lRange - p->leftLimit)*m_plot1Rect.Width()/lRange;
-				int mid = (int)((d_dx2 - p->leftLimit)*m_plot1Rect.Width()/lRange
-					+i_dx2*m_plot1Rect.Width()/(10*lRange));
-				cur_ix = (int)mid;
-				pre_iy = (mOldArray->dy - minDepth)*unitPixel;
-				cur_iy = (mDataPart.iDeptData - minDepth)*unitPixel;
-				pDC->MoveTo(pre_ix,pre_iy);
-				pDC->LineTo(cur_ix,cur_iy);
+			else
+			{
+				pDC->MoveTo(m_plot3Rect.left + pre_ix,pre_iy);
+				pDC->LineTo(m_plot3Rect.left + cur_ix,cur_iy);
+			}
+			if(pOldPen != NULL)
+			{
+				pDC->SelectObject(pOldPen);
 			}
 		}
 		if(mDataPart.iData >= p->rightLimit)

@@ -20,5 +20,7 @@ void CWorkInfo::init()
 	leftLimit = 0;//左边界
 	rightLimit = 100;//右边界
 	trackNum = 1;//轨道数
+	lineWidth = 2;
+	lineType = 2;
 	curveColor = RGB(255,0,0); //颜色
 }
