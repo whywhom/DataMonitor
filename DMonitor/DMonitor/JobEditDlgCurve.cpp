@@ -20,6 +20,7 @@ CJobEditDlgCurve::CJobEditDlgCurve(CWnd* pParent /*=NULL*/)
 	, m_minLimit(_T("1"))
 	, m_maxLimit(_T("100"))
 	, m_line(0)
+	, m_linewid(0)
 	, m_track(0)
 	, curveSelectColor(RGB(0xFF,0x00,0x00))
 {
@@ -46,6 +47,7 @@ void CJobEditDlgCurve::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_ZCW_CURVE_TITLE, m_title);
 	DDX_Text(pDX, IDC_EDIT_MIN, m_minLimit);
 	DDX_Text(pDX, IDC_EDIT_MAX, m_maxLimit);
+	DDX_Control(pDX, IDC_ZCW_CURVE_LINEWIDTH, m_linewidth);
 }
 
 
@@ -84,11 +86,16 @@ BOOL CJobEditDlgCurve::OnInitDialog()
 	m_scolor.SetStaiticColor(curveSelectColor);
 
 	m_linetype.InsertString(0,_T("实线"));//PS_SOLID /* —*/
-	m_linetype.InsertString(1,_T("虚线"));//PS_DASH  /* -------  */
-	m_linetype.InsertString(2,_T("点线"));//PS_DOT  /* .......  */
-	m_linetype.InsertString(3,_T("点划线"));//PS_DASHDOT  /* _._._._  */
-	m_linetype.InsertString(4,_T("双点划线"));//PS_DASHDOTDOT  /* _.._.._  */
+	//m_linetype.InsertString(1,_T("虚线"));//PS_DASH  /* -------  */
+	//m_linetype.InsertString(2,_T("点线"));//PS_DOT  /* .......  */
+	//m_linetype.InsertString(3,_T("点划线"));//PS_DASHDOT  /* _._._._  */
+	//m_linetype.InsertString(4,_T("双点划线"));//PS_DASHDOTDOT  /* _.._.._  */
 	m_linetype.SetCurSel(m_line);
+
+	m_linewidth.InsertString(0,_T("细线"));//PS_SOLID /* —*/
+	m_linewidth.InsertString(1,_T("普通"));//PS_DASH  /* -------  */
+	m_linewidth.InsertString(2,_T("粗线"));//PS_DOT  /* .......  */
+	m_linewidth.SetCurSel(m_linewid);
 
 	nTestEditMin.SetWindowText(m_minLimit);
 	nTestEditMax.SetWindowText(m_maxLimit);

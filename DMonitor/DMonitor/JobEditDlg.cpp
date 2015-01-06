@@ -332,6 +332,9 @@ void CJobEditDlg::CurveInit(CString Label){
 					//线型	
 					rs.GetFieldValue (10,OleVariant);
 					m_Curve.m_line=OleVariant.iVal;	
+					//线宽
+					rs.GetFieldValue (11,OleVariant);
+					m_Curve.m_linewid=OleVariant.iVal-1;	
 
 				rs.Close();				
             }
@@ -650,7 +653,8 @@ void CJobEditDlg::CurveAdd()
 				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
 				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色
 				rs.SetFieldValue(9,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
-				rs.SetFieldValue(10,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型		
+				rs.SetFieldValue(10,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
+				rs.SetFieldValue(11,COleVariant(long(m_Curve.m_linewidth.GetCurSel()+1)));//线型
 				rs.Update();
 				MessageBox(_T("添加成功"));
 				}else{
@@ -1088,7 +1092,8 @@ void CJobEditDlg::JobInit(){
 				td.CreateField(_T("COLOR_G"),dbByte,0L);
 				td.CreateField(_T("COLOR_B"),dbByte,0L);
 				td.CreateField(_T("TRACK"),dbInteger,0L);	
-				td.CreateField(_T("LINETYPE"),dbInteger,0L);	
+				td.CreateField(_T("LINETYPE"),dbInteger,0L);
+				td.CreateField(_T("LINEWIDTH"),dbInteger,0L);
 			    td.Append();
 				td.Close();
 
@@ -1202,9 +1207,16 @@ void CJobEditDlg::CurveUpdate(CString Label)
 				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
 				rs.SetFieldValue(4,COleVariant(m_Curve.m_minLimit));//最小取值
 				rs.SetFieldValue(5,COleVariant(m_Curve.m_maxLimit));//最大取值
-				rs.SetFieldValue(6,COleVariant(long(m_Curve.curveSelectColor)));//颜色
-				rs.SetFieldValue(7,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
-				rs.SetFieldValue(8,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
+				//rs.SetFieldValue(6,COleVariant(long(m_Curve.curveSelectColor)));//颜色
+				//rs.SetFieldValue(7,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
+				//rs.SetFieldValue(8,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
+				rs.SetFieldValue(6,COleVariant(BYTE(GetRValue(m_Curve.curveSelectColor))));//R颜色
+				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
+				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色
+				rs.SetFieldValue(9,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
+				rs.SetFieldValue(10,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
+				rs.SetFieldValue(11,COleVariant(long(m_Curve.m_linewidth.GetCurSel()+1)));//线型
+				
 				rs.Update();
 				MessageBox(_T("修改成功,点左侧曲线信息查看"));
 				}else{
