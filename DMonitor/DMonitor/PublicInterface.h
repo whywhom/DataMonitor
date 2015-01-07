@@ -8,6 +8,9 @@
 
 //消息类型定义
 #define WM_USER_RECEIVEDATA (WM_USER+7)
+#define WM_CONNECT_ERR      (WM_USER+8)
+#define WM_CONNECT_OK      (WM_USER+9)
+#define WM_JOBLOAD_OK      (WM_USER+10)
 
 #define FEATURE_C_LANGUAGE
 //错误类型

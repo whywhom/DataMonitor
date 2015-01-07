@@ -9,7 +9,9 @@
 #include "JobDlg.h"
 #include <string>
 #include <iostream> 
-
+#include <fstream> 
+#include <cassert> 
+#include "json\include\json.h"
 using namespace std; 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -92,6 +94,8 @@ CDMonitorDlg::CDMonitorDlg(CWnd* pParent /*=NULL*/)
 
 	bTimer = false;//计时器是否开启
 	pos = NULL;//当前记录位置
+	
+	ClearWorkInfoList();
 
 	pData = NULL;
 	fileLimit = 1024*1024*4;
@@ -148,6 +152,7 @@ BEGIN_MESSAGE_MAP(CDMonitorDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CDMonitorDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CDMonitorDlg::OnBnClickedCancel)
 	ON_MESSAGE( WM_USER_RECEIVEDATA, OnCommReceive)//接收端口消息
+	ON_MESSAGE( WM_JOBLOAD_OK, OnJobloadReceive)//接收端口消息
 	ON_WM_GETMINMAXINFO()
 	ON_WM_SIZE()
 	ON_WM_DESTROY()
@@ -2460,6 +2465,72 @@ void CDMonitorDlg::openDataFile(CString strFile)
 	}
 	fp = _wfopen(strFile, _T("w")); 
 } 
+
+LRESULT CDMonitorDlg::OnJobloadReceive(WPARAM wParam, LPARAM lParam)
+{
+	CString CurrentJob=theApp.ToolPath+_T("currentjob.json");
+	char * pFileName = theApp.FromUNICODEToANSI(CurrentJob);
+	ParseJsonFromFile(pFileName);
+	delete []pFileName;
+	pFileName = NULL;
+	if(wParam == 0)
+	{
+		MessageBox(_T("载入作业成功！"),_T("提示"), MB_OKCANCEL );	 
+	} 
+	return 0;
+}
+
+int CDMonitorDlg::ParseJsonFromFile(const char* filename)  
+{  
+	ClearWorkInfoList();
+	// 解析json用Json::Reader   
+	Json::Reader reader;  
+	// Json::Value是一种很重要的类型，可以代表任意类型。如int, string, object, array...   
+	Json::Value root;         
+
+	std::ifstream is;  
+	is.open (filename, std::ios::binary );  
+
+	if (reader.parse(is, root))  
+	{  
+		std::string code;  
+		if (!root["arrayCurve"].isNull())  // 访问节点，Access an object value by name, create a null member if it does not exist.   
+		{	
+			//code = root["uploadid"].asString();  
+
+			// 访问节点，Return the member named key if it exist, defaultValue otherwise.   
+			//code = root.get("uploadid", "null").asString();  
+
+			// 得到"files"的数组个数   
+			int curve_size = root["arrayCurve"].size();  
+
+			// 遍历数组   
+			for(int i = 0; i < curve_size; ++i)  
+			{  
+				CWorkInfo* plist = new CWorkInfo();
+				Json::Value val_Label = root["arrayCurve"][i]["Label"];  
+				Json::Value val_Unit = root["arrayCurve"][i]["Unit"]; 
+				Json::Value val_Filter = root["arrayCurve"][i]["Filter"]; 
+				Json::Value val_Title = root["arrayCurve"][i]["Title"]; 
+				Json::Value val_MIN = root["arrayCurve"][i]["MIN"]; 
+				plist->leftLimit = val_MIN.asInt();
+				Json::Value val_MAX = root["arrayCurve"][i]["MAX"]; 
+				plist->rightLimit = val_MAX.asInt();
+				Json::Value val_COLOR_R = root["arrayCurve"][i]["COLOR_R"]; 
+				Json::Value val_COLOR_G = root["arrayCurve"][i]["COLOR_G"]; 
+				Json::Value val_COLOR_B = root["arrayCurve"][i]["COLOR_B"]; 
+				Json::Value val_TRACK = root["arrayCurve"][i]["TRACK"]; 
+				Json::Value val_LINETYPE = root["arrayCurve"][i]["LINETYPE"]; 
+				Json::Value val_LINEWIDTH = root["arrayCurve"][i]["LINEWIDTH"]; 
+				//plist->curveColor = curveSelectColor;
+				theApp.workInfoList.AddTail(plist);
+			}
+		}
+	}  
+	is.close();  
+	return 0;  
+}  
+
 LRESULT CDMonitorDlg::OnCommReceive(WPARAM wParam, LPARAM lParam)
 {
 #ifdef _DEBUG
@@ -2660,20 +2731,21 @@ void CDMonitorDlg::OnMyMenuJob(int myparameterFlag)
 {
 	// TODO: 在此添加命令处理程序代码
 	CJobDlg m_jDlg;
-	m_jDlg.m_Path=theApp.JobPath;
+	m_jDlg.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
+	m_jDlg.m_Path=theApp.ToolPath;
 	m_jDlg.receiveFlag = myparameterFlag;
-	m_jDlg.m_Title=_T("力擎作业管理");
-	m_jDlg.m_TreeTitle=_T("作业列表");
+	m_jDlg.m_Title=_T("力擎作业/仪器管理");
+	m_jDlg.m_TreeTitle=_T("仪器列表");
 	m_jDlg.DoModal();
 }
 
 void CDMonitorDlg::OnMenuTool()
 {
 	// TODO: 在此添加命令处理程序代码
-	// TODO: 在此添加命令处理程序代码
 	CJobDlg m_jDlg;
+	m_jDlg.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
 	m_jDlg.m_Path=theApp.ToolPath;
-	m_jDlg.m_Title=_T("力擎仪器管理");
+	m_jDlg.m_Title=_T("力擎作业/仪器管理");
 	m_jDlg.m_TreeTitle=_T("仪器列表");
 	m_jDlg.DoModal();
 }
@@ -2702,8 +2774,10 @@ void CDMonitorDlg::OnMenuJobload()
 	// TODO: 在此添加命令处理程序代码
 	// TODO: 在此添加命令处理程序代码
 	CJobDlg m_jDlg;
-	m_jDlg.m_Path=theApp.JobPath;
-	m_jDlg.m_Title=_T("力擎作业管理");
+	m_jDlg.fatherHwnd = (AfxGetMainWnd()->GetSafeHwnd());//获取HWND，赋值给通信层进行消息传递
+	m_jDlg.m_Path=theApp.ToolPath;
+	m_jDlg.m_Title=_T("力擎作业/仪器管理");
+	m_jDlg.m_TreeTitle=_T("仪器列表");
 	m_jDlg.DoModal();
 }
 

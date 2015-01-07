@@ -173,6 +173,7 @@ public:
 	void initDataPart(DATA_PART &dataPart);
 	void ClearDataTempa();
 	void SetScaleScroll();
+	int ParseJsonFromFile(const char* filename);
 // 实现
 protected:
 	HICON m_hIcon;
@@ -222,6 +223,7 @@ public:
 	afx_msg void OnMenuDisconn();
 	afx_msg void OnUpdateMenuDisconn(CCmdUI *pCmdUI);
 	afx_msg LRESULT OnCommReceive(WPARAM wParam, LPARAM lParam);//接收端口消息
+	afx_msg LRESULT OnJobloadReceive(WPARAM wParam, LPARAM lParam);//接收加载作业消息
 	afx_msg void OnMenuMeasuredown();
 	afx_msg void OnUpdateMenuMeasuredown(CCmdUI *pCmdUI);
 	afx_msg void OnMenuMeasureup();

@@ -49,12 +49,18 @@ BOOL CJobEditDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	// TODO:  在此添加额外的初始化
+	CString jobDB=m_Path+_T("job.list");//如果作业数据库不存在就创建，如果存在就打开
+	m_DBJobList.Open(jobDB);
+	//MessageBox(jobDB);
 	if(m_Open==TRUE){//如果是打开作业操作，则用数据库内容初始化窗口
 		m_DataBase.Open(m_jobName);	
-		ToolInit();
+		//ToolInitOpen();
 	}else{
-		JobInit();		
+		JobInit();	
+		//ToolInit();			
 	}	
+
+	ToolInit();
 	DisplayTree(1);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -184,11 +190,11 @@ void CJobEditDlg::OnSelchangedJobeditTree(NMHDR *pNMHDR, LRESULT *pResult)
 			m_Tool.MoveWindow(rect);  
 			m_Tool.ShowWindow( SW_SHOW ); 				
 			m_editTable=1;		
-			GetDlgItem(IDC_ZCW_JOBEDIT_ADD)->ShowWindow(TRUE);
-			GetDlgItem(IDC_ZCW_JOBEDIT_DELETE)->ShowWindow(TRUE);
+			GetDlgItem(IDC_ZCW_JOBEDIT_ADD)->ShowWindow(FALSE);
+			GetDlgItem(IDC_ZCW_JOBEDIT_DELETE)->ShowWindow(FALSE);
 			GetDlgItem(IDC_ZCW_JOBEDIT_UPDATE)->ShowWindow(TRUE);
-			GetDlgItem(IDC_ZCW_JOBEDIT_IMPORT)->ShowWindow(TRUE);
-			GetDlgItem(IDC_ZCW_JOBEDIT_EXPORT)->ShowWindow(TRUE);
+			GetDlgItem(IDC_ZCW_JOBEDIT_IMPORT)->ShowWindow(FALSE);
+			GetDlgItem(IDC_ZCW_JOBEDIT_EXPORT)->ShowWindow(FALSE);
 		break;
 	 case 2:
 		    if(hPar){			
@@ -262,6 +268,41 @@ void CJobEditDlg::ToolInit(CString Label){
 		try{					
 				CDaoRecordset rs(&m_DataBase);
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL where LABEL='")+Label+_T("'"));
+					rs.MoveFirst () ;				
+					rs.GetFieldValue (0,OleVariant);
+					m_Tool.m_Label=OleVariant.bstrVal;
+
+					rs.GetFieldValue (1,OleVariant);
+					m_Tool.m_Type=OleVariant.bstrVal;
+
+					rs.GetFieldValue (2,OleVariant);
+					m_Tool.m_SN=OleVariant.bstrVal;	
+
+					rs.GetFieldValue (3,OleVariant);
+					m_Tool.m_Length=OleVariant.fltVal;	
+
+					rs.GetFieldValue (4,OleVariant);
+					m_Tool.m_Weight=OleVariant.fltVal;
+
+					rs.GetFieldValue (5,OleVariant);
+					m_Tool.m_OuteRdiam=OleVariant.fltVal;	
+
+					rs.GetFieldValue (6,OleVariant);
+					m_Tool.m_Speed=OleVariant.bstrVal;							
+				rs.Close();				
+            }
+            catch(CDaoException *e){
+			MessageBox(e->m_pErrorInfo->m_strDescription);
+			e->Delete();
+            }
+}
+
+void CJobEditDlg::ToolInit(){
+//初始化仪器信息窗口
+	 COleVariant OleVariant ;
+		try{					
+				CDaoRecordset rs(&m_DataBase);
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL"));				
 					rs.MoveFirst () ;				
 					rs.GetFieldValue (0,OleVariant);
 					m_Tool.m_Label=OleVariant.bstrVal;
@@ -412,10 +453,13 @@ void CJobEditDlg::OriginDel(CString Label){
 			e->Delete();
             }
 }
-
+/*
 void CJobEditDlg::ToolInit(){
 	//初始化仪器信息窗口	
-					m_Tool.m_Label=_T("");					
+	                CString LabelName=m_jobName.Left(m_jobName.Find(_T(".")));//截取文件名
+					LabelName=LabelName.Right(LabelName.Find(_T("\\")));
+					LabelName=LabelName.Right(LabelName.GetLength()-1);
+					m_Tool.m_Label=LabelName;					
 					m_Tool.m_SN=_T("001");					
 					m_Tool.m_Speed=_T("1000");						
 					m_Tool.m_Type=_T("001");						
@@ -423,7 +467,7 @@ void CJobEditDlg::ToolInit(){
 					m_Tool.m_Weight=0;						
 					m_Tool.m_OuteRdiam=0;			
 }
-
+*/
 void CJobEditDlg::CurveInit(){
 	//初始化曲线信息窗口	
 					m_Curve.m_Label=_T("");					
@@ -612,18 +656,21 @@ void CJobEditDlg::ToolAdd()
 	 try{				
 			   //新建数据库记录			  			   
 				CDaoRecordset rs(&m_DataBase);				
-				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL where LABEL='")+m_Tool.m_Label+_T("'"));
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM TOOL"));
 				if(rs.IsBOF()){
 			    rs.AddNew();
-				rs.SetFieldValue(0,COleVariant(m_Tool.m_Label));
-				rs.SetFieldValue(1,COleVariant(m_Tool.m_Type));	
-				rs.SetFieldValue(2,COleVariant(m_Tool.m_SN));
-				rs.SetFieldValue(3,COleVariant(m_Tool.m_Length));
-				rs.SetFieldValue(4,COleVariant(m_Tool.m_Weight));	
-				rs.SetFieldValue(5,COleVariant(m_Tool.m_OuteRdiam));
-				rs.SetFieldValue(6,COleVariant(m_Tool.m_Speed));
+				int Where=m_jobName.ReverseFind('\\');
+				CString LabelName=m_jobName.Right(m_jobName.GetLength()-1-Where);
+				LabelName=LabelName.Left(LabelName.ReverseFind('.'));
+				rs.SetFieldValue(0,COleVariant(LabelName));
+				rs.SetFieldValue(1,_T("001"));	
+				rs.SetFieldValue(2,_T("001"));
+				rs.SetFieldValue(3,_T("0"));
+				rs.SetFieldValue(4,_T("0"));	
+				rs.SetFieldValue(5,_T("0"));
+				rs.SetFieldValue(6,_T("1000"));
 				rs.Update();
-				MessageBox(_T("添加成功"));
+				//MessageBox(_T("添加成功"));
 				}else{
 				MessageBox(_T("仪器信息")+m_Tool.m_Label+_T("已经存在"),MB_OK);
 				}
@@ -638,10 +685,17 @@ void CJobEditDlg::ToolAdd()
 void CJobEditDlg::CurveAdd()
 {	
 	 try{				
-			   //新建数据库记录			  			   
-				CDaoRecordset rs(&m_DataBase);				
-				rs.Open(dbOpenDynaset,_T("SELECT * FROM Curve where LABEL='")+m_Curve.m_Label+_T("'"));
-				if(rs.IsBOF()){
+			   //新建数据库记录
+		        CDaoRecordset rsJobList(&m_DBJobList);						
+				rsJobList.Open(dbOpenDynaset,_T("SELECT * FROM CurveList where LABEL='")+m_Curve.m_Label+_T("'"));
+
+				if(rsJobList.IsBOF()){
+				rsJobList.AddNew();
+				rsJobList.SetFieldValue(0,COleVariant(m_Curve.m_Label));
+				rsJobList.Update();
+
+				CDaoRecordset rs(&m_DataBase);	
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM Curve"));
 			    rs.AddNew();
 				rs.SetFieldValue(0,COleVariant(m_Curve.m_Label));
 				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
@@ -656,11 +710,12 @@ void CJobEditDlg::CurveAdd()
 				rs.SetFieldValue(10,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
 				rs.SetFieldValue(11,COleVariant(long(m_Curve.m_linewidth.GetCurSel()+1)));//线型
 				rs.Update();
+				rs.Close();
 				MessageBox(_T("添加成功"));
 				}else{
 				MessageBox(_T("曲线信息")+m_Curve.m_Label+_T("已经存在"),MB_OK);
 				}
-				rs.Close();			
+				rsJobList.Close();			
 	 } catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
 			e->Delete();
@@ -671,19 +726,27 @@ void CJobEditDlg::OriginAdd()
 {	
 	 try{				
 			   //新建数据库记录			  			   
+				CDaoRecordset rsJobList(&m_DBJobList);						
+				rsJobList.Open(dbOpenDynaset,_T("SELECT * FROM OriginList where LABEL='")+m_Origin.m_Label+_T("'"));
+
+				if(rsJobList.IsBOF()){
+				rsJobList.AddNew();
+				rsJobList.SetFieldValue(0,COleVariant(m_Origin.m_Label));
+				rsJobList.Update();
+
 				CDaoRecordset rs(&m_DataBase);				
-				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin where LABEL='")+m_Origin.m_Label+_T("'"));
-				if(rs.IsBOF()){
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin"));
 			    rs.AddNew();
 				rs.SetFieldValue(0,COleVariant(m_Origin.m_Label));
 				rs.SetFieldValue(1,COleVariant(long(m_Origin.m_unitbox.GetCurSel())));	
 				rs.SetFieldValue(2,COleVariant(long(m_Origin.m_filterbox.GetCurSel())));				
 				rs.Update();
+				rs.Close();
 				MessageBox(_T("添加成功"));
 				}else{
 				MessageBox(_T("原始信号")+m_Origin.m_Label+_T("已经存在"),MB_OK);
 				}
-				rs.Close();	
+				rsJobList.Close();	
 
 	 } catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -1079,7 +1142,7 @@ void CJobEditDlg::JobInit(){
 				td.CreateField(_T("SPEED"),dbText,50,0L);
 			    td.Append();
 				td.Close();
-
+				ToolAdd();//初始化tool数据
 				//创建Curve表
 				td.Create(_T("CURVE"));
 				td.CreateField(_T("LABEL"),dbText,50,0L);
@@ -1207,9 +1270,6 @@ void CJobEditDlg::CurveUpdate(CString Label)
 				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
 				rs.SetFieldValue(4,COleVariant(m_Curve.m_minLimit));//最小取值
 				rs.SetFieldValue(5,COleVariant(m_Curve.m_maxLimit));//最大取值
-				//rs.SetFieldValue(6,COleVariant(long(m_Curve.curveSelectColor)));//颜色
-				//rs.SetFieldValue(7,COleVariant(long(m_Curve.m_trackbox.GetCurSel())));//轨道	
-				//rs.SetFieldValue(8,COleVariant(long(m_Curve.m_linetype.GetCurSel())));//线型	
 				rs.SetFieldValue(6,COleVariant(BYTE(GetRValue(m_Curve.curveSelectColor))));//R颜色
 				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
 				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色

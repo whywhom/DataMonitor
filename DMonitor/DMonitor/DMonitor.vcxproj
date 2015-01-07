@@ -124,6 +124,7 @@
     <ClInclude Include="JobEditDlgOrigin.h" />
     <ClInclude Include="JobEditDlgPower.h" />
     <ClInclude Include="JobEditDlgTool.h" />
+    <ClInclude Include="JobInfoDlg.h" />
     <ClInclude Include="json\include\autolink.h" />
     <ClInclude Include="json\include\config.h" />
     <ClInclude Include="json\include\features.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="JobEditDlgOrigin.cpp" />
     <ClCompile Include="JobEditDlgPower.cpp" />
     <ClCompile Include="JobEditDlgTool.cpp" />
+    <ClCompile Include="JobInfoDlg.cpp" />
     <ClCompile Include="json\src\json_reader.cpp" />
     <ClCompile Include="json\src\json_value.cpp" />
     <ClCompile Include="json\src\json_writer.cpp" />

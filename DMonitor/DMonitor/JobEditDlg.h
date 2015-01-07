@@ -27,8 +27,10 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	CString m_jobName;
-	CDaoDatabase m_DataBase;
+	CString m_jobName;//当前仪器数据库文件名
+	CString m_Path;//仪器存储路径
+	CDaoDatabase m_DataBase;//存储当前仪器的数据
+	CDaoDatabase m_DBJobList;//存储所有作业-仪器对应信息及所有信号的标签
 	bool m_Open;
 	CTreeCtrl m_jeTree;
 	virtual BOOL OnInitDialog();
@@ -44,6 +46,7 @@ private:
 	void ToolAdd();
 	void ToolInit(CString Label);
 	void ToolInit();
+	void ToolInitOpen();
 	void ToolDel(CString Label);
 	void ToolUpdate(CString Label);
 	void CurveAdd();

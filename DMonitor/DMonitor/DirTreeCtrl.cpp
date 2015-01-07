@@ -93,7 +93,7 @@ void CDirTreeCtrl::DisplayPath(HTREEITEM hParent, LPCTSTR strPath) //ÏÔÊ¾Â·¾¶
 	CSortStringArray strFileArray;	
 	if ( strPathFiles.Right(1) != "\\" )
 		strPathFiles += "\\";
-	strPathFiles += "*.*";
+	strPathFiles += "*.tools";
 	bFind = find.FindFile( strPathFiles );
 	while ( bFind )
 	{
