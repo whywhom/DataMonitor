@@ -2469,10 +2469,10 @@ void CDMonitorDlg::openDataFile(CString strFile)
 LRESULT CDMonitorDlg::OnJobloadReceive(WPARAM wParam, LPARAM lParam)
 {
 	CString CurrentJob=theApp.ToolPath+_T("currentjob.json");
-	char * pFileName = theApp.FromUNICODEToANSI(CurrentJob);
-	ParseJsonFromFile(pFileName);
-	delete []pFileName;
-	pFileName = NULL;
+	//char * pFileName = theApp.FromUNICODEToANSI(CurrentJob);
+	ParseJsonFromFile(CurrentJob);
+	//delete []pFileName;
+	//pFileName = NULL;
 	if(wParam == 0)
 	{
 		MessageBox(_T("载入作业成功！"),_T("提示"), MB_OKCANCEL );	 
@@ -2480,16 +2480,29 @@ LRESULT CDMonitorDlg::OnJobloadReceive(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CDMonitorDlg::ParseJsonFromFile(const char* filename)  
+int CDMonitorDlg::ParseJsonFromFile(CString filename)  
 {  
 	ClearWorkInfoList();
+	//CFile fAddressImport;
+	//CFileException eFileException;
+	//if (!fAddressImport.Open (filename, CFile::modeRead, &eFileException))
+	//{
+	//	return 0xFF;
+	//}
+	char * pFileName = theApp.FromUNICODEToANSI(filename);
+	
+	//int len = fAddressImport.GetLength();
+	//char * pFile = new char(len);
+	//memset(pFile,0,len);
+	//fAddressImport.Read(pFile,len);
+	//fAddressImport.Close();
 	// 解析json用Json::Reader   
 	Json::Reader reader;  
 	// Json::Value是一种很重要的类型，可以代表任意类型。如int, string, object, array...   
 	Json::Value root;         
 
 	std::ifstream is;  
-	is.open (filename, std::ios::binary );  
+	is.open (filename, std::ios::binary);  
 
 	if (reader.parse(is, root))  
 	{  
@@ -2509,25 +2522,39 @@ int CDMonitorDlg::ParseJsonFromFile(const char* filename)
 			{  
 				CWorkInfo* plist = new CWorkInfo();
 				Json::Value val_Label = root["arrayCurve"][i]["Label"];  
+				plist->strSignal = val_Label.asCString();
 				Json::Value val_Unit = root["arrayCurve"][i]["Unit"]; 
+				plist->strUnit = val_Unit.asCString();
 				Json::Value val_Filter = root["arrayCurve"][i]["Filter"]; 
 				Json::Value val_Title = root["arrayCurve"][i]["Title"]; 
+				plist->strTitle = val_Title.asCString();
 				Json::Value val_MIN = root["arrayCurve"][i]["MIN"]; 
 				plist->leftLimit = val_MIN.asInt();
 				Json::Value val_MAX = root["arrayCurve"][i]["MAX"]; 
 				plist->rightLimit = val_MAX.asInt();
 				Json::Value val_COLOR_R = root["arrayCurve"][i]["COLOR_R"]; 
+				BYTE cR = val_COLOR_R.asUInt();
 				Json::Value val_COLOR_G = root["arrayCurve"][i]["COLOR_G"]; 
+				BYTE cG = val_COLOR_G.asUInt();
 				Json::Value val_COLOR_B = root["arrayCurve"][i]["COLOR_B"]; 
+				BYTE cB = val_COLOR_B.asUInt();
+				plist->curveColor = RGB(cR,cG,cB);
 				Json::Value val_TRACK = root["arrayCurve"][i]["TRACK"]; 
+				plist->trackNum = val_TRACK.asInt();
 				Json::Value val_LINETYPE = root["arrayCurve"][i]["LINETYPE"]; 
+				plist->lineType = val_LINETYPE.asInt();
 				Json::Value val_LINEWIDTH = root["arrayCurve"][i]["LINEWIDTH"]; 
+				plist->lineWidth = val_LINEWIDTH.asInt();
 				//plist->curveColor = curveSelectColor;
 				theApp.workInfoList.AddTail(plist);
 			}
 		}
 	}  
 	is.close();  
+	delete []pFileName;
+	pFileName = NULL;
+	//delete []pFile;
+	//pFile = NULL;
 	return 0;  
 }  
 

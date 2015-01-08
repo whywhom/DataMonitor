@@ -173,7 +173,7 @@ public:
 	void initDataPart(DATA_PART &dataPart);
 	void ClearDataTempa();
 	void SetScaleScroll();
-	int ParseJsonFromFile(const char* filename);
+	int ParseJsonFromFile(CString filename);
 // й╣ож
 protected:
 	HICON m_hIcon;

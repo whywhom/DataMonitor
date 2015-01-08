@@ -469,6 +469,7 @@ void CJobDlg::LoadJob(CString JobName){
 		ofs.open(s);
 		assert(ofs.is_open()); 
 		ofs<<json_file; 
+		ofs.close();
 		//通知接收者处理
 		::SendMessage(fatherHwnd,WM_JOBLOAD_OK, 0x00, 0x0000);
 		SendMessage(WM_CLOSE);
