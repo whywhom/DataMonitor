@@ -2477,6 +2477,7 @@ LRESULT CDMonitorDlg::OnJobloadReceive(WPARAM wParam, LPARAM lParam)
 	{
 		MessageBox(_T("载入作业成功！"),_T("提示"), MB_OKCANCEL );	 
 	} 
+	PrepareCurveInfo();
 	return 0;
 }
 
@@ -2530,8 +2531,10 @@ int CDMonitorDlg::ParseJsonFromFile(CString filename)
 				Json::Value val_Title = root["arrayCurve"][i]["Title"]; 
 				plist->strTitle = val_Title.asCString();
 				Json::Value val_MIN = root["arrayCurve"][i]["MIN"]; 
+				int min = val_MIN.asInt();
 				plist->leftLimit = val_MIN.asInt();
 				Json::Value val_MAX = root["arrayCurve"][i]["MAX"]; 
+				int max = val_MAX.asInt();
 				plist->rightLimit = val_MAX.asInt();
 				Json::Value val_COLOR_R = root["arrayCurve"][i]["COLOR_R"]; 
 				BYTE cR = val_COLOR_R.asUInt();
@@ -2816,25 +2819,29 @@ void CDMonitorDlg::OnTestMode1()
 	//testDlg.DoModal();
 	if (testDlg.DoModal () == IDOK)
 	{
-		CreateCurveFile(theApp.strCurveFile);
-		CreateUnitFile(theApp.strUnitsFile);
-		POSITION pos = theApp.workInfoList.GetHeadPosition();
-		str_unitlist.clear();
-		while(pos)
-		{
-			CWorkInfo* p = theApp.workInfoList.GetNext(pos);
-			if(p)
-			{
-				CT2CA pszConvertedAnsiString (p->strTitle);   
-				// construct a std::string using the LPCSTR input   
-				std::string strStd (pszConvertedAnsiString);  
-				str_unitlist.push_back(strStd);
-			}
-		}
-		bLoadAssignment = true;
+		PrepareCurveInfo();
 	}
 }
 
+void CDMonitorDlg::PrepareCurveInfo()
+{
+	CreateCurveFile(theApp.strCurveFile);
+	CreateUnitFile(theApp.strUnitsFile);
+	POSITION pos = theApp.workInfoList.GetHeadPosition();
+	str_unitlist.clear();
+	while(pos)
+	{
+		CWorkInfo* p = theApp.workInfoList.GetNext(pos);
+		if(p)
+		{
+			CT2CA pszConvertedAnsiString (p->strTitle);   
+			// construct a std::string using the LPCSTR input   
+			std::string strStd (pszConvertedAnsiString);  
+			str_unitlist.push_back(strStd);
+		}
+	}
+	bLoadAssignment = true;
+}
 void CDMonitorDlg::ClearWorkInfoList()
 {
 	CWorkInfo* pCurrent = NULL;
@@ -2994,6 +3001,34 @@ void CDMonitorDlg::LinkElementeFuns(TiXmlElement * element,CWorkInfo* plist)
 
 	msg = new TiXmlElement( "RightLimit" ); 
 	str.Format(_T("%d"),plist->rightLimit);
+	////********/////transfer//////********//////
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "LineWidth" ); 
+	str.Format(_T("%d"),plist->lineWidth);
+	////********/////transfer//////********//////
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));
+	UnicodeStrLen=2*str.GetLength();
+	memcpy(UnicodeStr,str,UnicodeStrLen);
+	utf8StrLen=6*UnicodeStrLen;
+	memset(utf8Str,0,maxBufferSize*sizeof(char));
+	dwLength=theApp.FromUnicodeToUTF8( utf8Str, utf8StrLen, UnicodeStr, UnicodeStrLen);//Unicode to UTF-8
+	//////////********///////////
+	msg->LinkEndChild( new TiXmlText( utf8Str )); 
+	msgs->LinkEndChild( msg ); 
+
+	msg = new TiXmlElement( "LineType" ); 
+	str.Format(_T("%d"),plist->lineType);
 	////********/////transfer//////********//////
 	memset(utf8Str,0,maxBufferSize*sizeof(char));
 	memset(UnicodeStr,0,maxBufferSize*sizeof(unsigned short));

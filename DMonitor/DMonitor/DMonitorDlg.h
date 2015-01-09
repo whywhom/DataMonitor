@@ -163,6 +163,7 @@ public:
 	void InitColorVariable();
 	void ParseWorkInfoData();
 	void ParseWorkUnitData();
+	void PrepareCurveInfo();
 	void ClearWorkInfoList();
 	void ClearWorkUnitList();
 	int CreateCurveFile(CString strFile);
