@@ -2526,6 +2526,7 @@ int CDMonitorDlg::ParseJsonFromFile(CString filename)
 				Json::Value val_Unit = root["arrayCurve"][i]["Unit"]; 
 				plist->strUnit = val_Unit.asCString();
 				Json::Value val_Filter = root["arrayCurve"][i]["Filter"]; 
+				plist->strFilter = val_Filter.asCString();
 				Json::Value val_Title = root["arrayCurve"][i]["Title"]; 
 				plist->strTitle = val_Title.asCString();
 				Json::Value val_MIN = root["arrayCurve"][i]["MIN"]; 

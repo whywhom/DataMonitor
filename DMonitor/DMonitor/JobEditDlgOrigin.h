@@ -24,7 +24,7 @@ public:
 	afx_msg void OnEnChangeLabel();
 	CComboBox m_unitbox;
 	CComboBox m_filterbox;
-	int m_unit;
-	int m_filter;
+	CString m_unit;
+	CString m_filter;
 	virtual BOOL OnInitDialog();
 };

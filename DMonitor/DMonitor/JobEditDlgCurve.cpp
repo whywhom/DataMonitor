@@ -14,11 +14,11 @@ IMPLEMENT_DYNAMIC(CJobEditDlgCurve, CDialog)
 CJobEditDlgCurve::CJobEditDlgCurve(CWnd* pParent /*=NULL*/)
 	: CDialog(CJobEditDlgCurve::IDD, pParent)
 	, m_Label(_T(""))
-	, m_unit(0)
-	, m_filter(0)
+	, m_unit(_T(""))
+	, m_filter(_T(""))
 	, m_title(_T(""))
-	, m_minLimit(_T("1"))
-	, m_maxLimit(_T("100"))
+	, m_minLimit(1)
+	, m_maxLimit(100)
 	, m_line(0)
 	, m_linewid(0)
 	, m_track(0)
@@ -72,12 +72,21 @@ BOOL CJobEditDlgCurve::OnInitDialog()
 
 	for(int i=0;i<78;i++){
 	m_unitbox.AddString(m_unitary[i]);
+		if(m_unit==m_unitary[i]){
+			m_unitbox.SetCurSel(i);
+		}else{
+			m_unitbox.SetCurSel(0);
+		}
 	}
-	m_unitbox.SetCurSel(m_unit);
+	
 	for(int i=0;i<41;i++){
 	m_filterbox.AddString(m_filterary[i]);
-	}
-	m_filterbox.SetCurSel(m_filter);
+		if(m_filter==m_filterary[i]){
+			m_filterbox.SetCurSel(i);
+		}else{
+			m_filterbox.SetCurSel(0);
+		}
+	}	
 
 	m_trackbox.AddString(_T("轨道 1"));
 	m_trackbox.AddString(_T("轨道 2"));
@@ -97,8 +106,8 @@ BOOL CJobEditDlgCurve::OnInitDialog()
 	m_linewidth.InsertString(2,_T("粗线"));//PS_DOT  /* .......  */
 	m_linewidth.SetCurSel(m_linewid);
 
-	nTestEditMin.SetWindowText(m_minLimit);
-	nTestEditMax.SetWindowText(m_maxLimit);
+	//nTestEditMin.SetWindowText(m_minLimit);
+	//nTestEditMax.SetWindowText(m_maxLimit);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE

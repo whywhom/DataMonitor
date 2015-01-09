@@ -25,8 +25,8 @@ public:
 	CComboBox m_filterbox;
 	COLORREF curveSelectColor;
 	CString m_Label;
-	int m_unit;
-	int m_filter;
+	CString m_unit;
+	CString m_filter;
 	afx_msg void OnEnChangeLabel();
 	CComboBox m_trackbox;
 	CComboBox m_linetype;
@@ -37,8 +37,8 @@ public:
 	CEdit m_edittitle;
 	afx_msg void OnBnClickedButtonColor();
 	CString m_title;
-	CString m_minLimit;
-	CString m_maxLimit;
+	int m_minLimit;
+	int m_maxLimit;
 	int m_line;
 	int m_linewid;
 	int m_track;

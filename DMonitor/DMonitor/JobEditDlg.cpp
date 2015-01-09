@@ -342,20 +342,21 @@ void CJobEditDlg::CurveInit(CString Label){
 					rs.GetFieldValue (0,OleVariant);
 					m_Curve.m_Label=OleVariant.bstrVal;
 
+					//单位,字符型
 					rs.GetFieldValue (1,OleVariant);
-					m_Curve.m_unit=OleVariant.iVal;						
-
+					m_Curve.m_unit=OleVariant.bstrVal;						
+					//滤波方法,字符型
 					rs.GetFieldValue (2,OleVariant);
-					m_Curve.m_filter=OleVariant.iVal;	
+					m_Curve.m_filter=OleVariant.bstrVal;
 					//标识
 					rs.GetFieldValue (3,OleVariant);
 					m_Curve.m_title=OleVariant.bstrVal;
 					//最小取值
 					rs.GetFieldValue (4,OleVariant);
-					m_Curve.m_minLimit=OleVariant.bstrVal;
+					m_Curve.m_minLimit=OleVariant.iVal;
 					//最大取值
 					rs.GetFieldValue (5,OleVariant);
-					m_Curve.m_maxLimit=OleVariant.bstrVal;
+					m_Curve.m_maxLimit=OleVariant.iVal;
 					//R颜色
 					BYTE R,G,B;
 					rs.GetFieldValue (6,OleVariant);
@@ -396,10 +397,10 @@ void CJobEditDlg::OriginInit(CString Label){
 					m_Origin.m_Label=OleVariant.bstrVal;
 
 					rs.GetFieldValue (1,OleVariant);
-					m_Origin.m_unit=OleVariant.iVal;						
+					m_Origin.m_unit=OleVariant.bstrVal;						
 
 					rs.GetFieldValue (2,OleVariant);
-					m_Origin.m_filter=OleVariant.iVal;		
+					m_Origin.m_filter=OleVariant.bstrVal;		
 
 				rs.Close();				
             }
@@ -471,15 +472,15 @@ void CJobEditDlg::ToolInit(){
 void CJobEditDlg::CurveInit(){
 	//初始化曲线信息窗口	
 					m_Curve.m_Label=_T("");					
-					m_Curve.m_unit=0;
-					m_Curve.m_filter=0;
+					//m_Curve.m_unit=0;
+					//m_Curve.m_filter=0;
 }
 
 void CJobEditDlg::OriginInit(){
 	//初始化原始信号窗口	
 					m_Origin.m_Label=_T("");					
-					m_Origin.m_unit=0;
-					m_Origin.m_filter=0;
+					//m_Origin.m_unit=0;
+					//m_Origin.m_filter=0;
 }
 
 void CJobEditDlg::ControlInit(){
@@ -698,11 +699,21 @@ void CJobEditDlg::CurveAdd()
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Curve"));
 			    rs.AddNew();
 				rs.SetFieldValue(0,COleVariant(m_Curve.m_Label));
-				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
-				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));		
+				//单位				
+				int iUnit=m_Curve.m_unitbox.GetCurSel();
+				CString strUnit;
+				m_Curve.m_unitbox.GetLBText(iUnit,strUnit);
+				rs.SetFieldValue(1,COleVariant(strUnit));
+
+				//滤波方法
+				int iFilter=m_Curve.m_filterbox.GetCurSel();
+				CString strFilter;
+				m_Curve.m_filterbox.GetLBText(iFilter,strFilter);
+				rs.SetFieldValue(2,COleVariant(strFilter));
+				
 				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
-				rs.SetFieldValue(4,COleVariant(m_Curve.m_minLimit));//最小取值
-				rs.SetFieldValue(5,COleVariant(m_Curve.m_maxLimit));//最大取值
+				rs.SetFieldValue(4,COleVariant(long(m_Curve.m_minLimit)));//最小取值
+				rs.SetFieldValue(5,COleVariant(long(m_Curve.m_maxLimit)));//最大取值
 				rs.SetFieldValue(6,COleVariant(BYTE(GetRValue(m_Curve.curveSelectColor))));//R颜色
 				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
 				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色
@@ -738,8 +749,17 @@ void CJobEditDlg::OriginAdd()
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Origin"));
 			    rs.AddNew();
 				rs.SetFieldValue(0,COleVariant(m_Origin.m_Label));
-				rs.SetFieldValue(1,COleVariant(long(m_Origin.m_unitbox.GetCurSel())));	
-				rs.SetFieldValue(2,COleVariant(long(m_Origin.m_filterbox.GetCurSel())));				
+				//单位				
+				int iUnit=m_Origin.m_unitbox.GetCurSel();
+				CString strUnit;
+				m_Origin.m_unitbox.GetLBText(iUnit,strUnit);
+				rs.SetFieldValue(1,COleVariant(strUnit));
+
+				//滤波方法
+				int iFilter=m_Origin.m_filterbox.GetCurSel();
+				CString strFilter;
+				m_Origin.m_filterbox.GetLBText(iFilter,strFilter);
+				rs.SetFieldValue(2,COleVariant(strFilter));				
 				rs.Update();
 				rs.Close();
 				MessageBox(_T("添加成功"));
@@ -1111,6 +1131,8 @@ void CJobEditDlg::OnBnClickedAdd()
 	case 2:
 		if(m_Curve.m_Label.Trim().IsEmpty()){
 		MessageBox(_T("名称不能为空"),MB_OK);
+		}else if(m_Curve.m_title.Trim().IsEmpty()){
+        MessageBox(_T("标识不能为空"),MB_OK);
 		}else{
 		CurveAdd();			
 		}		
@@ -1146,11 +1168,11 @@ void CJobEditDlg::JobInit(){
 				//创建Curve表
 				td.Create(_T("CURVE"));
 				td.CreateField(_T("LABEL"),dbText,50,0L);
-				td.CreateField(_T("UNIT"),dbInteger,0L);		
-				td.CreateField(_T("FILTER"),dbInteger,0L);	
+				td.CreateField(_T("UNIT"),dbText,50,0L);
+				td.CreateField(_T("FILTER"),dbText,50,0L);	
 				td.CreateField(_T("TITLE"),dbText,50,0L);
-				td.CreateField(_T("MIN"),dbText,50,0L);
-				td.CreateField(_T("MAX"),dbText,50,0L);
+				td.CreateField(_T("MIN"),dbInteger,0,0L);
+				td.CreateField(_T("MAX"),dbInteger,0,0L);
 				td.CreateField(_T("COLOR_R"),dbByte,0xFFL);	
 				td.CreateField(_T("COLOR_G"),dbByte,0L);
 				td.CreateField(_T("COLOR_B"),dbByte,0L);
@@ -1163,8 +1185,8 @@ void CJobEditDlg::JobInit(){
 				//创建Origin表
 				td.Create(_T("ORIGIN"));
 				td.CreateField(_T("LABEL"),dbText,50,0L);
-				td.CreateField(_T("UNIT"),dbInteger,0L);		
-				td.CreateField(_T("FILTER"),dbInteger,0L);		
+				td.CreateField(_T("UNIT"),dbText,50,0L);		
+				td.CreateField(_T("FILTER"),dbText,50,0L);		
 			    td.Append();
 				td.Close();
 
@@ -1265,11 +1287,21 @@ void CJobEditDlg::CurveUpdate(CString Label)
 				rs.Edit();
 				if(!rs.IsBOF()){			   
 				rs.SetFieldValue(0,COleVariant(m_Curve.m_Label));
-				rs.SetFieldValue(1,COleVariant(long(m_Curve.m_unitbox.GetCurSel())));	
-				rs.SetFieldValue(2,COleVariant(long(m_Curve.m_filterbox.GetCurSel())));		
+				//单位				
+				int iUnit=m_Curve.m_unitbox.GetCurSel();
+				CString strUnit;
+				m_Curve.m_unitbox.GetLBText(iUnit,strUnit);
+				rs.SetFieldValue(1,COleVariant(strUnit));
+
+				//滤波方法
+				int iFilter=m_Curve.m_filterbox.GetCurSel();
+				CString strFilter;
+				m_Curve.m_filterbox.GetLBText(iFilter,strFilter);
+				rs.SetFieldValue(2,COleVariant(strFilter));
+
 				rs.SetFieldValue(3,COleVariant(m_Curve.m_title));//标识
-				rs.SetFieldValue(4,COleVariant(m_Curve.m_minLimit));//最小取值
-				rs.SetFieldValue(5,COleVariant(m_Curve.m_maxLimit));//最大取值
+				rs.SetFieldValue(4,COleVariant(long(m_Curve.m_minLimit)));//最小取值
+				rs.SetFieldValue(5,COleVariant(long(m_Curve.m_maxLimit)));//最大取值
 				rs.SetFieldValue(6,COleVariant(BYTE(GetRValue(m_Curve.curveSelectColor))));//R颜色
 				rs.SetFieldValue(7,COleVariant(BYTE(GetGValue(m_Curve.curveSelectColor))));//G颜色
 				rs.SetFieldValue(8,COleVariant(BYTE(GetBValue(m_Curve.curveSelectColor))));//B颜色
@@ -1299,8 +1331,17 @@ void CJobEditDlg::OriginUpdate(CString Label)
 				rs.Edit();
 				if(!rs.IsBOF()){			   
 				rs.SetFieldValue(0,COleVariant(m_Origin.m_Label));
-				rs.SetFieldValue(1,COleVariant(long(m_Origin.m_unitbox.GetCurSel())));	
-				rs.SetFieldValue(2,COleVariant(long(m_Origin.m_filterbox.GetCurSel())));		
+				//单位				
+				int iUnit=m_Curve.m_unitbox.GetCurSel();
+				CString strUnit;
+				m_Curve.m_unitbox.GetLBText(iUnit,strUnit);
+				rs.SetFieldValue(1,COleVariant(strUnit));
+
+				//滤波方法
+				int iFilter=m_Curve.m_filterbox.GetCurSel();
+				CString strFilter;
+				m_Curve.m_filterbox.GetLBText(iFilter,strFilter);
+				rs.SetFieldValue(2,COleVariant(strFilter));		
 				rs.Update();
 				MessageBox(_T("修改成功,点左侧原始信号查看"));
 				}else{

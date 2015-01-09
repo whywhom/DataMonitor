@@ -9,6 +9,7 @@ public:
 	CString strSignal;//信号名称
 	CString strTitle;//信号缩写,解析数据用
 	CString strUnit;//单位
+	CString strFilter;//滤波方法
 	int leftLimit;//左边界
 	int rightLimit;//右边界
 	int trackNum;//轨道数,0:轨道一；1：轨道二

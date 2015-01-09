@@ -19,8 +19,8 @@ void CWorkInfo::init()
 	strUnit = _T("");//单位
 	leftLimit = 0;//左边界
 	rightLimit = 100;//右边界
-	trackNum = 1;//轨道数
-	lineWidth = 2;
-	lineType = 2;
+	trackNum = 0;//轨道数
+	lineWidth = 1;
+	lineType = 0;
 	curveColor = RGB(255,0,0); //颜色
 }

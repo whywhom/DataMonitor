@@ -61,12 +61,21 @@ BOOL CJobEditDlgOrigin::OnInitDialog()
 
 	for(int i=0;i<78;i++){
 	m_unitbox.AddString(m_unitary[i]);
+		if(m_unit==m_unitary[i]){
+			m_unitbox.SetCurSel(i);
+		}else{
+			m_unitbox.SetCurSel(0);
+		}
 	}
-	m_unitbox.SetCurSel(m_unit);
+	
 	for(int i=0;i<41;i++){
 	m_filterbox.AddString(m_filterary[i]);
+		if(m_filter==m_filterary[i]){
+			m_filterbox.SetCurSel(i);
+		}else{
+			m_filterbox.SetCurSel(0);
+		}
 	}
-	m_filterbox.SetCurSel(m_filter);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE

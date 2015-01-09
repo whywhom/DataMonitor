@@ -330,9 +330,9 @@ void CJobDlg::LoadJob(CString JobName){
             std::string str2(bstr_t2);  
 			itemTool["SN"]=str2;			
 			rs.GetFieldValue (3,OleVariant);
-			itemTool["Length"]=OleVariant.fltVal;
+			itemTool["Length"]=OleVariant.iVal;
 			rs.GetFieldValue (4,OleVariant);
-			itemTool["Weight"]=OleVariant.fltVal;
+			itemTool["Weight"]=OleVariant.iVal;
 			rs.GetFieldValue (5,OleVariant);
 			itemTool["OuteRdiam"]=OleVariant.fltVal;
 			rs.GetFieldValue (6,OleVariant);
@@ -352,23 +352,24 @@ void CJobDlg::LoadJob(CString JobName){
 			itemCurve["Label"]=str_c0;		
 
 			rs.GetFieldValue (1,OleVariant);
-			itemCurve["Unit"]=OleVariant.iVal;
+			_bstr_t bstr_c1(OleVariant.bstrVal);  
+            std::string str_c1(bstr_c1); 
+			itemCurve["Unit"]=str_c1;
+
 			rs.GetFieldValue (2,OleVariant);
-			itemCurve["Filter"]=OleVariant.iVal;
+			_bstr_t bstr_c2(OleVariant.bstrVal);  
+            std::string str_c2(bstr_c2); 
+			itemCurve["Filter"]=str_c2;
 
 			rs.GetFieldValue (3,OleVariant);
-			_bstr_t bstr_c1(OleVariant.bstrVal);  
-            std::string str_c1(bstr_c1);  
-			itemCurve["Title"]=str_c1;
-
-			rs.GetFieldValue (4,OleVariant);
-			_bstr_t bstr_c2(OleVariant.bstrVal);  
-            std::string str_c2(bstr_c2);  
-			itemCurve["MIN"]=str_c2;
-			rs.GetFieldValue (5,OleVariant);
 			_bstr_t bstr_c3(OleVariant.bstrVal);  
             std::string str_c3(bstr_c3);  
-			itemCurve["MAX"]=str_c3;
+			itemCurve["Title"]=str_c3;
+
+			rs.GetFieldValue (4,OleVariant);			
+			itemCurve["MIN"]=OleVariant.iVal;
+			rs.GetFieldValue (5,OleVariant);			
+			itemCurve["MAX"]=OleVariant.iVal;
 			rs.GetFieldValue (6,OleVariant);
 			itemCurve["COLOR_R"]=OleVariant.iVal;
 			rs.GetFieldValue (7,OleVariant);
@@ -394,10 +395,16 @@ void CJobDlg::LoadJob(CString JobName){
 			_bstr_t bstr_o0(OleVariant.bstrVal);  
             std::string str_o0(bstr_o0);  
 			itemOrigin["Label"]=str_o0;			
-			rs.GetFieldValue (1,OleVariant);			
-			itemOrigin["Unit"]=OleVariant.iVal;
-			rs.GetFieldValue (2,OleVariant);			
-			itemOrigin["Filter"]=OleVariant.iVal;
+
+			rs.GetFieldValue (1,OleVariant);
+			_bstr_t bstr_o1(OleVariant.bstrVal);  
+            std::string str_o1(bstr_o1); 
+			itemOrigin["Unit"]=str_o1;
+
+			rs.GetFieldValue (2,OleVariant);
+			_bstr_t bstr_o2(OleVariant.bstrVal);  
+            std::string str_o2(bstr_o2); 
+			itemOrigin["Filter"]=str_o2;
 			arrayOrigin.append(itemOrigin);			
 			rs.MoveNext();
 		}
