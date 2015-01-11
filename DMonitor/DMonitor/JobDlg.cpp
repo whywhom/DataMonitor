@@ -367,9 +367,9 @@ void CJobDlg::LoadJob(CString JobName){
 			itemCurve["Title"]=str_c3;
 
 			rs.GetFieldValue (4,OleVariant);			
-			itemCurve["MIN"]=OleVariant.iVal;
+			itemCurve["MIN"]=OleVariant.dblVal;
 			rs.GetFieldValue (5,OleVariant);			
-			itemCurve["MAX"]=OleVariant.iVal;
+			itemCurve["MAX"]=OleVariant.dblVal;
 			rs.GetFieldValue (6,OleVariant);
 			itemCurve["COLOR_R"]=OleVariant.iVal;
 			rs.GetFieldValue (7,OleVariant);

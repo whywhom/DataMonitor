@@ -37,8 +37,8 @@ public:
 	CEdit m_edittitle;
 	afx_msg void OnBnClickedButtonColor();
 	CString m_title;
-	int m_minLimit;
-	int m_maxLimit;
+	double m_minLimit;
+	double m_maxLimit;
 	int m_line;
 	int m_linewid;
 	int m_track;

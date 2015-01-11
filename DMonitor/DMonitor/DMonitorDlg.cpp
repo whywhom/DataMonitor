@@ -993,7 +993,7 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 		int j = 0;
 		int iDrawType = PS_SOLID;
 		int iLineWidth = 1;
-		COLORREF colorR = RGB(127,127,127);
+		COLORREF colorR = RGB(20,20,20);
 		CPen pen(iDrawType, 1, colorR); //画笔
 		CPen* pOldPen = pDC->SelectObject(&pen);//画笔和画线区连接
 		int count1 = theApp.workInfoList.GetCount();
@@ -1046,7 +1046,7 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 					rectTop.right = rectTop.left + gap1;
 
 					rectBottom = m_scaleRect;
-					rectBottom.top = gap*i+gap/2+1;
+					rectBottom.top = gap*i+gap/2+3;
 					rectBottom.bottom = gap*i+gap-1;
 					rectBottom.right = rectBottom.left + gap1;
 
@@ -1069,12 +1069,12 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 					pDC->DrawText(plist->strSignal,rectTop,DT_CENTER);
 
 					pDC->SetTextAlign(TA_LEFT);
-					str.Format(_T("%d"),plist->leftLimit);
+					str.Format(_T("%f"),plist->leftLimit);
 					//pDC->TextOut(1,30*i+16,str);   //输出文本值
 					pDC->DrawText(str,rectBottom,DT_LEFT);
 
 					pDC->SetTextAlign(TA_RIGHT);
-					str.Format(_T("%d"),plist->rightLimit);
+					str.Format(_T("%f"),plist->rightLimit);
 					//pDC->TextOut(rect.Width()-100,30*i+16,str);   //输出文本值
 					pDC->DrawText(str,rectBottom,DT_RIGHT);
 					i++;
@@ -1099,7 +1099,7 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 					rectTop.right = rectTop.left + gap3;
 
 					rectBottom = m_scaleRect;
-					rectBottom.top = gap*j+gap/2+1;
+					rectBottom.top = gap*j+gap/2+3;
 					rectBottom.bottom = gap*j+gap-1;
 					rectBottom.left = rectBottom.left + gap1 + gap2;
 					rectBottom.right = rectBottom.left + gap3;
@@ -1126,12 +1126,12 @@ void CDMonitorDlg::DrawScale(CDC* pDC)
 					pDC->DrawText(plist->strSignal,rectTop,DT_CENTER);
 
 					pDC->SetTextAlign(TA_LEFT);
-					str.Format(_T("%d"),plist->leftLimit);
+					str.Format(_T("%f"),plist->leftLimit);
 					//pDC->TextOut(1,30*i+16,str);   //输出文本值
 					pDC->DrawText(str,rectBottom,DT_LEFT);
 
 					pDC->SetTextAlign(TA_RIGHT);
-					str.Format(_T("%d"),plist->rightLimit);
+					str.Format(_T("%f"),plist->rightLimit);
 					//pDC->TextOut(rect.Width()-100,30*i+16,str);   //输出文本值
 					pDC->DrawText(str,rectBottom,DT_RIGHT);
 					j++;
@@ -2531,10 +2531,10 @@ int CDMonitorDlg::ParseJsonFromFile(CString filename)
 				Json::Value val_Title = root["arrayCurve"][i]["Title"]; 
 				plist->strTitle = val_Title.asCString();
 				Json::Value val_MIN = root["arrayCurve"][i]["MIN"]; 
-				int min = val_MIN.asInt();
+				double min = val_MIN.asInt();
 				plist->leftLimit = val_MIN.asInt();
 				Json::Value val_MAX = root["arrayCurve"][i]["MAX"]; 
-				int max = val_MAX.asInt();
+				double max = val_MAX.asInt();
 				plist->rightLimit = val_MAX.asInt();
 				Json::Value val_COLOR_R = root["arrayCurve"][i]["COLOR_R"]; 
 				BYTE cR = val_COLOR_R.asUInt();
