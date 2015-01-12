@@ -3559,6 +3559,7 @@ void CDMonitorDlg::OnInstruction()
 	if(dwAttr==0xFFFFFFFF)
 	{
 		MessageBox(_T("文件夹不存在\n"),_T("提示"),MB_OK); 
+		return;
 	}
 	CString DocHelpFilePath = PdfHelpFilePath;
 	PdfHelpFilePath += strName;
