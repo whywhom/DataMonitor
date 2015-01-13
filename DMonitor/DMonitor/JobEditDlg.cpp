@@ -61,6 +61,7 @@ BOOL CJobEditDlg::OnInitDialog()
 	}	
 
 	ToolInit();
+	m_jeTree.ModifyStyle(0,TVS_HASBUTTONS|TVS_LINESATROOT|TVS_HASLINES|TVS_SHOWSELALWAYS);
 	DisplayTree(1);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -70,16 +71,15 @@ BOOL CJobEditDlg::OnInitDialog()
 void CJobEditDlg::DisplayTree(int EditTable){
 	m_jeTree.DeleteAllItems();
 	//树形控件初始化
-	m_jeTree.ModifyStyle(0,TVS_HASBUTTONS|TVS_LINESATROOT|TVS_HASLINES);
-	HTREEITEM root1=m_jeTree.InsertItem(_T("仪器信息"),0,1,TVI_ROOT,TVI_LAST);
+	HTREEITEM root1=m_jeTree.InsertItem(_T("仪器信息"),TVI_ROOT);
 	m_jeTree.SetItemData(root1,(DWORD)1);
-	HTREEITEM root2=m_jeTree.InsertItem(_T("曲线信息"),0,1,TVI_ROOT,TVI_LAST);
+	HTREEITEM root2=m_jeTree.InsertItem(_T("曲线信息"),TVI_ROOT);
 	m_jeTree.SetItemData(root2,(DWORD)2);
-	HTREEITEM root3=m_jeTree.InsertItem(_T("原始信号"),0,1,TVI_ROOT,TVI_LAST);
+	HTREEITEM root3=m_jeTree.InsertItem(_T("原始信号"),TVI_ROOT);
 	m_jeTree.SetItemData(root3,(DWORD)3);
-	HTREEITEM root4=m_jeTree.InsertItem(_T("控制信息"),0,1,TVI_ROOT,TVI_LAST);
+	HTREEITEM root4=m_jeTree.InsertItem(_T("控制信息"),TVI_ROOT);
 	m_jeTree.SetItemData(root4,(DWORD)4);
-	HTREEITEM root5=m_jeTree.InsertItem(_T("加电参数"),0,1,TVI_ROOT,TVI_LAST);
+	HTREEITEM root5=m_jeTree.InsertItem(_T("加电参数"),TVI_ROOT);
 	m_jeTree.SetItemData(root5,(DWORD)5);
 			switch(EditTable){
 				case 1:
@@ -112,7 +112,7 @@ void CJobEditDlg::DisplayTree(int EditTable){
 				rs.Open(dbOpenDynaset, L"SELECT * FROM TOOL" );		
 				while(!rs.IsEOF()){
 					rs.GetFieldValue (0,OleVariant);
-					m_jeTree.InsertItem(OleVariant.bstrVal,0,1,root1,TVI_LAST);
+					m_jeTree.InsertItem(OleVariant.bstrVal,root1);
 					rs.MoveNext();
 				}
 				rs.Close();     
@@ -120,7 +120,7 @@ void CJobEditDlg::DisplayTree(int EditTable){
 				rs.Open(dbOpenDynaset, L"SELECT * FROM Curve" );		
 				while(!rs.IsEOF()){
 					rs.GetFieldValue (0,OleVariant);
-					m_jeTree.InsertItem(OleVariant.bstrVal,0,1,root2,TVI_LAST);
+					m_jeTree.InsertItem(OleVariant.bstrVal,root2);
 					rs.MoveNext();
 				}
 				rs.Close();     
@@ -129,20 +129,20 @@ void CJobEditDlg::DisplayTree(int EditTable){
 				rs.Open(dbOpenDynaset, L"SELECT * FROM Origin" );		
 				while(!rs.IsEOF()){
 					rs.GetFieldValue (0,OleVariant);
-					m_jeTree.InsertItem(OleVariant.bstrVal,0,1,root3,TVI_LAST);
+					m_jeTree.InsertItem(OleVariant.bstrVal,root3);
 					rs.MoveNext();
 				}
 				rs.Close();  
 
 				//填充Power的子节点
-				m_jeTree.InsertItem(_T("工作电"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("低刻挡"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("高刻挡"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("测井挡"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("步进加"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("步进减"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("开腿"),0,1,root5,TVI_LAST);
-				m_jeTree.InsertItem(_T("收腿"),0,1,root5,TVI_LAST);			
+				m_jeTree.InsertItem(_T("工作电"),root5);
+				m_jeTree.InsertItem(_T("低刻挡"),root5);
+				m_jeTree.InsertItem(_T("高刻挡"),root5);
+				m_jeTree.InsertItem(_T("测井挡"),root5);
+				m_jeTree.InsertItem(_T("步进加"),root5);
+				m_jeTree.InsertItem(_T("步进减"),root5);
+				m_jeTree.InsertItem(_T("开腿"),root5);
+				m_jeTree.InsertItem(_T("收腿"),root5);			
 				
 	 } catch(CDaoException *e){		
 			MessageBox(e->m_pErrorInfo->m_strDescription);
@@ -777,79 +777,82 @@ void CJobEditDlg::OriginAdd()
 void CJobEditDlg::ControlAdd()
 {	
 	 try{				
-			   //新建数据库记录			    
+			   int Where=m_jobName.ReverseFind('\\');
+				CString Label=m_jobName.Right(m_jobName.GetLength()-1-Where);
+				Label=Label.Left(Label.ReverseFind('.'));//获得仪器的Label值
+				//新建数据库记录			    
 				CDaoRecordset rs(&m_DataBase);				
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Control"));				
 				if(rs.IsBOF()){
                 CString strDataValue;                
 			    rs.AddNew();
-				rs.SetFieldValue(0,_T("DEPTHSTEP"));
+				rs.SetFieldValue(0,Label+_T("_DEPTHSTEP"));
 				rs.SetFieldValue(1,_T("mm"));				
 				rs.SetFieldValue(2,_T("100"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("TIMESTEP"));
+				rs.SetFieldValue(0,Label+_T("_TIMESTEP"));
 				rs.SetFieldValue(1,_T("ms"));					
 				rs.SetFieldValue(2,_T("600"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("DISPSTEP"));
+				rs.SetFieldValue(0,Label+_T("_DISPSTEP"));
 				rs.SetFieldValue(1,_T("ms"));					
 				rs.SetFieldValue(2,_T("3000"));
 				rs.Update();
 				
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Sonic_AdStep"));
+				rs.SetFieldValue(0,Label+_T("_Sonic_AdStep"));
 				rs.SetFieldValue(1,_T("uS"));						
 				rs.SetFieldValue(2,_T("2"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Pole_FreqNum"));
+				rs.SetFieldValue(0,Label+_T("_Pole_FreqNum"));
 				rs.SetFieldValue(1,_T("HZ"));					
 				rs.SetFieldValue(2,_T("30"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Speed_Max"));
+				rs.SetFieldValue(0,Label+_T("_Speed_Max"));
 				rs.SetFieldValue(1,_T("m/h"));					
 				rs.SetFieldValue(2,_T("1200"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Load_Max"));
+				rs.SetFieldValue(0,Label+_T("_Load_Max"));
 				rs.SetFieldValue(1,_T("KG"));				
 				rs.SetFieldValue(2,_T("5000"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Load_Diff"));
+				rs.SetFieldValue(0,Label+_T("_Load_Diff"));
 				rs.SetFieldValue(1,_T("KG"));						
 				rs.SetFieldValue(2,_T("500"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Sonic_FreqNum"));
+				rs.SetFieldValue(0,Label+_T("_Sonic_FreqNum"));
 				rs.SetFieldValue(1,_T("10ms"));						
 				rs.SetFieldValue(2,_T("5"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("Sonic_LogicalWidth"));
+				rs.SetFieldValue(0,Label+_T("_Sonic_LogicalWidth"));
 				rs.SetFieldValue(1,_T("200uS"));					
 				rs.SetFieldValue(2,_T("2"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("FORMATLABEL"));
+				rs.SetFieldValue(0,Label+_T("_FORMATLABEL"));
 				rs.SetFieldValue(1,_T(" "));				
 				rs.SetFieldValue(2,_T("BORE.xml"));
 				rs.Update();
 
 				rs.AddNew();
-				rs.SetFieldValue(0,_T("HEADLABEL"));
+				rs.SetFieldValue(0,Label+_T("_HEADLABEL"));
 				rs.SetFieldValue(1,_T(" "));			
 				rs.SetFieldValue(2,_T("BOREHEAD.xml"));
 				rs.Update();
@@ -867,7 +870,11 @@ void CJobEditDlg::ControlAdd()
 void CJobEditDlg::PowerAdd()
 {	
 	 try{				
-			   //新建数据库记录			    
+			   //新建数据库记录
+		        int Where=m_jobName.ReverseFind('\\');
+				CString Label=m_jobName.Right(m_jobName.GetLength()-1-Where);
+				Label=Label.Left(Label.ReverseFind('.'));//获得仪器的Label值
+
 				CDaoRecordset rs(&m_DataBase);				
 				rs.Open(dbOpenDynaset,_T("SELECT * FROM Power"));				
 				if(rs.IsBOF()){
@@ -878,7 +885,7 @@ void CJobEditDlg::PowerAdd()
 						 sLabel.Format(_T("%d"),256*i+j+1);
 						 CString sMode;
 						 sMode.Format(_T("%d"),i);
-						 rs.SetFieldValue(0,COleVariant(sLabel));
+						 rs.SetFieldValue(0,COleVariant(Label+_T("_")+sLabel));
 						 rs.SetFieldValue(1,COleVariant(long(j+1)));	
 						 rs.SetFieldValue(2,_T("0"));
 						 rs.SetFieldValue(3,_T("0"));
@@ -1332,15 +1339,15 @@ void CJobEditDlg::OriginUpdate(CString Label)
 				if(!rs.IsBOF()){			   
 				rs.SetFieldValue(0,COleVariant(m_Origin.m_Label));
 				//单位				
-				int iUnit=m_Curve.m_unitbox.GetCurSel();
+				int iUnit=m_Origin.m_unitbox.GetCurSel();
 				CString strUnit;
-				m_Curve.m_unitbox.GetLBText(iUnit,strUnit);
+				m_Origin.m_unitbox.GetLBText(iUnit,strUnit);
 				rs.SetFieldValue(1,COleVariant(strUnit));
 
 				//滤波方法
-				int iFilter=m_Curve.m_filterbox.GetCurSel();
+				int iFilter=m_Origin.m_filterbox.GetCurSel();
 				CString strFilter;
-				m_Curve.m_filterbox.GetLBText(iFilter,strFilter);
+				m_Origin.m_filterbox.GetLBText(iFilter,strFilter);
 				rs.SetFieldValue(2,COleVariant(strFilter));		
 				rs.Update();
 				MessageBox(_T("修改成功,点左侧原始信号查看"));

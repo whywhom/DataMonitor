@@ -147,18 +147,6 @@ void CJobDlg::JobCreat()
 			    td.Append();
 				td.Close();
 
-				//创建ControlList表
-				td.Create(_T("ControlList"));
-				td.CreateField(_T("LABEL"),dbText,50,0L);				
-			    td.Append();
-				td.Close();
-
-				//创建CurveList表
-				td.Create(_T("PowerList"));
-				td.CreateField(_T("LABEL"),dbText,50,0L);				
-			    td.Append();
-				td.Close();
-
 		}catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
 			e->Delete();
@@ -277,12 +265,16 @@ void CJobDlg::OnJobLoad()
     CString JobName=m_JobTreeLeft.GetItemText(sel_job);//获取作业名称
 	HTREEITEM hPar=m_JobTreeLeft.GetParentItem(sel_job);//父节点
 
-	if(!hPar){//必须是一级节点（作业）
+	if(!hPar&&sel_job){//必须是一级节点（作业）
 		if(MessageBox(_T("您确定要载入作业")+JobName+_T("吗?"),_T("提示"), MB_OKCANCEL )==IDOK)
 		{
 		  LoadJob(JobName);		 
 		} 
 	}
+	else{
+		MessageBox(_T("请先选择作业"));
+	}
+
 }
 void CJobDlg::LoadJob(CString JobName){
 		//解析Json的方法
@@ -721,10 +713,21 @@ BOOL CJobDlg::PreTranslateMessage(MSG* pMsg)
 void CJobDlg::OnToolNew()
 {
 	// TODO: 在此添加命令处理程序代码
-	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|tool files(*.mdb)|*.mdb|All files(*.*)|*.*|"));//构造保存文件对话框
+	CFileDialog dlg(FALSE,_T(""),_T(""),OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,_T("tools files(*.tools)|*.tools|"));//构造保存文件对话框
 	dlg.m_ofn.lpstrInitialDir=m_Path;
     if(dlg.DoModal()==IDOK)//显示保存文件对话框
 	{
+		int Where=dlg.GetPathName().ReverseFind('\\');
+		CString Label=dlg.GetPathName().Right(dlg.GetPathName().GetLength()-1-Where);
+		Label=Label.Left(Label.ReverseFind('.'));//获得仪器的Label值,如果ToolList中不存在则添加
+		CDaoRecordset rs(&m_DataBase);						
+		rs.Open(dbOpenDynaset,_T("SELECT * FROM ToolList where LABEL='")+Label+_T("'"));
+		if(rs.IsBOF()){
+		rs.AddNew();
+		rs.SetFieldValue(0,COleVariant(Label));
+		rs.Update();
+		rs.Close();
+		//////////////打开仪器编辑对话框
 		CJobEditDlg m_jeDlg;
 		m_jeDlg.m_jobName=dlg.GetPathName();//获取文件路径名称
 		m_jeDlg.m_Path=m_Path;
@@ -732,6 +735,10 @@ void CJobDlg::OnToolNew()
 		if(m_jeDlg.DoModal()==IDOK){
 		m_treeCtrl.ModifyStyle(0,TVS_HASBUTTONS   |   TVS_LINESATROOT   |   TVS_HASLINES);	
 		m_treeCtrl.DisplayTree (m_Path,TRUE);
+		}
+		//////////////
+		}else{
+		MessageBox(_T("不能覆盖同名仪器"));
 		}
 	}
 }
@@ -785,10 +792,23 @@ void CJobDlg::OnToolDel()
 	CString LabelName=strPath.Right(strPath.GetLength()-1-Where);
 	LabelName=LabelName.Left(LabelName.ReverseFind('.'));
 	if(!m_treeCtrl.FindSubDir(strPath)){//不能删除非空子目录
-		if(MessageBox(_T("您确定要删除仪器")+LabelName+_T("吗?"),_T("警告"), MB_OKCANCEL )==IDOK)
+		if(MessageBox(_T("您确定要删除仪器")+LabelName+_T("吗?此操作也将删除所有作业对该仪器的引用"),_T("警告"), MB_OKCANCEL )==IDOK)
 		{
-		  DeleteFile(strPath);
+		  DeleteFile(strPath);//删除文件
 		  m_treeCtrl.DeleteItem(sel_htem);//删除节点
+
+		  CDaoRecordset rs(&m_DataBase);//删除ToolList表数据
+		  rs.Open(dbOpenDynaset,_T("SELECT * FROM ToolList where Label='")+LabelName+_T("'"));
+		  rs.Delete();					
+		  rs.Close();
+
+		  rs.Open(dbOpenDynaset,_T("SELECT * FROM JobList where ToolLabel='")+LabelName+_T("'"));	
+			while(!rs.IsEOF()){//删除JobList表数据
+				rs.Delete();	
+				rs.MoveNext();
+			}
+		  rs.Close();
+		  DisplayTreeLeft();
 		} 
 	}
 }
@@ -806,18 +826,25 @@ void CJobDlg::OnBnClickedZcwAdditem()
     CString strJobName=m_JobTreeLeft.GetItemText(sel_job);//获取文件路径名称
 	HTREEITEM hPar=m_JobTreeLeft.GetParentItem(sel_job);//父节点
 
-	if((!m_treeCtrl.FindSubDir(strPath))&&(!hPar)){//左边必须是一级节点，右边不能是目录
-		//MessageBox(strJobName+LabelName,MB_OK);
+	if(m_treeCtrl.FindSubDir(strPath)){
+		MessageBox(_T("请选择仪器"));
+	}else if((!sel_job)||hPar){
+	    MessageBox(_T("请选择作业"));
+	}else{		
 		 try{				
 			   //新建数据库记录			  			   
-				CDaoRecordset rs(&m_DataBase);				
-				rs.Open(dbOpenDynaset,_T("SELECT * FROM JobList"));			
+				CDaoRecordset rs(&m_DataBase);	
+				rs.Open(dbOpenDynaset,_T("SELECT * FROM JobList where ToolLabel='")+LabelName+_T("' and JobName='")+strJobName+_T("'"));
+				if(rs.IsBOF()){					
 			    rs.AddNew();
 				rs.SetFieldValue(0,COleVariant(strJobName));	
 				rs.SetFieldValue(1,COleVariant(LabelName));
 				rs.Update();					
 				rs.Close();			
 				DisplayTreeLeft();
+				}else{
+				MessageBox(strJobName+_T("已经包含仪器")+LabelName);
+				}
 		} catch(CDaoException *e){
 			MessageBox(e->m_pErrorInfo->m_strDescription);
 			e->Delete();

@@ -60,20 +60,22 @@ BOOL CJobEditDlgOrigin::OnInitDialog()
 	CString m_filterary[]={_T("none"),_T("3点平均"),_T("3点加权"),_T("5点平均"),_T("5点加权"),_T("7点平均"),_T("7点加权"),_T("9点平均"),_T("9点加权"),_T("11点平均"),_T("11点加权"),_T("13点平均"),_T("13点加权"),_T("15点平均"),_T("15点加权"),_T("17点平均"),_T("17点加权"),_T("19点平均"),_T("19点加权"),_T("21点平均"),_T("21点加权"),_T("3700(1)"),_T("3700(2)"),_T("3700(3)"),_T("一阶滤波1"),_T("一阶滤波2"),_T("一阶滤波3"),_T("一阶滤波4"),_T("一阶滤波5"),_T("一阶滤波1"),_T("串联滤波1"),_T("串联滤波1"),_T("累计滤波1"),_T("累计滤波2"),_T("累计滤波3"),_T("累计滤波4"),_T("累计滤波5"),_T("累计滤波6"),_T("累计滤波7"),_T("累计滤波8"),_T("累计滤波9")};
 
 	for(int i=0;i<78;i++){
-	m_unitbox.AddString(m_unitary[i]);
+	m_unitbox.AddString(m_unitary[i]);	
+	}
+	m_unitbox.SetCurSel(0);
+	for(int i=0;i<78;i++){
 		if(m_unit==m_unitary[i]){
 			m_unitbox.SetCurSel(i);
-		}else{
-			m_unitbox.SetCurSel(0);
 		}
 	}
 	
 	for(int i=0;i<41;i++){
-	m_filterbox.AddString(m_filterary[i]);
+	m_filterbox.AddString(m_filterary[i]);	
+	}
+	m_filterbox.SetCurSel(0);
+	for(int i=0;i<41;i++){	
 		if(m_filter==m_filterary[i]){
 			m_filterbox.SetCurSel(i);
-		}else{
-			m_filterbox.SetCurSel(0);
 		}
 	}
 
